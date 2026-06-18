@@ -214,6 +214,7 @@ function App() {
           href={profile.resume}
           target="_blank"
           rel="noopener noreferrer"
+          title="Download Neel Shingavi's Resume"
           onClick={() => analytics.resumeDownloaded()}
         >
           <Download size={17} />
@@ -282,6 +283,7 @@ function App() {
                 href={profile.links.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
+                title="Visit Neel Shingavi's LinkedIn Profile"
                 onClick={() => analytics.socialClicked('linkedin')}
                 aria-label="LinkedIn profile (opens in new tab)"
               >
@@ -293,6 +295,7 @@ function App() {
                 href={profile.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
+                title="Visit Neel Shingavi's GitHub Profile"
                 onClick={() => analytics.socialClicked('github')}
                 aria-label="GitHub profile (opens in new tab)"
               >
@@ -311,7 +314,7 @@ function App() {
             <picture>
               <source srcSet="/assets/neel-shingavi.avif" type="image/avif" />
               <source srcSet="/assets/neel-shingavi.webp" type="image/webp" />
-              <img src="/assets/neel-shingavi.jpg" alt="Neel Shingavi" loading="eager" fetchPriority="high" />
+              <img src="/assets/neel-shingavi.jpg" alt="Portrait of Neel Shingavi, Product Engineer specializing in Backend Systems and AI Analytics" loading="eager" fetchPriority="high" />
             </picture>
             <div className="portrait-scan" />
             <div className="portrait-tag tag-one">LLM + SQL</div>
@@ -388,6 +391,7 @@ function App() {
               href={profile.resume}
               target="_blank"
               rel="noopener noreferrer"
+              title="Download full resume PDF"
               onClick={() => analytics.resumeDownloaded()}
             >
               Download full resume
