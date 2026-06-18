@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import smoothscroll from 'smoothscroll-polyfill';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { FallbackPage } from './components/FallbackPage.jsx';
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary fallback={<FallbackPage />}>
       <LazyMotion features={domAnimation}>
         <App />
+        <SpeedInsights />
       </LazyMotion>
     </ErrorBoundary>
   </React.StrictMode>
