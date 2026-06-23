@@ -506,7 +506,7 @@ function App() {
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
             <p className="eyebrow">Contact</p>
-            <h2 id="contact-heading">Have a hard problem, a product idea, or a team that ships?</h2>
+            <h2 id="contact-heading">Have a problem, a product idea, or a team that ships?</h2>
             <p>{profile.availability}</p>
             <div className="contact-actions" style={{marginBottom: '20px'}}>
               <a
