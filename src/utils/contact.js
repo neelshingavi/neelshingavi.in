@@ -8,8 +8,8 @@ function rot13(str) {
 }
 
 // Store obfuscated values (run rot13 on the real values to get these)
-// shingavineel@gmail.com → fuvatnivarre@tznvy.pbz
-const ENCODED_EMAIL = 'fuvatnivarre@tznvy.pbz';
+// shingavineel@gmail.com → fuvatnivarry@tznvy.pbz
+const ENCODED_EMAIL = 'fuvatnivarry@tznvy.pbz';
 const ENCODED_PHONE = '+91 9284466546'; // numbers are fine in plain text
 
 export const getEmail = () => rot13(ENCODED_EMAIL);
