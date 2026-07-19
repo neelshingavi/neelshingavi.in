@@ -322,20 +322,7 @@ function App() {
             <div className="portrait-tag tag-three">Client Delivery</div>
           </m.div>
 
-          <m.aside
-            className="hero-terminal"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1, duration: 0.75 }}
-            aria-label="Current focus"
-          >
-            <span>current_signal.log</span>
-            <p>Building reliable software where backend architecture, AI, and real business workflows meet.</p>
-            <div>
-              <MapPin size={16} />
-              {profile.location}
-            </div>
-          </m.aside>
+
         </section>
 
         <section className="metric-strip" aria-label="Portfolio metrics">
@@ -384,8 +371,8 @@ function App() {
         <section className="experience-section section-shell" aria-labelledby="experience-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Experience</p>
-              <h2 id="experience-heading">Client work with production pressure.</h2>
+              <p className="eyebrow">Background</p>
+              <h2 id="experience-heading">Professional experience and academic foundation.</h2>
             </div>
             <a
               href={profile.resume}
@@ -488,7 +475,7 @@ function App() {
             </div>
             <div className="trophy-pill">
               <Trophy size={18} />
-              5 major recognitions
+              6 major recognitions
             </div>
           </Reveal>
 

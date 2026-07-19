@@ -27,7 +27,7 @@ export const heroRoles = [
 
 export const stats = [
   { value: 4, suffix: '', label: 'Client Projects Delivered End to End', accent: 'teal' },
-  { value: 9.32, suffix: '', label: 'Current CGPA', accent: 'gold', decimals: 2 },
+  { value: 9.50, suffix: '', label: 'Current CGPA', accent: 'gold', decimals: 2 },
   { value: 6, suffix: ' Months', label: 'Work Experience', accent: 'signal' },
   { value: 5, suffix: '+', label: 'Hackathon Victories', accent: 'coral' },
   { value: 10, suffix: '+', label: 'Expert Sessions Attended', accent: 'lime' },
@@ -35,26 +35,38 @@ export const stats = [
 
 export const experience = [
   {
+    company: 'Script Lanes',
+    role: 'Full Stack Developer Intern',
+    period: 'Jun 2026 - Present',
+    location: 'Pune',
+    points: [
+      'Designed and implemented the end-to-end AI Notes processing engine for MBBS Mentor, integrating AWS S3 and OpenRouter APIs to automate document ingestion and parsing workloads.',
+      'Engineered localized aggregation logic to process historical user data, generating automated weekly and monthly concept summaries.',
+      'Upcoming internship focusing on cross-platform mobile app development in the React Native stack.',
+    ],
+  },
+  {
+    company: 'Startup and Innovation Cell (SIC), PICT',
+    role: 'Technical Head',
+    period: 'Apr 2026 - Present',
+    location: 'Pune',
+    points: [
+      'Directed technical strategy and architectural planning for 8 early-stage startups across diverse industry domains within the university incubator.',
+      'Consulted cross-functional founding teams on system design, database modeling, and optimal technology stack selection, accelerating MVP delivery by 4 weeks.',
+      'Conducted rigorous architectural reviews and provided cloud infrastructure guidance to ensure the deployment of robust, reliable, and scalable product solutions.',
+    ],
+  },
+  {
     company: 'Word Lane Tech',
     role: 'Backend Developer and Client Coordination Intern',
     period: 'Jul 2025 - Dec 2025',
     location: 'Pune',
     points: [
-      'Developed backend modules for client projects, improving reliability and reducing manual workflows.',
-      'Delivered 4 projects end to end, optimizing development cycles and ensuring timely deployment.',
-      'Collaborated with clients and cross-functional teams to streamline communication and accelerate delivery timelines.',
-      'Built production systems supporting desktop and Android workflows for real client operations.',
+      'Developed and verified modular RESTful API endpoints utilizing Node.js and Express.js to support active business consumer services.',
+      'Collaborated with client-side engineering teams to translate product specifications into maintainable server logic, delivering 4 core projects end-to-end.',
+      'Built and optimized production systems supporting both desktop and Android workflows, improving reliability and reducing manual operations.',
     ],
-  },
-  {
-    company: 'Script Lanes',
-    role: 'Upcoming Mobile App Developer Intern (React Native Stack)',
-    period: 'Jun 2026 - Jun 2027',
-    location: 'Pune',
-    points: [
-      'Upcoming internship focusing on cross-platform mobile app development in the React Native stack.',
-    ],
-  },
+  }
 ];
 
 export const education = [
@@ -62,7 +74,7 @@ export const education = [
     school: 'Pune Institute of Computer Technology (PICT)',
     course: 'B.Tech in Electronics and Computer Engineering',
     period: 'Aug 2025 - Present',
-    result: 'CGPA 9.32',
+    result: 'CGPA 9.50/10',
   },
   {
     school: 'Bharati Vidyapeeth J.N.I.O.T., Katraj, Pune',
@@ -86,7 +98,7 @@ export const projects = [
     description:
       'LLM-powered analytics platform that turns UPI transaction data into contextual business insights, spending patterns, revenue trends, and customer behavior intelligence.',
     impact: ['250,000+ transactions processed', '2nd place at IIT Bombay InsightX', 'Built for real-world business analysis'],
-    stack: ['Python', 'LLM APIs', 'SQL', 'Data Analytics', 'PostgreSQL'],
+    stack: ['Python', 'LangChain', 'DuckDB', 'LLM APIs', 'SQL', 'Data Analytics', 'PostgreSQL'],
     color: 'lime',
   },
   {
@@ -98,6 +110,16 @@ export const projects = [
     impact: ['5,000+ monthly transactions', '2 active clients', 'Offline SQLite plus Supabase cloud sync'],
     stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'PostgreSQL', 'HTTP APIs'],
     color: 'coral',
+  },
+  {
+    name: 'PayPerUseAI',
+    type: 'Usage-based AI payment gateway',
+    period: 'Apr 2026 - Jun 2026',
+    description:
+      'Usage-based payment gateway that dynamically meters and processes multi-model AI inference queries utilizing Algorand smart contracts for secure billing.',
+    impact: ['Smart escrow settlement (PyTeal)', 'Sub-200ms real-time streaming (SSE)', 'Blockchain-backed ledgers'],
+    stack: ['FastAPI', 'Python', 'React.js', 'PyTeal', 'Algorand Blockchain'],
+    color: 'lime',
   },
   {
     name: 'CertiCraft',
@@ -126,28 +148,33 @@ export const achievements = [
   { title: "1st Position - TechSprint'26 Hackathon", detail: 'Team Leader, 200+ teams', tone: 'gold' },
   { title: 'Finalist - GDG Cloud Pune Hackathon', detail: '1,000+ teams', tone: 'teal' },
   { title: 'Finalist - Meta x OpenEnv x PyTorch Hackathon', detail: 'Team Leader, 52,000+ teams', tone: 'coral' },
+  { title: 'Finalist - Algorand HackSeries 3.0', detail: 'Top 30 of 800+', tone: 'signal' },
   { title: "2nd Position - Indradhanu'25 Project Competition", detail: '150+ projects', tone: 'signal' },
 ];
 
 export const skills = [
   {
     label: 'Languages',
-    items: ['Java', 'Python', 'C/C++', 'SQL', 'JavaScript'],
+    items: ['Java', 'Python', 'C/C++', 'SQL', 'TypeScript', 'JavaScript'],
   },
   {
     label: 'Frameworks',
-    items: ['React', 'Node.js', 'Express.js', 'JavaFX', 'Swing', 'LLM APIs'],
+    items: ['React', 'Next.js', 'Node.js', 'Express.js', 'JavaFX', 'Swing', 'LLM APIs'],
   },
   {
     label: 'Databases',
-    items: ['SQLite', 'PostgreSQL', 'Supabase', 'MongoDB'],
+    items: ['SQLite', 'PostgreSQL', 'Supabase', 'MongoDB', 'Redis'],
   },
   {
     label: 'Tools',
-    items: ['Git', 'GitHub', 'Maven', 'VS Code', 'JAR/EXE Packaging'],
+    items: ['Git', 'GitHub', 'Docker', 'AWS (S3/EC2)', 'Maven', 'VS Code', 'JAR/EXE Packaging'],
   },
   {
     label: 'Core',
     items: ['DSA', 'OOP', 'DBMS', 'Data Modeling', 'System Design Basics', 'HTTP API Integration'],
+  },
+  {
+    label: 'Soft Skills',
+    items: ['Leadership', 'Critical Thinking', 'Effective Communication', 'Teamwork & Collaboration'],
   },
 ];
