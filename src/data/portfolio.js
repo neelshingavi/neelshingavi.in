@@ -164,7 +164,6 @@ export const achievements = [
   { title: 'Finalist - Meta x OpenEnv x PyTorch Hackathon', detail: 'Top 800 of 52,000+ teams', tone: 'coral' },
   { title: 'Finalist - Algorand HackSeries 3.0', detail: 'Top 30 of 800+', tone: 'signal' },
   { title: "2nd Position - Indradhanu'25 Project Competition", detail: '150+ projects', tone: 'signal' },
-  { title: 'Complete Club Coordinator - PICT ACM', detail: 'Led 600+ students, 23 teams for 15+ events', tone: 'gold' },
 ];
 
 export const skills = [
