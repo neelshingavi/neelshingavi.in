@@ -25,7 +25,7 @@ import { MobileNav } from './components/MobileNav.jsx';
 import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { analytics } from './utils/analytics.js';
-import { achievements, education, experience, heroRoles, profile, projects, skills, stats } from './data/portfolio.js';
+import { achievements, clubs, education, experience, heroRoles, profile, projects, skills, stats } from './data/portfolio.js';
 
 const navItems = ['work', 'systems', 'wins', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
@@ -410,6 +410,21 @@ function App() {
                   <h3>{item.school}</h3>
                   <p>{item.course}</p>
                   <strong>{item.result}</strong>
+                </Reveal>
+              ))}
+            </div>
+            <div className="timeline-column">
+              <h3 className="timeline-title">Clubs & Leadership</h3>
+              {clubs.map((item) => (
+                <Reveal className="timeline-block" key={item.company}>
+                  <span>{item.period}</span>
+                  <h3>{item.company}</h3>
+                  <p>{item.role}</p>
+                  <ul>
+                    {item.points.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
                 </Reveal>
               ))}
             </div>

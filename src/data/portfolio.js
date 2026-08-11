@@ -13,7 +13,7 @@ export const profile = {
     github: 'https://github.com/neelshingavi',
   },
   summary:
-    'Software developer building scalable, production-grade applications, backend systems, data-driven products, and LLM-powered analytics with a strong focus on performance, reliability, and clean architecture.',
+    'Full-Stack Software Engineer with expertise in building scalable web applications, distributed architectures, and AI-integrated data pipelines. Proficient across the stack using Java, Node.js, Next.js, and PostgreSQL, alongside cloud deployment on AWS. Proven track record of accelerating product delivery from responsive client interfaces to secure backend systems.',
   availability: 'Open for internships, full-time roles, freelance builds, and serious product collaborations.',
 };
 
@@ -38,13 +38,27 @@ export const experience = [
     company: 'Script Lanes',
     role: 'Full Stack Developer Intern',
     period: 'Jun 2026 - Present',
-    location: 'Pune',
+    location: 'On-Site',
     points: [
-      'Designed and implemented the end-to-end AI Notes processing engine for MBBS Mentor, integrating AWS S3 and OpenRouter APIs to automate document ingestion and parsing workloads.',
-      'Engineered localized aggregation logic to process historical user data, generating automated weekly and monthly concept summaries.',
+      'Designed and implemented end-to-end AI Notes processing engine for MBBS Mentor, integrating AWS S3 and OpenRouter APIs to automate document ingestion, processing, and parsing workflows.',
+      'Engineered localized data aggregation pipelines to process historical user activity and generate automated weekly and monthly concept summaries.',
       'Upcoming internship focusing on cross-platform mobile app development in the React Native stack.',
     ],
   },
+  {
+    company: 'Word Lane Tech',
+    role: 'Backend Developer and Client Coordination Intern',
+    period: 'Jul 2025 - Dec 2025',
+    location: 'Remote',
+    points: [
+      'Developed and tested modular RESTful APIs using Node.js and Express.js to support production business services and application workflows.',
+      'Collaborated with frontend engineering teams to translate product requirements into maintainable backend services, successfully testing and shipping 3 core service layers, while delivering 4 core projects end-to-end.',
+      'Built and optimized production systems supporting both desktop and Android workflows, improving reliability and reducing manual operations.',
+    ],
+  }
+];
+
+export const clubs = [
   {
     company: 'Startup and Innovation Cell (SIC), PICT',
     role: 'Technical Head',
@@ -57,14 +71,14 @@ export const experience = [
     ],
   },
   {
-    company: 'Word Lane Tech',
-    role: 'Backend Developer and Client Coordination Intern',
-    period: 'Jul 2025 - Dec 2025',
+    company: 'PICT ACM Student Chapter',
+    role: 'Complete Club Coordinator',
+    period: 'Aug 2025 - Present',
     location: 'Pune',
     points: [
-      'Developed and verified modular RESTful API endpoints utilizing Node.js and Express.js to support active business consumer services.',
-      'Collaborated with client-side engineering teams to translate product specifications into maintainable server logic, delivering 4 core projects end-to-end.',
-      'Built and optimized production systems supporting both desktop and Android workflows, improving reliability and reducing manual operations.',
+      'Led 600+ students across 23 cross-functional teams to execute 12 major competitions and 15+ events.',
+      'Coordinated multi-disciplinary operations ensuring successful delivery of technical events, workshops, and large-scale hackathons.',
+      'Acted as the core liaison between management, student teams, and external sponsors for seamless event execution.',
     ],
   }
 ];
@@ -73,13 +87,13 @@ export const education = [
   {
     school: 'Pune Institute of Computer Technology (PICT)',
     course: 'B.Tech in Electronics and Computer Engineering',
-    period: 'Aug 2025 - Present',
+    period: 'Aug 2025 - May 2028',
     result: 'CGPA 9.50/10',
   },
   {
     school: 'Bharati Vidyapeeth J.N.I.O.T., Katraj, Pune',
     course: 'Diploma in Computer Technology',
-    period: 'May 2022 - May 2025',
+    period: 'Aug 2022 - May 2025',
     result: '93.26%',
   },
   {
@@ -94,10 +108,10 @@ export const projects = [
   {
     name: 'QueryPilot',
     type: 'AI analytics platform',
-    period: 'Jan 2026 - Feb 2026',
+    period: 'Feb 2026 - Apr 2026',
     description:
-      'LLM-powered analytics platform that turns UPI transaction data into contextual business insights, spending patterns, revenue trends, and customer behavior intelligence.',
-    impact: ['250,000+ transactions processed', '2nd place at IIT Bombay InsightX', 'Built for real-world business analysis'],
+      'Engineered an analytical RAG engine using conversational LLM pipelines for natural-language querying across relational databases. Ingested and processed 250,000+ UPI financial transactions to generate contextual business insights and revenue velocity metrics.',
+    impact: ['250,000+ transactions processed', '2nd place at InsightX IIT Bombay', 'Pipeline optimization'],
     stack: ['Python', 'LangChain', 'DuckDB', 'LLM APIs', 'SQL', 'Data Analytics', 'PostgreSQL'],
     color: 'lime',
   },
@@ -106,9 +120,9 @@ export const projects = [
     type: 'Production trading workflow app',
     period: 'Mar 2026 - Present',
     description:
-      'Desktop and Android platform for saree brokers to manage billing, payments, commissions, returns, and cloud-synced daily workflows.',
-    impact: ['5,000+ monthly transactions', '2 active clients', 'Offline SQLite plus Supabase cloud sync'],
-    stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'PostgreSQL', 'HTTP APIs'],
+      'Developed a local-first financial ledger and trade management application with a native desktop interface for managing bills, payments, return goods, and commission settlements. Implemented offline-first persistence using SQLite and Hibernate ORM, with PostgreSQL (Supabase) as the cloud backend and incremental push/pull HTTP synchronization for multi-device data consistency.',
+    impact: ['5,000+ monthly transactions', 'Offline-first persistence', 'Multi-device cloud sync'],
+    stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
     color: 'coral',
   },
   {
@@ -145,11 +159,12 @@ export const projects = [
 
 export const achievements = [
   { title: '2nd Position - InsightX, IIT Bombay', detail: 'Team Leader, 1,700+ teams', tone: 'lime' },
-  { title: "1st Position - TechSprint'26 Hackathon", detail: 'Team Leader, 200+ teams', tone: 'gold' },
-  { title: 'Finalist - GDG Cloud Pune Hackathon', detail: '1,000+ teams', tone: 'teal' },
-  { title: 'Finalist - Meta x OpenEnv x PyTorch Hackathon', detail: 'Team Leader, 52,000+ teams', tone: 'coral' },
+  { title: "1st Position - TechSprint'26 Hackathon", detail: 'Team Leader, 250+ teams', tone: 'gold' },
+  { title: 'Finalist - GDG Cloud Pune Hackathon', detail: 'Team Leader, Top 20 of 1,000+', tone: 'teal' },
+  { title: 'Finalist - Meta x OpenEnv x PyTorch Hackathon', detail: 'Top 800 of 52,000+ teams', tone: 'coral' },
   { title: 'Finalist - Algorand HackSeries 3.0', detail: 'Top 30 of 800+', tone: 'signal' },
   { title: "2nd Position - Indradhanu'25 Project Competition", detail: '150+ projects', tone: 'signal' },
+  { title: 'Complete Club Coordinator - PICT ACM', detail: 'Led 600+ students, 23 teams for 15+ events', tone: 'gold' },
 ];
 
 export const skills = [
@@ -167,14 +182,14 @@ export const skills = [
   },
   {
     label: 'Tools',
-    items: ['Git', 'GitHub', 'Docker', 'AWS (S3/EC2)', 'Maven', 'VS Code', 'JAR/EXE Packaging'],
+    items: ['Git', 'GitHub', 'Docker', 'AWS (S3/EC2/Lambda)', 'Maven', 'VS Code', 'JAR/EXE Packaging'],
   },
   {
-    label: 'Core',
-    items: ['DSA', 'OOP', 'DBMS', 'Data Modeling', 'System Design Basics', 'HTTP API Integration'],
+    label: 'Core CS',
+    items: ['Data Structures & Algorithms', 'OOP', 'DBMS', 'Computer Networks', 'Operating Systems', 'System Design', 'Data Modeling', 'HTTP API Integration'],
   },
   {
-    label: 'Soft Skills',
+    label: 'Professional',
     items: ['Leadership', 'Critical Thinking', 'Effective Communication', 'Teamwork & Collaboration'],
   },
 ];
