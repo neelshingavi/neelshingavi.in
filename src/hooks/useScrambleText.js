@@ -12,7 +12,7 @@ export function useScrambleText(target) {
     if (prefersReducedMotion) { setDisplay(target); return; }
 
     let queue = target.split('').map((ch, i) => ({
-      to: ch, start: Math.floor(i * 1.4), end: Math.floor(i * 1.4) + 12,
+      to: ch, start: Math.floor(i * 0.4), end: Math.floor(i * 0.4) + 4,
     }));
     frame.current = 0;
 
