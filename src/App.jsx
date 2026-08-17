@@ -417,22 +417,7 @@ function App() {
             </m.div>
           </div>
 
-          <m.div
-            className="hero-portrait"
-            initial={{ opacity: 0, scale: 0.96, y: 34 }}
-            animate={preloaderComplete ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 34 }}
-            transition={{ delay: 0.28, duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <picture>
-              <source srcSet="/assets/neel-shingavi.avif" type="image/avif" />
-              <source srcSet="/assets/neel-shingavi.webp" type="image/webp" />
-              <img src="/assets/neel-shingavi.jpg" alt="Portrait of Neel Shingavi, Product Engineer specializing in Backend Systems and AI Analytics" loading="eager" fetchPriority="high" />
-            </picture>
-            <div className="portrait-scan" />
-            <div className="portrait-tag tag-one">LLM + SQL</div>
-            <div className="portrait-tag tag-two">Java Systems</div>
-            <div className="portrait-tag tag-three">Client Delivery</div>
-          </m.div>
+
 
 
         </section>

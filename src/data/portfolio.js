@@ -185,7 +185,7 @@ export const skills = [
   },
   {
     label: 'Core CS',
-    items: ['Data Structures & Algorithms', 'OOP', 'DBMS', 'Computer Networks', 'Operating Systems', 'System Design', 'Data Modeling', 'HTTP API Integration'],
+    items: ['Data Structures & Algorithms', 'OOP', 'DBMS', 'OS', 'Computer Networks', 'System Design'],
   },
   {
     label: 'Professional',
