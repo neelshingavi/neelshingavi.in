@@ -1129,13 +1129,6 @@ footer a {
 }
 
 @media (max-width: 1040px) {
-  .site-header {
-    grid-template-columns: 1fr auto;
-  }
-
-  .nav-links {
-    display: none;
-  }
 
   .hero-section {
     grid-template-columns: 1fr;
