@@ -1,6 +1,7 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { m, useScroll, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
 import {
   ArrowUpRight,
   Braces,
@@ -21,26 +22,137 @@ import { Reveal } from './components/Reveal.jsx';
 import { SkillBadge } from './components/SkillBadge.jsx';
 import { useTypeCycle } from './hooks/useTypeCycle.js';
 import { useCanRunWebGL } from './hooks/useCanRunWebGL.js';
+import { useSmoothScroll } from './hooks/useSmoothScroll.js';
+import { useSectionMood } from './hooks/useSectionMood.js';
+import { useMagnetic } from './hooks/useMagnetic.js';
+import { useTilt } from './hooks/useTilt.js';
+import { useScrambleText } from './hooks/useScrambleText.js';
 import { MobileNav } from './components/MobileNav.jsx';
 import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { Preloader } from './components/Preloader.jsx';
+import { ProjectCard } from './components/ProjectCard.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, clubs, education, experience, heroRoles, profile, projects, skills, stats } from './data/portfolio.js';
 
 const navItems = ['work', 'systems', 'wins', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
-const BackgroundScene = lazy(() =>
-  import('./components/BackgroundScene.jsx').then((module) => ({ default: module.BackgroundScene })),
-);
+
+gsap.registerPlugin(SplitText);
+
+import { ImageSequenceBackground } from './components/ImageSequenceBackground.jsx';
+
+function MagneticNavItem({ item, activeSection }) {
+  const ref = useMagnetic(0.3);
+  return (
+    <a
+      ref={ref}
+      href={`#${item}`}
+      className={activeSection === item ? 'active' : ''}
+      aria-current={activeSection === item ? 'page' : undefined}
+    >
+      {item}
+    </a>
+  );
+}
+
+function HeroName({ play }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    if (!play) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const split = new SplitText(ref.current, { type: 'chars', charsClass: 'char' });
+    if (prefersReducedMotion) { gsap.set(split.chars, { opacity: 1, y: 0 }); return () => split.revert(); }
+
+    gsap.fromTo(split.chars,
+      { yPercent: 130, opacity: 0, rotateZ: 6 },
+      { yPercent: 0, opacity: 1, rotateZ: 0, duration: 1.05, stagger: 0.028, ease: 'power4.out', delay: 0.15 }
+    );
+    return () => split.revert();
+  }, [play]);
+  return <h1 id="hero-title" ref={ref}>Neel Shingavi</h1>;
+}
+
+function SystemTile({ item, Icon }) {
+  const tiltRef = useTilt(8);
+  return (
+    <div ref={tiltRef} className="system-tile">
+      <Icon size={24} />
+      <span>{item}</span>
+    </div>
+  );
+}
+
+function MagneticAction({ href, className, onClick, title, target, rel, children, ariaLabel }) {
+  const ref = useMagnetic(0.3);
+  return (
+    <a ref={ref} href={href} className={className} onClick={onClick} title={title} target={target} rel={rel} aria-label={ariaLabel}>
+      {children}
+    </a>
+  );
+}
 
 function App() {
+  useSmoothScroll();
+  useSectionMood();
   const ringRef = useRef(null);
   const dotRef = useRef(null);
   const [activeSection, setActiveSection] = useState('');
+  const [preloaderComplete, setPreloaderComplete] = useState(false);
   const heroText = useTypeCycle(heroRoles);
+  const scrambledHeroText = useScrambleText(heroText);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
   const canRunWebGL = useCanRunWebGL();
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to('.hero-portrait', {
+        yPercent: 14,
+        ease: 'none',
+        scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 0.6 },
+      });
+
+      gsap.from('.project-card', {
+        y: 60, opacity: 0, rotateX: 8,
+        stagger: 0.09, ease: 'power3.out',
+        scrollTrigger: { trigger: '.project-grid', start: 'top 80%', end: 'top 30%', scrub: 0.5 },
+      });
+
+      gsap.fromTo('.timeline-progress-line',
+        { scaleY: 0 },
+        { scaleY: 1, ease: 'none', transformOrigin: 'top',
+          scrollTrigger: { trigger: '.timeline-layout', start: 'top center', end: 'bottom center', scrub: true } }
+      );
+
+      gsap.utils.toArray('.timeline-block').forEach((block) => {
+        gsap.fromTo(block, 
+          { opacity: 0.2 }, 
+          { opacity: 1, 
+            scrollTrigger: { 
+              trigger: block, 
+              start: 'top center', 
+              end: 'center center', 
+              scrub: true 
+            } 
+          });
+      });
+
+      gsap.from('.signal-node', {
+        scale: 0.85, opacity: 0,
+        stagger: { each: 0.08, from: 'random' },
+        ease: 'back.out(1.6)',
+        scrollTrigger: { trigger: '.signal-map', start: 'top 75%' },
+      });
+
+      gsap.from('.system-tile', {
+        rotateY: -25, opacity: 0, y: 30,
+        stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.system-grid', start: 'top 80%' },
+      });
+    });
+    return () => ctx.revert();
+  }, []);
 
   useEffect(() => {
     // Check user's motion preference before setting up GSAP cursor
@@ -167,6 +279,18 @@ function App() {
     return () => handleUnload();
   }, []);
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const active = document.querySelector(`.nav-links a.active`);
+      const indicator = document.querySelector('.nav-indicator');
+      if (active && indicator) {
+        const { offsetLeft, offsetWidth } = active;
+        gsap.to(indicator, { x: offsetLeft, width: offsetWidth, duration: 0.45, ease: 'power3.out' });
+      }
+    });
+    return () => ctx.revert();
+  }, [activeSection]);
+
   return (
     <>
       {/* Skip link MUST be first */}
@@ -183,9 +307,10 @@ function App() {
         aria-valuemax={100}
       />
 
+      <Preloader onComplete={() => setPreloaderComplete(true)} />
       <ErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          {canRunWebGL && <BackgroundScene />}
+          <ImageSequenceBackground />
         </Suspense>
       </ErrorBoundary>
 
@@ -197,19 +322,13 @@ function App() {
           <img src="/favicon-96x96.png" alt="Logo" className="brand-logo" />
           <small>Product Engineer</small>
         </a>
-        <nav className="nav-links" aria-label="Primary navigation">
+        <nav className="nav-links" aria-label="Primary navigation" style={{ position: 'relative' }}>
+          <div className="nav-indicator" style={{ position: 'absolute', bottom: -6, left: 0, height: 2, background: 'var(--lime)', borderRadius: 2 }} />
           {navItems.map((item) => (
-            <a
-              key={item}
-              href={`#${item}`}
-              className={activeSection === item ? 'active' : ''}
-              aria-current={activeSection === item ? 'page' : undefined}
-            >
-              {item}
-            </a>
+            <MagneticNavItem key={item} item={item} activeSection={activeSection} />
           ))}
         </nav>
-        <a
+        <MagneticAction
           className="header-action"
           href={profile.resume}
           target="_blank"
@@ -219,7 +338,7 @@ function App() {
         >
           <Download size={17} />
           Resume
-        </a>
+        </MagneticAction>
         <MobileNav activeSection={activeSection} />
       </header>
 
@@ -231,35 +350,28 @@ function App() {
             <m.p
               className="eyebrow"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.7 }}
             >
               {profile.title}
             </m.p>
-            <m.h1
-              id="hero-title"
-              initial={{ opacity: 0, y: 44 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            >
-              Neel Shingavi
-            </m.h1>
+            <HeroName play={preloaderComplete} />
             <m.div
               className="type-line"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={preloaderComplete ? { opacity: 1 } : { opacity: 0 }}
               transition={{ delay: 0.55, duration: 0.7 }}
               aria-live="polite"
               aria-atomic="true"
             >
               <Code2 size={19} aria-hidden="true" />
-              <span>{heroText}</span>
+              <span>{scrambledHeroText}</span>
               <i aria-hidden="true" />
             </m.div>
             <m.p
               className="hero-summary"
               initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
               transition={{ delay: 0.65, duration: 0.75 }}
             >
               {profile.summary}
@@ -267,48 +379,48 @@ function App() {
             <m.div
               className="hero-actions"
               initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
               transition={{ delay: 0.8, duration: 0.7 }}
             >
-              <a
+              <MagneticAction
                 className="primary-action"
                 href="#work"
                 onClick={() => analytics.ctaClicked('hero_view_work')}
               >
                 View shipped work
                 <ArrowUpRight size={18} />
-              </a>
-              <a
+              </MagneticAction>
+              <MagneticAction
                 className="secondary-action"
                 href={profile.links.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Visit Neel Shingavi's LinkedIn Profile"
                 onClick={() => analytics.socialClicked('linkedin')}
-                aria-label="LinkedIn profile (opens in new tab)"
+                ariaLabel="LinkedIn profile (opens in new tab)"
               >
                 <ExternalLink size={18} />
                 LinkedIn
-              </a>
-              <a
+              </MagneticAction>
+              <MagneticAction
                 className="secondary-action"
                 href={profile.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Visit Neel Shingavi's GitHub Profile"
                 onClick={() => analytics.socialClicked('github')}
-                aria-label="GitHub profile (opens in new tab)"
+                ariaLabel="GitHub profile (opens in new tab)"
               >
                 <ExternalLink size={18} />
                 GitHub
-              </a>
+              </MagneticAction>
             </m.div>
           </div>
 
           <m.div
             className="hero-portrait"
             initial={{ opacity: 0, scale: 0.96, y: 34 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            animate={preloaderComplete ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 34 }}
             transition={{ delay: 0.28, duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
           >
             <picture>
@@ -357,12 +469,7 @@ function App() {
             <div className="system-grid">
               {['Backend Architecture', 'LLM Analytics', 'Workflow Automation', 'Client Delivery'].map((item, index) => {
                 const Icon = iconMap[index];
-                return (
-                  <Reveal className="system-tile" delay={index * 0.08} key={item}>
-                    <Icon size={24} />
-                    <span>{item}</span>
-                  </Reveal>
-                );
+                return <SystemTile key={item} item={item} Icon={Icon} />;
               })}
             </div>
           </div>
@@ -374,7 +481,8 @@ function App() {
               <p className="eyebrow">Background</p>
               <h2 id="experience-heading">Professional experience and academic foundation.</h2>
             </div>
-            <a
+            <MagneticAction
+              className="primary-action"
               href={profile.resume}
               target="_blank"
               rel="noopener noreferrer"
@@ -383,14 +491,15 @@ function App() {
             >
               Download full resume
               <Download size={17} />
-            </a>
+            </MagneticAction>
           </Reveal>
 
           <div className="timeline-layout">
+            <div className="timeline-progress-line"></div>
             <div className="timeline-column">
               <h3 className="timeline-title">Experience</h3>
               {experience.map((item) => (
-                <Reveal className="timeline-block" key={item.company}>
+                <div className="timeline-block" key={item.company}>
                   <span>{item.period}</span>
                   <h3>{item.company}</h3>
                   <p>{item.role}</p>
@@ -399,7 +508,7 @@ function App() {
                       <li key={point}>{point}</li>
                     ))}
                   </ul>
-                </Reveal>
+                </div>
               ))}
             </div>
             <div className="education-column">
@@ -440,24 +549,7 @@ function App() {
           {projects.length > 0 ? (
             <div className="project-grid">
               {projects.map((project, index) => (
-                <Reveal className={`project-card ${project.color}`} delay={index * 0.07} key={project.name}>
-                  <div className="project-index">0{index + 1}</div>
-                  <div>
-                    <span>{project.type}</span>
-                    <h3>{project.name}</h3>
-                    <p>{project.description}</p>
-                  </div>
-                  <div className="impact-list">
-                    {project.impact.map((item) => (
-                      <strong key={item}>{item}</strong>
-                    ))}
-                  </div>
-                  <div className="stack-list">
-                    {project.stack.map((item) => (
-                      <em key={item}>{item}</em>
-                    ))}
-                  </div>
-                </Reveal>
+                <ProjectCard key={project.name} project={project} index={index} />
               ))}
             </div>
           ) : null}
@@ -496,11 +588,11 @@ function App() {
 
           <div className="signal-map">
             {achievements.map((achievement, index) => (
-              <Reveal className={`signal-node ${achievement.tone}`} delay={index * 0.08} key={achievement.title}>
+              <div className={`signal-node ${achievement.tone}`} key={achievement.title}>
                 <span>0{index + 1}</span>
                 <h3>{achievement.title}</h3>
                 <p>{achievement.detail}</p>
-              </Reveal>
+              </div>
             ))}
           </div>
         </section>
@@ -511,22 +603,22 @@ function App() {
             <h2 id="contact-heading">Have a problem, a product idea, or a team that ships?</h2>
             <p>{profile.availability}</p>
             <div className="contact-actions" style={{marginBottom: '20px'}}>
-              <a
+              <MagneticAction
                 className="primary-action"
                 href={`mailto:${profile.email}`}
                 onClick={() => analytics.emailClicked()}
               >
                 <Mail size={18} />
                 {profile.email}
-              </a>
-              <a
+              </MagneticAction>
+              <MagneticAction
                 className="secondary-action"
                 href={`tel:${profile.phone.replaceAll(' ', '')}`}
                 onClick={() => analytics.phoneClicked()}
               >
                 <Phone size={18} />
                 {profile.phone}
-              </a>
+              </MagneticAction>
             </div>
 
             <ContactForm />
@@ -534,13 +626,17 @@ function App() {
         </section>
       </main>
 
+      <div className="footer-marquee">
+        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
+        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
+      </div>
       <footer>
         <span>Designed and built for Neel Shingavi.</span>
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="back-to-top"
+          className="back-to-top underline-draw"
           aria-label="Scroll back to top"
-          style={{ background: 'none', border: 'none', color: 'var(--paper)', textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
+          style={{ background: 'none', border: 'none', color: 'var(--paper)', textDecoration: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
         >
           Back to top ↑
         </button>

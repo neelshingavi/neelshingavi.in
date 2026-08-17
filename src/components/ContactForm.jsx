@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { gsap } from 'gsap';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { analytics } from '../utils/analytics.js';
 import { profile } from '../data/portfolio.js';
@@ -6,6 +7,7 @@ import { profile } from '../data/portfolio.js';
 export function ContactForm() {
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const buttonRef = useRef(null);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -13,7 +15,12 @@ export function ContactForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (status === 'submitting') return;
     setStatus('submitting');
+    
+    const btn = buttonRef.current;
+    const tl = gsap.timeline();
+    tl.to(btn, { width: 48, borderRadius: 24, color: 'transparent', duration: 0.4, ease: 'power3.inOut' });
 
     try {
       const res = await fetch('https://api.web3forms.com/submit', {
@@ -33,11 +40,14 @@ export function ContactForm() {
         setStatus('success');
         setForm({ name: '', email: '', message: '' });
         analytics.contactFormSubmitted();
+        tl.to(btn, { backgroundColor: 'var(--lime)', color: 'var(--ink)', duration: 0.3 });
       } else {
         setStatus('error');
+        tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
       }
     } catch {
       setStatus('error');
+      tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
     }
   };
 
@@ -107,12 +117,14 @@ export function ContactForm() {
         </div>
 
         <button
+          ref={buttonRef}
           type="submit"
-          className="primary-action"
+          className="primary-action liquid-button"
           disabled={status === 'submitting'}
+          style={{ overflow: 'hidden', whiteSpace: 'nowrap', minHeight: 48, justifyContent: 'center' }}
         >
-          {status === 'submitting' ? (
-            'Sending...'
+          {status === 'success' ? (
+            <CheckCircle size={18} />
           ) : (
             <>
               <Send size={18} /> Send Message

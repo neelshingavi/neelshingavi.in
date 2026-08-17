@@ -15,6 +15,7 @@ import {
   FolderTree, 
   Boxes 
 } from 'lucide-react';
+import { useMagnetic } from '../hooks/useMagnetic.js';
 
 const LOGO_MAP = {
   // Languages
@@ -128,9 +129,11 @@ const LOGO_MAP = {
 export const SkillBadge = ({ name }) => {
   const config = LOGO_MAP[name] || { icon: Code2, color: '#64748b', isCustomSvg: false };
   const IconComponent = config.icon;
+  const magRef = useMagnetic(0.2);
 
   return (
     <span 
+      ref={magRef}
       className="skill-badge" 
       style={{ '--hover-color': config.color }}
     >
