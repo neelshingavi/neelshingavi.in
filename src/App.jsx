@@ -70,7 +70,7 @@ function HeroName({ play }) {
     );
     return () => split.revert();
   }, [play]);
-  return <h1 id="hero-title" ref={ref}>Neel Shingavi</h1>;
+  return <h1 id="hero-title" ref={ref}>Neel<br/>Shingavi</h1>;
 }
 
 function SystemTile({ item, Icon }) {

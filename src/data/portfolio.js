@@ -163,7 +163,7 @@ export const achievements = [
   { title: 'Finalist - GDG Cloud Pune Hackathon', detail: 'Team Leader, Top 20 of 1,000+', tone: 'teal' },
   { title: 'Finalist - Meta x OpenEnv x PyTorch Hackathon', detail: 'Top 800 of 52,000+ teams', tone: 'coral' },
   { title: 'Finalist - Algorand HackSeries 3.0', detail: 'Top 30 of 800+', tone: 'signal' },
-  { title: "2nd Position - Indradhanu'25 Project Competition", detail: '150+ projects', tone: 'signal' },
+  { title: "2nd Position - Indradhanu'25 Project Competition", detail: 'Team Leader, 250+ projects', tone: 'signal' },
 ];
 
 export const skills = [
