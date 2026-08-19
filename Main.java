@@ -4,13 +4,15 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int t = sc.nextInt();
-        for(int i=0;i<t;i++){
+        while (t-- > 0) {
             int n = sc.nextInt();
-            String str = sc.next();
-            int output = 0;
-            if(str.contains("...")){ System.out.println("2"); continue; }
-            for(char ch: str.toCharArray()) if(ch == '.') output++;
-            System.out.println(output);
+            int[] arr = new int[n];
+            for (int i = 0; i < n; i++)
+                arr[i] = sc.nextInt();
+            if (arr[0] == 1)
+                System.out.println("YES");
+            else
+                System.out.println("NO");
         }
     }
 }
