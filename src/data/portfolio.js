@@ -173,7 +173,7 @@ export const skills = [
   },
   {
     label: 'Frameworks',
-    items: ['React', 'Next.js', 'Node.js', 'Express.js', 'JavaFX', 'Swing', 'LLM APIs'],
+    items: ['Next.js', 'Node.js', 'Express.js', 'JavaFX', 'Swing', 'LLM APIs'],
   },
   {
     label: 'Databases',
@@ -181,14 +181,14 @@ export const skills = [
   },
   {
     label: 'Tools',
-    items: ['Git', 'GitHub', 'Docker', 'AWS (S3/EC2/Lambda)', 'Maven', 'VS Code', 'JAR/EXE Packaging'],
+    items: ['Git', 'GitHub', 'Docker', 'AWS S3/EC2', 'Maven', 'VS Code'],
   },
   {
     label: 'Core CS',
-    items: ['Data Structures & Algorithms', 'OOP', 'DBMS', 'OS', 'Computer Networks', 'System Design'],
+    items: ['DSA', 'OOP', 'DBMS', 'OS', 'CN', 'System Design'],
   },
   {
     label: 'Professional',
-    items: ['Leadership', 'Critical Thinking', 'Effective Communication', 'Teamwork & Collaboration'],
+    items: ['Leadership', 'Problem Solving', 'Team Player', 'Public Speaking', 'Agile / Scrum', 'Time Management'],
   },
 ];

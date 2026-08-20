@@ -1,7 +1,9 @@
+import { memo } from 'react';
 import { useTilt } from '../hooks/useTilt.js';
 
-export function ProjectCard({ project, index }) {
+export const ProjectCard = memo(function ProjectCard({ project, index }) {
   const tiltRef = useTilt(8);
+
   return (
     <div ref={tiltRef} className={`project-card ${project.color}`}>
       <div className="project-index">0{index + 1}</div>
@@ -22,4 +24,4 @@ export function ProjectCard({ project, index }) {
       </div>
     </div>
   );
-}
+});

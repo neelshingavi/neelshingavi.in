@@ -61,16 +61,32 @@ function HeroName({ play }) {
   useLayoutEffect(() => {
     if (!play) return;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const split = new SplitText(ref.current, { type: 'chars', charsClass: 'char' });
-    if (prefersReducedMotion) { gsap.set(split.chars, { opacity: 1, y: 0 }); return () => split.revert(); }
+    
+    let split;
+    const ctx = gsap.context(() => {
+      split = new SplitText(ref.current, { type: 'chars, words', charsClass: 'char' });
+      if (prefersReducedMotion) { 
+        gsap.set(split.chars, { opacity: 1, y: 0 }); 
+        return; 
+      }
 
-    gsap.fromTo(split.chars,
-      { yPercent: 130, opacity: 0, rotateZ: 6 },
-      { yPercent: 0, opacity: 1, rotateZ: 0, duration: 1.05, stagger: 0.028, ease: 'power4.out', delay: 0.15 }
-    );
-    return () => split.revert();
+      gsap.fromTo(split.chars,
+        { yPercent: 130, opacity: 0, rotateZ: 6 },
+        { yPercent: 0, opacity: 1, rotateZ: 0, duration: 1.05, stagger: 0.028, ease: 'power4.out', delay: 0.15 }
+      );
+    }, ref);
+
+    return () => {
+      if (split) split.revert();
+      ctx.revert();
+    };
   }, [play]);
-  return <h1 id="hero-title" ref={ref}>Neel<br/>Shingavi</h1>;
+  return (
+    <h1 id="hero-title">
+      <span ref={ref} aria-hidden="true">Neel<br/>Shingavi</span>
+      <span className="sr-only">Neel Shingavi - Product Engineer & Backend Specialist</span>
+    </h1>
+  );
 }
 
 function SystemTile({ item, Icon }) {
@@ -549,11 +565,13 @@ function App() {
             {skills.map((group, index) => (
               <Reveal className="skill-group" delay={index * 0.06} key={group.label}>
                 <h3>{group.label}</h3>
-                <div>
+                <ul className="skills-grid" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {group.items.map((item) => (
-                    <SkillBadge key={item} name={item} />
+                    <li key={item}>
+                      <SkillBadge name={item} />
+                    </li>
                   ))}
-                </div>
+                </ul>
               </Reveal>
             ))}
           </div>

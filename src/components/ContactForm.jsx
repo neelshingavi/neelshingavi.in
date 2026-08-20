@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { analytics } from '../utils/analytics.js';
@@ -6,16 +6,48 @@ import { profile } from '../data/portfolio.js';
 
 export function ContactForm() {
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', message: '', honeypot: '' });
+  const [errors, setErrors] = useState({});
   const buttonRef = useRef(null);
+  const mountTime = useRef(0);
+
+  useEffect(() => {
+    mountTime.current = Date.now();
+  }, []);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    // Clear error when user types
+    if (errors[e.target.name]) {
+      setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (status === 'submitting') return;
+
+    // Manual Validation
+    const newErrors = {};
+    if (form.name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters.';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) newErrors.email = 'Please enter a valid email address.';
+    if (form.message.trim().length < 20) newErrors.message = 'Message must be at least 20 characters.';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Bot Protection
+    const timeElapsed = Date.now() - mountTime.current;
+    if (form.honeypot || timeElapsed < 3000) {
+      // Silently succeed to fool bots without hitting the API
+      setStatus('success');
+      setForm({ name: '', email: '', message: '', honeypot: '' });
+      return;
+    }
+
     setStatus('submitting');
     
     const btn = buttonRef.current;
@@ -30,7 +62,9 @@ export function ContactForm() {
           access_key: import.meta.env.VITE_WEB3FORMS_KEY,
           subject: `Portfolio Contact from ${form.name}`,
           from_name: form.name,
-          ...form,
+          name: form.name,
+          email: form.email,
+          message: form.message
         }),
       });
 
@@ -38,7 +72,7 @@ export function ContactForm() {
 
       if (data.success) {
         setStatus('success');
-        setForm({ name: '', email: '', message: '' });
+        setForm({ name: '', email: '', message: '', honeypot: '' });
         analytics.contactFormSubmitted();
         tl.to(btn, { backgroundColor: 'var(--lime)', color: 'var(--ink)', duration: 0.3 });
       } else {
@@ -71,6 +105,18 @@ export function ContactForm() {
       )}
 
       <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+        {/* Hidden from users via CSS, skipped by screen readers */}
+        <input 
+          type="text" 
+          name="honeypot" 
+          style={{ display: 'none' }} 
+          tabIndex="-1" 
+          autoComplete="off" 
+          aria-hidden="true" 
+          value={form.honeypot}
+          onChange={handleChange}
+        />
+
         <div className="form-group">
           <label htmlFor="cf-name">Name</label>
           <input
@@ -84,7 +130,10 @@ export function ContactForm() {
             onChange={handleChange}
             placeholder="Your name"
             autoComplete="name"
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? "cf-name-error" : undefined}
           />
+          {errors.name && <span className="validation-error" id="cf-name-error" role="alert">{errors.name}</span>}
         </div>
 
         <div className="form-group">
@@ -98,7 +147,10 @@ export function ContactForm() {
             onChange={handleChange}
             placeholder="your@email.com"
             autoComplete="email"
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "cf-email-error" : undefined}
           />
+          {errors.email && <span className="validation-error" id="cf-email-error" role="alert">{errors.email}</span>}
         </div>
 
         <div className="form-group">
@@ -113,7 +165,10 @@ export function ContactForm() {
             value={form.message}
             onChange={handleChange}
             placeholder="Tell me about the opportunity or project..."
+            aria-invalid={!!errors.message}
+            aria-describedby={errors.message ? "cf-message-error" : undefined}
           />
+          {errors.message && <span className="validation-error" id="cf-message-error" role="alert">{errors.message}</span>}
         </div>
 
         <button

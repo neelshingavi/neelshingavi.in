@@ -138,9 +138,11 @@ export const SkillBadge = ({ name }) => {
       style={{ '--hover-color': config.color }}
     >
       {config.isCustomSvg ? (
-        config.svg
+        <div aria-hidden="true" focusable="false" className="skill-icon-wrapper" style={{ display: 'flex' }}>
+          {config.svg}
+        </div>
       ) : (
-        <IconComponent size={14} style={{ color: 'inherit' }} />
+        <IconComponent size={14} style={{ color: 'inherit' }} aria-hidden="true" focusable="false" />
       )}
       {name}
     </span>
