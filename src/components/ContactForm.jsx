@@ -55,11 +55,19 @@ export function ContactForm() {
     tl.to(btn, { width: 48, borderRadius: 24, color: 'transparent', duration: 0.4, ease: 'power3.inOut' });
 
     try {
+      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+      if (!accessKey) {
+        console.error('Missing Web3Forms access key.');
+        setStatus('error');
+        tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
+        return;
+      }
+
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+          access_key: accessKey,
           subject: `Portfolio Contact from ${form.name}`,
           from_name: form.name,
           name: form.name,

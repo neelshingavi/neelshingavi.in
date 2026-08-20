@@ -19,12 +19,17 @@ export function useSmoothScroll() {
 
     // Sync Lenis <-> ScrollTrigger so pinned/scrubbed animations track the smoothed position
     lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    
+    const updateLenis = (time) => {
+      lenis.raf(time * 1000);
+    };
+    
+    gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
-      gsap.ticker.remove((time) => lenis.raf(time * 1000));
+      gsap.ticker.remove(updateLenis);
     };
   }, []);
 }

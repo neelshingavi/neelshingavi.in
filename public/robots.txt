@@ -4,4 +4,4 @@ Allow: /
 # Block assets that don't need indexing
 Disallow: /assets/*.pdf
 
-Sitemap: https://neelshingavi.dev/sitemap.xml
+Sitemap: https://neelshingavi.in/sitemap.xml

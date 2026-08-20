@@ -21,7 +21,7 @@ import { AnimatedCounter } from './components/AnimatedCounter.jsx';
 import { Reveal } from './components/Reveal.jsx';
 import { SkillBadge } from './components/SkillBadge.jsx';
 import { useTypeCycle } from './hooks/useTypeCycle.js';
-import { useCanRunWebGL } from './hooks/useCanRunWebGL.js';
+import { useCanRunBackgroundAnimation } from './hooks/useCanRunBackgroundAnimation.js';
 import { useSmoothScroll } from './hooks/useSmoothScroll.js';
 import { useSectionMood } from './hooks/useSectionMood.js';
 import { useMagnetic } from './hooks/useMagnetic.js';
@@ -64,15 +64,15 @@ function HeroName({ play }) {
     
     let split;
     const ctx = gsap.context(() => {
-      split = new SplitText(ref.current, { type: 'chars, words', charsClass: 'char' });
+      split = new SplitText(ref.current, { type: 'words', wordsClass: 'word' });
       if (prefersReducedMotion) { 
-        gsap.set(split.chars, { opacity: 1, y: 0 }); 
+        gsap.set(split.words, { opacity: 1, y: 0 }); 
         return; 
       }
 
-      gsap.fromTo(split.chars,
-        { yPercent: 130, opacity: 0, rotateZ: 6 },
-        { yPercent: 0, opacity: 1, rotateZ: 0, duration: 1.05, stagger: 0.028, ease: 'power4.out', delay: 0.15 }
+      gsap.fromTo(split.words,
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.85, stagger: 0.04, ease: 'power3.out', delay: 0.1 }
       );
     }, ref);
 
@@ -84,7 +84,7 @@ function HeroName({ play }) {
   return (
     <h1 id="hero-title">
       <span ref={ref} aria-hidden="true">Neel<br/>Shingavi</span>
-      <span className="sr-only">Neel Shingavi - Product Engineer & Backend Specialist</span>
+      <span className="sr-only">Neel Shingavi</span>
     </h1>
   );
 }
@@ -119,7 +119,7 @@ function App() {
   const scrambledHeroText = useScrambleText(heroText);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
-  const canRunWebGL = useCanRunWebGL();
+  const canRunBackground = useCanRunBackgroundAnimation();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -326,7 +326,7 @@ function App() {
       <Preloader onComplete={() => setPreloaderComplete(true)} />
       <ErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          <ImageSequenceBackground />
+          {canRunBackground && <ImageSequenceBackground />}
         </Suspense>
       </ErrorBoundary>
 
@@ -372,23 +372,11 @@ function App() {
               {profile.title}
             </m.p>
             <HeroName play={preloaderComplete} />
-            <m.div
-              className="type-line"
-              initial={{ opacity: 0 }}
-              animate={preloaderComplete ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ delay: 0.55, duration: 0.7 }}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <Code2 size={19} aria-hidden="true" />
-              <span>{scrambledHeroText}</span>
-              <i aria-hidden="true" />
-            </m.div>
             <m.p
               className="hero-summary"
               initial={{ opacity: 0, y: 24 }}
               animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-              transition={{ delay: 0.65, duration: 0.75 }}
+              transition={{ delay: 0.5, duration: 0.75 }}
             >
               {profile.summary}
             </m.p>
@@ -396,40 +384,40 @@ function App() {
               className="hero-actions"
               initial={{ opacity: 0, y: 22 }}
               animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
-              transition={{ delay: 0.8, duration: 0.7 }}
+              transition={{ delay: 0.65, duration: 0.7 }}
             >
-              <MagneticAction
-                className="primary-action"
-                href="#work"
-                onClick={() => analytics.ctaClicked('hero_view_work')}
+              <a
+                className="secondary-action"
+                href="#contact"
+                onClick={() => analytics.ctaClicked('hero_contact')}
               >
-                View shipped work
-                <ArrowUpRight size={18} />
-              </MagneticAction>
-              <MagneticAction
+                <Mail size={18} />
+                Let's connect
+              </a>
+              <a
                 className="secondary-action"
                 href={profile.links.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Visit Neel Shingavi's LinkedIn Profile"
                 onClick={() => analytics.socialClicked('linkedin')}
-                ariaLabel="LinkedIn profile (opens in new tab)"
+                aria-label="LinkedIn profile (opens in new tab)"
               >
                 <ExternalLink size={18} />
                 LinkedIn
-              </MagneticAction>
-              <MagneticAction
+              </a>
+              <a
                 className="secondary-action"
                 href={profile.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Visit Neel Shingavi's GitHub Profile"
                 onClick={() => analytics.socialClicked('github')}
-                ariaLabel="GitHub profile (opens in new tab)"
+                aria-label="GitHub profile (opens in new tab)"
               >
                 <ExternalLink size={18} />
                 GitHub
-              </MagneticAction>
+              </a>
             </m.div>
           </div>
 
@@ -585,7 +573,7 @@ function App() {
             </div>
             <div className="trophy-pill">
               <Trophy size={18} />
-              6 major recognitions
+              {achievements.length} major recognitions
             </div>
           </Reveal>
 

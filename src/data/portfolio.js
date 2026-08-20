@@ -2,7 +2,7 @@ import { getEmail, getPhone } from '../utils/contact.js';
 
 export const profile = {
   name: 'Neel Shingavi',
-  title: 'Backend engineer and product builder',
+  title: 'PUNE, INDIA • FULL STACK DEVELOPER',
   location: 'Pune, India',
   get email() { return getEmail(); },
   get phone() { return getPhone(); },
@@ -26,11 +26,11 @@ export const heroRoles = [
 ];
 
 export const stats = [
-  { value: 4, suffix: '', label: 'Client Projects Delivered End to End', accent: 'teal' },
+  { value: 4, suffix: '', label: 'Client Projects Delivered', accent: 'teal' },
   { value: 9.50, suffix: '', label: 'Current CGPA', accent: 'gold', decimals: 2 },
-  { value: 6, suffix: ' Months', label: 'Work Experience', accent: 'signal' },
-  { value: 5, suffix: '+', label: 'Hackathon Victories', accent: 'coral' },
-  { value: 10, suffix: '+', label: 'Expert Sessions Attended', accent: 'lime' },
+  { value: 250, suffix: 'K+', label: 'Transactions Processed', accent: 'signal' },
+  { value: 6, suffix: '', label: 'Major Recognitions', accent: 'coral' },
+  { value: 5, suffix: 'K+', label: 'Monthly Trades Managed', accent: 'lime' },
 ];
 
 export const experience = [
