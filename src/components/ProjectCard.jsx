@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useTilt } from '../hooks/useTilt.js';
+import { ExternalLink } from 'lucide-react';
 
 export const ProjectCard = memo(function ProjectCard({ project, index }) {
   const tiltRef = useTilt(8);
@@ -22,6 +23,16 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
           <em key={item}>{item}</em>
         ))}
       </div>
+      {project.photosLink && (
+        <a 
+          href={project.photosLink} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="project-photos-link"
+        >
+          View photos <ExternalLink size={14} />
+        </a>
+      )}
     </div>
   );
 });

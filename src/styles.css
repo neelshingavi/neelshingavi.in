@@ -922,6 +922,26 @@ h2 {
   font-size: 1.06rem;
 }
 
+.project-photos-link {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(244, 240, 223, 0.7);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.project-card.lime .project-photos-link:hover { color: var(--lime); }
+.project-card.coral .project-photos-link:hover { color: var(--coral); }
+.project-card.teal .project-photos-link:hover { color: var(--teal); }
+.project-card.gold .project-photos-link:hover { color: var(--gold); }
+
 .project-card.lime {
   border-top: 5px solid var(--lime);
 }

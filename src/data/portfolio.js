@@ -124,6 +124,7 @@ export const projects = [
     impact: ['5,000+ monthly transactions', 'Offline-first persistence', 'Multi-device cloud sync'],
     stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
     color: 'coral',
+    photosLink: 'https://drive.google.com/drive/folders/1tmuq4egWo1IHDVIaBjV3EH-x7ZLuNRKr?usp=drive_link',
   },
   {
     name: 'PayPerUseAI',
