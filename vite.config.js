@@ -2,7 +2,11 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  clearScreen: false,
   plugins: [react()],
+  optimizeDeps: {
+    include: ['lucide-react', 'gsap', 'framer-motion', 'three', 'lenis'],
+  },
   build: {
     rollupOptions: {
       output: {

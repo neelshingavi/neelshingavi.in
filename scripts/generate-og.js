@@ -5,7 +5,7 @@ async function generateOG() {
   const width = 1200;
   const height = 630;
 
-  const bgPath = 'public/assets/sequence/ezgif-frame-150.png';
+  const bgPath = 'public/assets/sequence/ezgif-frame-150.webp';
   if (!fs.existsSync(bgPath)) {
     console.error(`ERROR: Required background asset missing: ${bgPath}`);
     process.exit(1);
