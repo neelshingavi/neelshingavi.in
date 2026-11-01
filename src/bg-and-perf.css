@@ -1,0 +1,174 @@
+/* =====================================================================
+   bg-and-perf.css
+
+   INSTALL: save as src/bg-and-perf.css, then in src/main.jsx add this line
+   directly AFTER `import './styles.css';`
+       import './bg-and-perf.css';
+   Later rules win, so nothing in styles.css needs to be edited or deleted.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. BACKGROUND LAYERS
+   Paint order (bottom -> top), all position:fixed, z-index:0:
+     .bg-poster  static first frame, in index.html, paints before JS
+     .bg-video   scrubbed video, fades in over the poster when ready
+     .bg-shade   vignette + scroll-driven dim, in index.html, after #root
+   `main`, header and footer are z-index:1, so content always sits above.
+   NOTE: don't use negative z-index for these. Your <body> has an opaque
+   background, and it paints ABOVE negative-z children (this is also why the
+   existing body::before gradient is currently invisible).
+   --------------------------------------------------------------------- */
+.bg-poster,
+.bg-video,
+.bg-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.bg-poster {
+  background: #07050b url('/assets/bg/poster.v1.webp') 50% 30% / cover no-repeat;
+}
+
+.bg-video {
+  object-fit: cover;
+  object-position: 50% 30%; /* keep the face in frame on short/wide screens */
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.bg-video.is-ready {
+  opacity: 1;
+}
+
+.bg-shade {
+  background:
+    radial-gradient(120% 90% at 50% 38%, transparent 50%, rgba(7, 5, 11, 0.78) 100%),
+    linear-gradient(0deg, rgba(7, 5, 11, 0.7), transparent 40%);
+}
+
+/* The dim: fully visible hero at the top of the page, calm and readable
+   behind the cards further down. Static fallback first... */
+.bg-shade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #07050b;
+  opacity: 0.6;
+}
+
+/* ...then driven by scroll position with ZERO JavaScript where supported
+   (Chrome/Edge 115+, Safari 26+, Firefox 159+). It only animates opacity,
+   so it runs on the compositor. */
+@supports (animation-timeline: scroll()) {
+  .bg-shade::after {
+    opacity: 0;
+    animation-name: bg-dim-in;
+    animation-duration: 1ms; /* Firefox requires a non-auto duration */
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+    animation-range: 0px 110vh;
+  }
+  @keyframes bg-dim-in {
+    to {
+      opacity: 0.72;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------
+   2. KILL THE PER-FRAME BLUR BILL
+   You have ~31 elements with backdrop-filter: blur(18-24px) sitting over a
+   background that changes every scroll tick. Each one re-blurs every frame.
+   The dim layer above already makes the background calm, so the blur isn't
+   needed — use near-opaque panels instead.
+   (Kept on .site-header only: one element is fine.)
+   --------------------------------------------------------------------- */
+.system-tile,
+.timeline-block,
+.education-item,
+.project-card,
+.skill-group,
+.signal-node,
+.contact-panel,
+.metric-strip {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.system-tile,
+.timeline-block,
+.education-item,
+.project-card,
+.skill-group,
+.signal-node,
+.metric-strip {
+  background:
+    linear-gradient(180deg, rgba(244, 240, 223, 0.07), rgba(244, 240, 223, 0.02)),
+    rgba(9, 6, 14, 0.82);
+}
+
+.site-header {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* ---------------------------------------------------------------------
+   3. NOISE OVERLAY
+   Your SVG feTurbulence has no intrinsic size, so the browser rasterised it
+   at full viewport size (x2 on Retina) and composites it over everything.
+   Tiling it at 220px makes the raster tiny and cached.
+   --------------------------------------------------------------------- */
+body::after {
+  background-size: 220px 220px;
+}
+
+/* ---------------------------------------------------------------------
+   4. TILT vs CSS TRANSITION CONFLICT
+   useTilt() writes transforms with GSAP every mousemove, but these elements
+   also have `transition: transform 0.3s` — so every GSAP frame was being
+   re-smoothed by CSS, making the tilt feel mushy. Let GSAP own transform.
+   Also: static will-change on many elements wastes GPU memory.
+   --------------------------------------------------------------------- */
+.project-card,
+.system-tile {
+  transition:
+    border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: auto;
+}
+.project-card:hover,
+.system-tile:hover {
+  transform: none;
+}
+.skill-badge {
+  will-change: auto;
+}
+
+.project-slot,
+.system-slot {
+  perspective: 900px;
+  display: flex;
+  flex-direction: column;
+}
+.project-slot > .project-card,
+.system-slot > .system-tile {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   5. OPTIONAL — try with and without.
+   mix-blend-mode on the two cursor layers forces the browser to read back
+   everything under the cursor every frame. If scrolling is still not buttery
+   on your machine, uncomment this and compare in DevTools.
+   --------------------------------------------------------------------- */
+/*
+.cursor-ring,
+.cursor-dot {
+  mix-blend-mode: normal;
+}
+*/

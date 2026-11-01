@@ -2,7 +2,7 @@ import { getEmail, getPhone } from '../utils/contact.js';
 
 export const profile = {
   name: 'Neel Shingavi',
-  title: 'PUNE, INDIA • FULL STACK DEVELOPER',
+  title: 'PUNE, INDIA • PRODUCT ENGINEER',
   location: 'Pune, India',
   get email() { return getEmail(); },
   get phone() { return getPhone(); },

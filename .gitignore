@@ -27,3 +27,5 @@ npm-debug.log*
 *.tsbuildinfo
 ezgif-2011b9ceb9b186d2-png-split/
 *.class
+files/
+files.zip

@@ -49,8 +49,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
     
-    <!-- Preload Hero Image -->
-    <link rel="preload" as="image" href="/assets/neel-shingavi.avif" type="image/avif" fetchpriority="high" />
+    <!-- Preload Hero Poster -->
+    <link rel="preload" as="image" href="/assets/bg/poster.v1.webp" type="image/webp" fetchpriority="high" />
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -193,7 +193,9 @@
         </main>
       </div>
     </noscript>
+    <div class="bg-poster" aria-hidden="true"></div>
     <div id="root"></div>
+    <div class="bg-shade" aria-hidden="true"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

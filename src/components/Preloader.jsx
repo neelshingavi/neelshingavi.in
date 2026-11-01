@@ -28,14 +28,14 @@ export function Preloader({ onComplete }) {
       tl.fromTo(
         '.pl-geo-path',
         { strokeDasharray: 800, strokeDashoffset: 800 },
-        { strokeDashoffset: 0, duration: 1.5, ease: 'power3.inOut' },
+        { strokeDashoffset: 0, duration: 0.75, ease: 'power3.inOut' },
         0
       );
 
       // Pulse and rotate SVG
       tl.to(
         svgRef.current,
-        { rotation: 180, duration: 2, ease: 'power2.inOut' },
+        { rotation: 180, duration: 0.9, ease: 'power2.inOut' },
         0
       );
 
@@ -43,7 +43,7 @@ export function Preloader({ onComplete }) {
       let textObj = { step: 0 };
       tl.to(textObj, {
         step: decodePhrases.length - 1,
-        duration: 1.5,
+        duration: 0.75,
         ease: 'steps(' + (decodePhrases.length - 1) + ')',
         onUpdate: () => {
           if (textRef.current) {
@@ -56,7 +56,7 @@ export function Preloader({ onComplete }) {
       let counterObj = { val: 0 };
       tl.to(counterObj, {
         val: 100,
-        duration: 1.5,
+        duration: 0.75,
         ease: 'power3.inOut',
         onUpdate: () => {
           if (counterRef.current) {
@@ -67,14 +67,14 @@ export function Preloader({ onComplete }) {
       }, 0);
 
       // Exit Sequence
-      tl.to('.pl-text-wrapper', { opacity: 0, y: 20, duration: 0.4, ease: 'power2.in' }, '+=0.2')
+      tl.to('.pl-text-wrapper', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.in' }, '+=0.1')
         .to(svgRef.current, {
           scale: 50, // Massive scale up
           opacity: 0,
-          duration: 0.8,
+          duration: 0.4,
           ease: 'power4.in'
-        }, '-=0.2')
-        .to(ref.current, { opacity: 0, duration: 0.4, ease: 'power2.inOut' }, '-=0.4');
+        }, '-=0.1')
+        .to(ref.current, { opacity: 0, duration: 0.2, ease: 'power2.inOut' }, '-=0.2');
     });
 
     return () => ctx.revert();

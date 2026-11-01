@@ -1,16 +1,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { LazyMotion, domAnimation } from 'framer-motion';
-import smoothscroll from 'smoothscroll-polyfill';
 import App from './App.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { FallbackPage } from './components/FallbackPage.jsx';
 import { initGA } from './utils/analytics.js';
 import { reportWebVitals } from './utils/webVitals.js';
 import './styles.css';
-
-// Polyfill smooth scrolling
-smoothscroll.polyfill();
+import './bg-and-perf.css';
 
 // Initialize analytics after page loads (non-blocking)
 window.addEventListener('load', () => {

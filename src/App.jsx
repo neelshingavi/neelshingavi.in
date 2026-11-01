@@ -20,27 +20,25 @@ import {
 import { AnimatedCounter } from './components/AnimatedCounter.jsx';
 import { Reveal } from './components/Reveal.jsx';
 import { SkillBadge } from './components/SkillBadge.jsx';
-import { useTypeCycle } from './hooks/useTypeCycle.js';
 import { useCanRunBackgroundAnimation } from './hooks/useCanRunBackgroundAnimation.js';
-import { useSmoothScroll } from './hooks/useSmoothScroll.js';
+import { useSmoothScroll, lenis } from './hooks/useSmoothScroll.js';
 import { useSectionMood } from './hooks/useSectionMood.js';
 import { useMagnetic } from './hooks/useMagnetic.js';
 import { useTilt } from './hooks/useTilt.js';
-import { useScrambleText } from './hooks/useScrambleText.js';
 import { MobileNav } from './components/MobileNav.jsx';
 import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Preloader } from './components/Preloader.jsx';
 import { ProjectCard } from './components/ProjectCard.jsx';
 import { analytics } from './utils/analytics.js';
-import { achievements, clubs, education, experience, heroRoles, profile, projects, skills, stats } from './data/portfolio.js';
+import { achievements, clubs, education, experience, profile, projects, skills, stats } from './data/portfolio.js';
 
 const navItems = ['work', 'systems', 'wins', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
 
 gsap.registerPlugin(SplitText);
 
-import { ImageSequenceBackground } from './components/ImageSequenceBackground.jsx';
+import { ScrubVideoBackground } from './components/ScrubVideoBackground.jsx';
 
 function MagneticNavItem({ item, activeSection }) {
   const ref = useMagnetic(0.3);
@@ -92,9 +90,11 @@ function HeroName({ play }) {
 function SystemTile({ item, Icon }) {
   const tiltRef = useTilt(8);
   return (
-    <div ref={tiltRef} className="system-tile">
-      <Icon size={24} />
-      <span>{item}</span>
+    <div className="system-slot">
+      <div ref={tiltRef} className="system-tile">
+        <Icon size={24} />
+        <span>{item}</span>
+      </div>
     </div>
   );
 }
@@ -108,15 +108,21 @@ function MagneticAction({ href, className, onClick, title, target, rel, children
   );
 }
 
+const seenPreloader = () => {
+  try {
+    return sessionStorage.getItem('pl') === '1';
+  } catch {
+    return false;
+  }
+};
+
 function App() {
   useSmoothScroll();
   useSectionMood();
   const ringRef = useRef(null);
   const dotRef = useRef(null);
   const [activeSection, setActiveSection] = useState('');
-  const [preloaderComplete, setPreloaderComplete] = useState(false);
-  const heroText = useTypeCycle(heroRoles);
-  const scrambledHeroText = useScrambleText(heroText);
+  const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
   const canRunBackground = useCanRunBackgroundAnimation();
@@ -129,7 +135,7 @@ function App() {
         scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 0.6 },
       });
 
-      gsap.from('.project-card', {
+      gsap.from('.project-slot', {
         y: 60, opacity: 0, rotateX: 8,
         stagger: 0.09, ease: 'power3.out',
         scrollTrigger: { trigger: '.project-grid', start: 'top 80%', end: 'top 30%', scrub: 0.5 },
@@ -161,7 +167,7 @@ function App() {
         scrollTrigger: { trigger: '.signal-map', start: 'top 75%' },
       });
 
-      gsap.from('.system-tile', {
+      gsap.from('.system-slot', {
         rotateY: -25, opacity: 0, y: 30,
         stagger: 0.1, ease: 'power3.out',
         scrollTrigger: { trigger: '.system-grid', start: 'top 80%' },
@@ -323,10 +329,21 @@ function App() {
         aria-valuemax={100}
       />
 
-      <Preloader onComplete={() => setPreloaderComplete(true)} />
+      {!preloaderComplete && (
+        <Preloader
+          onComplete={() => {
+            try {
+              sessionStorage.setItem('pl', '1');
+            } catch {
+              /* ignore */
+            }
+            setPreloaderComplete(true);
+          }}
+        />
+      )}
       <ErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          {canRunBackground && <ImageSequenceBackground />}
+          {canRunBackground && <ScrubVideoBackground />}
         </Suspense>
       </ErrorBoundary>
 
@@ -624,7 +641,13 @@ function App() {
       <footer>
         <span>Designed and built for Neel Shingavi.</span>
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => {
+            if (lenis) {
+              lenis.scrollTo(0);
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           className="back-to-top underline-draw"
           aria-label="Scroll back to top"
           style={{ background: 'none', border: 'none', color: 'var(--paper)', textDecoration: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
