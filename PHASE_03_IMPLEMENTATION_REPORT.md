@@ -227,7 +227,7 @@ All screenshots were captured directly from headless Chromium during live execut
 | `src/data/codingProfiles.js` | **Created** | Stores verified live/cached profiles, API configurations, and static fallback datasets for LeetCode and Codeforces. |
 | `src/components/LeetCodeActivity.jsx` | **Created** | Dedicated LeetCode algorithmic activity card with 169 solved metrics, 83E/78M/8H breakdown, and 52-week submission calendar. |
 | `src/components/CodeforcesActivity.jsx` | **Created** | Dedicated Codeforces competitive programming card with 1279 Pupil rating, Div. 2 rank 390, and 52-week contest activity. |
-| `src/components/CodingActivityShowcase.jsx` | **Created** | Unified coding track record orchestrator with platform tabs (GitHub, LeetCode, Codeforces, All Signals) and instant switching. |
+| `src/components/CodingActivityShowcase.jsx` | **Created** | Unified coding track record orchestrator with platform tabs (GitHub, LeetCode, Codeforces, All Signals), instant switching, and numbered eyebrow `04 / VERIFIED ENGINEERING CADENCE`. |
 | `src/components/CommandPalette.jsx` | **Modified** | Added instant jump actions to open Neel's LeetCode and Codeforces profiles. |
 | `src/components/TradersDeskArchitecture.jsx` | **Refined** | Fixed duplicate step numbering in data flow stepper pills (`<span className="step-num">{s.step}.</span>` + `<span className="step-title">{s.title}</span>`). |
 | `src/data/architecture.js` | **Refined** | Removed hardcoded number prefixes from `dataFlowSteps.title` to prevent redundant numbering (`1 1. ...`). |
