@@ -229,7 +229,7 @@ export const detailedAchievements = [
     title: '2nd Position — InsightX Hackathon',
     organization: 'IIT Bombay',
     year: '2026',
-    scale: '1,700+ Teams Competed Across India',
+    scale: '1,700+ Teams',
     role: 'Team Leader',
     project: 'QueryPilot',
     summary:
@@ -267,7 +267,7 @@ export const detailedAchievements = [
     title: 'Finalist — GDG Cloud Pune Hackathon',
     organization: 'Google Developer Group Pune',
     year: '2025',
-    scale: 'Top 20 of 1,000+ Participants',
+    scale: 'Top 20 of 1,000+',
     role: 'Team Leader',
     project: 'Cloud Systems',
     summary:
@@ -282,10 +282,10 @@ export const detailedAchievements = [
   },
   {
     id: 'meta',
-    title: 'Finalist — Meta x OpenEnv x PyTorch Hackathon',
+    title: 'Finalist — Meta x PyTorch Hackathon',
     organization: 'Meta / PyTorch Ecosystem',
     year: '2025',
-    scale: 'Top 800 of 52,000+ Global Teams',
+    scale: 'Top 1.5% · 52k Teams',
     role: 'Core Engineer',
     project: 'AI Engineering',
     summary:
@@ -303,7 +303,7 @@ export const detailedAchievements = [
     title: 'Finalist — Algorand HackSeries 3.0',
     organization: 'Algorand Foundation',
     year: '2026',
-    scale: 'Top 30 of 800+ Teams',
+    scale: 'Top 30 of 800+',
     role: 'Core Engineer',
     project: 'PayPerUseAI',
     summary:
@@ -321,7 +321,7 @@ export const detailedAchievements = [
     title: "2nd Position — Indradhanu'25 Project Competition",
     organization: 'State-Level Technical Summit',
     year: '2025',
-    scale: '250+ Projects Evaluated',
+    scale: '250+ Projects',
     role: 'Team Leader',
     project: 'Software Systems',
     summary:

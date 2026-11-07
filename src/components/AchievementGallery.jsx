@@ -2,6 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { Trophy, Award, ExternalLink, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { detailedAchievements } from '../data/architecture.js';
 
+const getStandingMeta = (title, id) => {
+  if (title.includes('1st Position')) return { label: '1st Place Winner', icon: '🥇' };
+  if (title.includes('2nd Position')) return { label: '2nd Place', icon: '🥈' };
+  if (title.includes('Global') || id === 'meta') return { label: 'Global Finalist', icon: '🌐' };
+  return { label: 'Finalist', icon: '🏅' };
+};
+
+const getCleanTitle = (title) => {
+  return title.replace(/^(1st Position|2nd Position|Finalist)\s*[—–-]\s*/i, '');
+};
+
 export function AchievementGallery() {
   const [selectedAchievement, setSelectedAchievement] = useState(null);
   const modalCloseBtnRef = useRef(null);
@@ -35,32 +46,47 @@ export function AchievementGallery() {
     <div className="achievement-gallery-shell" aria-label="Competitive Hackathon & Project Achievements">
       {/* Cards Grid */}
       <div className="achievements-cards-grid">
-        {detailedAchievements.map((ach, idx) => (
-          <button
-            key={ach.id}
-            type="button"
-            className={`achievement-card-interactive tone-${ach.tone}`}
-            onClick={() => setSelectedAchievement(ach)}
-          >
-            <div className="ach-card-top">
-              <span className="ach-index">0{idx + 1}</span>
-              <span className="ach-scale-chip">{ach.scale}</span>
-            </div>
+        {detailedAchievements.map((ach, idx) => {
+          const standing = getStandingMeta(ach.title, ach.id);
+          const cleanTitle = getCleanTitle(ach.title);
 
-            <h3 className="ach-card-title">{ach.title}</h3>
-            <p className="ach-card-org">{ach.organization} · {ach.year}</p>
+          return (
+            <button
+              key={ach.id}
+              type="button"
+              className={`achievement-card-interactive tone-${ach.tone}`}
+              onClick={() => setSelectedAchievement(ach)}
+            >
+              <div className="ach-card-top">
+                <div className="ach-badge-group">
+                  <span className="ach-index">0{idx + 1}</span>
+                  <span className={`ach-standing-pill tone-${ach.tone}`}>
+                    <span className="ach-standing-icon" aria-hidden="true">{standing.icon}</span>
+                    <span>{standing.label}</span>
+                  </span>
+                </div>
+                <span className="ach-scale-chip">{ach.scale}</span>
+              </div>
 
-            <p className="ach-card-summary">{ach.summary}</p>
+              <div className="ach-card-body">
+                <h3 className="ach-card-title">{cleanTitle}</h3>
+                <p className="ach-card-org">{ach.organization} · {ach.year}</p>
+                <p className="ach-card-summary">{ach.summary}</p>
+              </div>
 
-            <div className="ach-card-footer">
-              <span className="ach-project-tag">Project: {ach.project}</span>
-              <span className="ach-inspect-link">
-                View Proof & Details
-                <ExternalLink size={13} aria-hidden="true" />
-              </span>
-            </div>
-          </button>
-        ))}
+              <div className="ach-card-footer">
+                <span className="ach-project-tag">
+                  <span className="ach-project-label">Project:</span>{' '}
+                  <span className="ach-project-val">{ach.project}</span>
+                </span>
+                <span className={`ach-inspect-link tone-${ach.tone}`}>
+                  <span>View Proof & Details</span>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Accessible Detail Modal */}

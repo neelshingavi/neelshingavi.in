@@ -62,7 +62,7 @@ body {
   position: absolute;
   inset: 0;
   background: #07050b;
-  opacity: 0.6;
+  opacity: 0.97;
 }
 
 /* ...then driven by scroll position with ZERO JavaScript where supported
@@ -80,7 +80,7 @@ body {
   }
   @keyframes bg-dim-in {
     to {
-      opacity: 0.72;
+      opacity: 0.985;
     }
   }
 }
@@ -2359,7 +2359,7 @@ body::after {
 .achievements-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
 .achievement-card-interactive {
@@ -2368,32 +2368,73 @@ body::after {
   justify-content: space-between;
   padding: 24px 22px;
   background:
-    linear-gradient(180deg, rgba(244, 240, 223, 0.05), rgba(244, 240, 223, 0.015)),
-    rgba(12, 9, 20, 0.7);
-  border: 1px solid rgba(244, 240, 223, 0.12);
-  border-radius: 6px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%),
+    #090b08;
+  border: 1px solid rgba(244, 240, 223, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   text-align: left;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
 }
+
+.achievement-card-interactive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0.5;
+  transition: opacity 0.25s ease, height 0.25s ease;
+}
+.achievement-card-interactive.tone-lime::before { background: var(--lime); }
+.achievement-card-interactive.tone-gold::before { background: var(--gold, #fbc02d); }
+.achievement-card-interactive.tone-teal::before { background: var(--teal, #00e5ff); }
+.achievement-card-interactive.tone-coral::before { background: var(--coral, #ff6b6b); }
 
 .achievement-card-interactive:hover {
-  border-color: rgba(191, 242, 5, 0.4);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5), 0 0 25px rgba(191, 242, 5, 0.1);
   transform: translateY(-4px);
 }
+.achievement-card-interactive:hover::before {
+  opacity: 1;
+  height: 3px;
+}
 
-.achievement-card-interactive.tone-lime:hover { border-color: var(--lime); }
-.achievement-card-interactive.tone-gold:hover { border-color: var(--gold, #fbc02d); }
-.achievement-card-interactive.tone-teal:hover { border-color: var(--teal, #00e5ff); }
-.achievement-card-interactive.tone-coral:hover { border-color: var(--coral, #ff6b6b); }
+.achievement-card-interactive.tone-lime:hover {
+  border-color: rgba(191, 242, 5, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(191, 242, 5, 0.14);
+}
+.achievement-card-interactive.tone-gold:hover {
+  border-color: rgba(225, 185, 47, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(225, 185, 47, 0.14);
+}
+.achievement-card-interactive.tone-teal:hover {
+  border-color: rgba(0, 229, 255, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 229, 255, 0.14);
+}
+.achievement-card-interactive.tone-coral:hover {
+  border-color: rgba(255, 107, 107, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(255, 107, 107, 0.14);
+}
 
 .ach-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: nowrap;
+}
+
+.ach-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ach-index {
@@ -2403,36 +2444,85 @@ body::after {
   color: var(--muted);
 }
 
+.ach-standing-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.ach-standing-pill.tone-gold {
+  background: rgba(225, 185, 47, 0.12);
+  border: 1px solid rgba(225, 185, 47, 0.35);
+  color: var(--gold, #fbc02d);
+}
+
+.ach-standing-pill.tone-lime {
+  background: rgba(191, 242, 5, 0.1);
+  border: 1px solid rgba(191, 242, 5, 0.3);
+  color: var(--lime);
+}
+
+.ach-standing-pill.tone-teal {
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: var(--teal, #00e5ff);
+}
+
+.ach-standing-pill.tone-coral {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: var(--coral, #ff6b6b);
+}
+
+.ach-standing-icon {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
 .ach-scale-chip {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  padding: 2px 7px;
-  border-radius: 3px;
-  background: rgba(244, 240, 223, 0.06);
-  border: 1px solid rgba(244, 240, 223, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(244, 240, 223, 0.04);
+  border: 1px solid rgba(244, 240, 223, 0.09);
   color: var(--paper-2);
+  white-space: nowrap;
+}
+
+.ach-card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .ach-card-title {
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   font-weight: 700;
   color: var(--paper);
   margin: 0 0 4px;
   line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .ach-card-org {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.74rem;
   color: var(--muted);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .ach-card-summary {
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   color: var(--paper-2);
-  line-height: 1.55;
-  margin: 0 0 16px;
+  line-height: 1.6;
+  margin: 0 0 20px;
   flex-grow: 1;
 }
 
@@ -2440,23 +2530,36 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
+  padding-top: 14px;
   border-top: 1px solid rgba(244, 240, 223, 0.08);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
+  gap: 8px;
 }
 
 .ach-project-tag {
   color: var(--muted);
 }
+.ach-project-val {
+  color: var(--paper);
+  font-weight: 600;
+}
 
 .ach-inspect-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--lime);
+  gap: 5px;
   font-weight: 600;
+  transition: transform 0.18s ease;
 }
+.achievement-card-interactive:hover .ach-inspect-link {
+  transform: translateX(2px);
+}
+
+.ach-inspect-link.tone-lime { color: var(--lime); }
+.ach-inspect-link.tone-gold { color: var(--gold, #fbc02d); }
+.ach-inspect-link.tone-teal { color: var(--teal, #00e5ff); }
+.ach-inspect-link.tone-coral { color: var(--coral, #ff6b6b); }
 
 /* Detail Modal */
 .achievement-modal-backdrop {
