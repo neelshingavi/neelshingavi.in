@@ -43,8 +43,8 @@ export function CodingActivityShowcase() {
       {/* Top Platform Switcher Tabs */}
       <div className="activity-tabs-header">
         <div className="activity-tabs-intro">
-          <span className="activity-tabs-tag">VERIFIED ENGINEERING CADENCE</span>
-          <h3 className="activity-tabs-title">Development & Algorithmic Track Record</h3>
+          <p className="eyebrow activity-tabs-tag">04 / VERIFIED ENGINEERING CADENCE</p>
+          <h2 className="activity-tabs-title" id="cadence-heading">Development & Algorithmic Track Record</h2>
         </div>
 
         <div className="activity-platform-tabs" role="tablist" aria-label="Coding platform selectors">

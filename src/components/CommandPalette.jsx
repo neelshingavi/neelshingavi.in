@@ -13,6 +13,7 @@ import {
   Trophy,
   Cpu,
   Mail,
+  Code2,
   X,
   CornerDownLeft,
   Command,
@@ -92,6 +93,14 @@ export function CommandPalette({ isOpen, onClose }) {
       keywords: 'work projects querypilot tradersdesk certicraft payperuseai founderflow',
       icon: Briefcase,
       action: () => navigateTo('#work'),
+    },
+    {
+      id: 'nav-cadence',
+      category: 'Navigation',
+      label: 'Verified Engineering Cadence & Coding Heatmaps',
+      keywords: 'cadence coding activity heatmaps github leetcode codeforces 04',
+      icon: Code2,
+      action: () => navigateTo('#cadence'),
     },
     {
       id: 'nav-experience',

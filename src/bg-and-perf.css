@@ -1813,8 +1813,12 @@ body::after {
 /* ---------------------------------------------------------------------
    15B. CODING ACTIVITY SHOWCASE & PLATFORM TABS
    --------------------------------------------------------------------- */
+.cadence-section {
+  padding: 82px 0;
+}
+
 .coding-activity-showcase-shell {
-  margin-top: 48px;
+  margin-top: 0;
   width: 100%;
 }
 

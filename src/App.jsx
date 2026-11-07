@@ -41,7 +41,7 @@ import { CommandPalette } from './components/CommandPalette.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, clubs, education, experience, profile, projects, skills } from './data/portfolio.js';
 
-const navItems = ['systems', 'experience', 'work', 'wins', 'architecture', 'contact'];
+const navItems = ['systems', 'experience', 'work', 'cadence', 'skills', 'wins', 'architecture', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
 
 gsap.registerPlugin(SplitText);
@@ -552,14 +552,16 @@ function App() {
               ))}
             </div>
           ) : null}
+        </section>
 
+        <section className="cadence-section section-shell" id="cadence" aria-labelledby="cadence-heading">
           {/* Live Developer Velocity & Coding Activity Signals */}
           <CodingActivityShowcase />
         </section>
 
         <section className="skills-section section-shell" id="skills" aria-labelledby="skills-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">04 / STACK ARCHITECTURE</p>
+            <p className="eyebrow">05 / STACK ARCHITECTURE</p>
             <h2 id="skills-heading">The tools behind the shipped work.</h2>
           </Reveal>
           <div className="skills-board">
@@ -581,7 +583,7 @@ function App() {
         <section className="wins-section section-shell" id="wins" aria-labelledby="wins-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">05 / COMPETITIVE PROOF</p>
+              <p className="eyebrow">06 / COMPETITIVE PROOF</p>
               <h2 id="wins-heading">Hackathon signal, national scale.</h2>
             </div>
             <div className="trophy-pill">
@@ -595,7 +597,7 @@ function App() {
 
         <section className="architecture-section section-shell" id="architecture" aria-labelledby="architecture-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">06 / PRODUCTION ARCHITECTURE</p>
+            <p className="eyebrow">07 / PRODUCTION ARCHITECTURE</p>
             <h2 id="architecture-heading">Interactive deep dives into shipped systems.</h2>
             <p className="architecture-section-sub">
               Explore the local-first transaction lifecycles, database synchronization boundaries, and NL-to-SQL analytics pipelines that power real-world products.
@@ -609,7 +611,7 @@ function App() {
 
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
-            <p className="eyebrow">07 / CONTACT & COLLABORATION</p>
+            <p className="eyebrow">08 / CONTACT & COLLABORATION</p>
             <h2 id="contact-heading">Have something worth building?</h2>
             <p className="contact-availability">
               Whether you are architecting distributed backend infrastructure, building high-accuracy data pipelines,
@@ -677,13 +679,14 @@ function App() {
             <div className="footer-nav-col">
               <span className="footer-nav-heading">EXPLORE</span>
               <ul>
-                <li><a href="#systems">Core Systems & Capabilities</a></li>
-                <li><a href="#experience">Experience & Foundation</a></li>
-                <li><a href="#work">Selected Work</a></li>
-                <li><a href="#skills">Stack Architecture</a></li>
-                <li><a href="#wins">Competitive Proof</a></li>
-                <li><a href="#architecture">Production Architecture</a></li>
-                <li><a href="#contact">Initiate Contact</a></li>
+                <li><a href="#systems">01 Core Systems & Capabilities</a></li>
+                <li><a href="#experience">02 Experience & Foundation</a></li>
+                <li><a href="#work">03 Selected Work</a></li>
+                <li><a href="#cadence">04 Engineering Cadence</a></li>
+                <li><a href="#skills">05 Stack Architecture</a></li>
+                <li><a href="#wins">06 Competitive Proof</a></li>
+                <li><a href="#architecture">07 Production Architecture</a></li>
+                <li><a href="#contact">08 Initiate Contact</a></li>
               </ul>
             </div>
 
