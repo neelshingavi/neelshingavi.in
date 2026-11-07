@@ -118,6 +118,14 @@ export function CommandPalette({ isOpen, onClose }) {
       action: () => navigateTo('#wins'),
     },
     {
+      id: 'nav-architecture',
+      category: 'Navigation',
+      label: 'Production Architecture & Explorers',
+      keywords: 'architecture system topology tradersdesk querypilot pipeline sync offline local first',
+      icon: Layers,
+      action: () => navigateTo('#architecture'),
+    },
+    {
       id: 'nav-contact',
       category: 'Navigation',
       label: 'Contact & Collaboration',

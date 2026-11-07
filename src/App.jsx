@@ -41,7 +41,7 @@ import { CommandPalette } from './components/CommandPalette.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, clubs, education, experience, profile, projects, skills } from './data/portfolio.js';
 
-const navItems = ['systems', 'experience', 'work', 'wins', 'contact'];
+const navItems = ['systems', 'experience', 'work', 'wins', 'architecture', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
 
 gsap.registerPlugin(SplitText);
@@ -503,18 +503,12 @@ function App() {
         </section>
 
         <section className="about-section section-shell" id="systems" aria-labelledby="systems-heading">
-          <div className="about-intro-split">
-            <Reveal className="section-heading">
-              <p className="eyebrow">01 / SYSTEMS & ARCHITECTURE</p>
-              <h2 id="systems-heading">Software that moves from idea to production.</h2>
-            </Reveal>
-          </div>
+          <Reveal className="section-heading">
+            <p className="eyebrow">01 / CORE SYSTEMS & CAPABILITIES</p>
+            <h2 id="systems-heading">Software that moves from idea to production.</h2>
+          </Reveal>
 
           <SystemsNetwork />
-
-          {/* Interactive Production Architecture Explorers */}
-          <TradersDeskArchitecture />
-          <QueryPilotPipeline />
         </section>
 
         <section className="experience-section section-shell" id="experience" aria-labelledby="experience-heading">
@@ -599,9 +593,23 @@ function App() {
           <AchievementGallery />
         </section>
 
+        <section className="architecture-section section-shell" id="architecture" aria-labelledby="architecture-heading">
+          <Reveal className="section-heading">
+            <p className="eyebrow">06 / PRODUCTION ARCHITECTURE</p>
+            <h2 id="architecture-heading">Interactive deep dives into shipped systems.</h2>
+            <p className="architecture-section-sub">
+              Explore the local-first transaction lifecycles, database synchronization boundaries, and NL-to-SQL analytics pipelines that power real-world products.
+            </p>
+          </Reveal>
+
+          {/* Interactive Production Architecture Explorers */}
+          <TradersDeskArchitecture />
+          <QueryPilotPipeline />
+        </section>
+
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
-            <p className="eyebrow">06 / CONTACT & COLLABORATION</p>
+            <p className="eyebrow">07 / CONTACT & COLLABORATION</p>
             <h2 id="contact-heading">Have something worth building?</h2>
             <p className="contact-availability">
               Whether you are architecting distributed backend infrastructure, building high-accuracy data pipelines,
@@ -669,11 +677,12 @@ function App() {
             <div className="footer-nav-col">
               <span className="footer-nav-heading">EXPLORE</span>
               <ul>
-                <li><a href="#systems">Systems Architecture</a></li>
+                <li><a href="#systems">Core Systems & Capabilities</a></li>
                 <li><a href="#experience">Experience & Foundation</a></li>
                 <li><a href="#work">Selected Work</a></li>
                 <li><a href="#skills">Stack Architecture</a></li>
                 <li><a href="#wins">Competitive Proof</a></li>
+                <li><a href="#architecture">Production Architecture</a></li>
                 <li><a href="#contact">Initiate Contact</a></li>
               </ul>
             </div>
