@@ -1,14 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Copy, Check, Mail } from 'lucide-react';
 import { analytics } from '../utils/analytics.js';
 import { profile } from '../data/portfolio.js';
 
 export function ContactForm() {
-  const [status, setStatus] = useState('idle'); // idle | submitting | success | error
-  const [form, setForm] = useState({ name: '', email: '', message: '', honeypot: '' });
+  const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'fallback_opened' | 'error'
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+    honeypot: '',
+  });
   const [errors, setErrors] = useState({});
-  const buttonRef = useRef(null);
+  const [copied, setCopied] = useState(false);
   const mountTime = useRef(0);
 
   useEffect(() => {
@@ -16,63 +21,98 @@ export function ContactForm() {
   }, []);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    // Clear error when user types
-    if (errors[e.target.name]) {
-      setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const handleCopyEmail = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(profile.email);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = profile.email;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      analytics.emailClicked();
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      window.prompt('Copy email:', profile.email);
+    }
+  };
+
+  const triggerMailtoFallback = (name, email, subject, message) => {
+    const subjectLine = subject.trim() || `Inquiry from ${name.trim() || 'Portfolio'}`;
+    const bodyText = `Hi Neel,\n\n${message.trim()}\n\nBest regards,\n${name.trim()}\n${email.trim()}`;
+    const mailtoUrl = `mailto:${profile.email}?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(bodyText)}`;
+    
+    // Open user's email client
+    window.location.href = mailtoUrl;
+    setStatus('fallback_opened');
+    analytics.contactFormSubmitted();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (status === 'submitting') return;
 
-    // Manual Validation
+    // Validate inputs
     const newErrors = {};
-    if (form.name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters.';
+    if (form.name.trim().length < 2) {
+      newErrors.name = 'Please provide your name (at least 2 characters).';
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) newErrors.email = 'Please enter a valid email address.';
-    if (form.message.trim().length < 20) newErrors.message = 'Message must be at least 20 characters.';
-    
+    if (!emailRegex.test(form.email.trim())) {
+      newErrors.email = 'Please provide a valid email address.';
+    }
+    if (form.message.trim().length < 15) {
+      newErrors.message = 'Please provide a brief message (at least 15 characters).';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Bot Protection
+    // Bot protection
     const timeElapsed = Date.now() - mountTime.current;
-    if (form.honeypot || timeElapsed < 3000) {
-      // Silently succeed to fool bots without hitting the API
+    if (form.honeypot || timeElapsed < 2500) {
       setStatus('success');
-      setForm({ name: '', email: '', message: '', honeypot: '' });
+      setForm({ name: '', email: '', subject: '', message: '', honeypot: '' });
       return;
     }
 
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+
+    // If no backend key configured, use the genuine mailto composer
+    if (!accessKey) {
+      triggerMailtoFallback(form.name, form.email, form.subject, form.message);
+      return;
+    }
+
+    // Otherwise, submit through Web3Forms
     setStatus('submitting');
-    
-    const btn = buttonRef.current;
-    const tl = gsap.timeline();
-    tl.to(btn, { width: 48, borderRadius: 24, color: 'transparent', duration: 0.4, ease: 'power3.inOut' });
 
     try {
-      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
-      if (!accessKey) {
-        console.error('Missing Web3Forms access key.');
-        setStatus('error');
-        tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
-        return;
-      }
-
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: accessKey,
-          subject: `Portfolio Contact from ${form.name}`,
+          subject: form.subject ? `[Portfolio] ${form.subject} (from ${form.name})` : `Portfolio Contact from ${form.name}`,
           from_name: form.name,
           name: form.name,
           email: form.email,
-          message: form.message
+          message: form.message,
         }),
       });
 
@@ -80,120 +120,202 @@ export function ContactForm() {
 
       if (data.success) {
         setStatus('success');
-        setForm({ name: '', email: '', message: '', honeypot: '' });
+        setForm({ name: '', email: '', subject: '', message: '', honeypot: '' });
         analytics.contactFormSubmitted();
-        tl.to(btn, { backgroundColor: 'var(--lime)', color: 'var(--ink)', duration: 0.3 });
       } else {
-        setStatus('error');
-        tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
+        // If external API returns error, gracefully fallback to mailto
+        triggerMailtoFallback(form.name, form.email, form.subject, form.message);
       }
     } catch {
-      setStatus('error');
-      tl.to(btn, { width: '100%', borderRadius: 8, color: 'var(--ink)', duration: 0.4 });
+      // Network failure: fallback to mailto
+      triggerMailtoFallback(form.name, form.email, form.subject, form.message);
     }
   };
 
   if (status === 'success') {
     return (
-      <div className="contact-success" role="alert">
-        <CheckCircle size={32} className="success-icon" />
-        <h3>Message received.</h3>
-        <p>I&apos;ll get back to you within 24 hours.</p>
+      <div className="contact-status-card success" role="alert">
+        <CheckCircle size={32} className="status-icon" aria-hidden="true" />
+        <div className="status-copy">
+          <h3>Message Dispatched Successfully</h3>
+          <p>Thank you for reaching out. I typically reply within 24 hours.</p>
+        </div>
+        <button
+          type="button"
+          className="secondary-action"
+          onClick={() => setStatus('idle')}
+          style={{ marginTop: '12px' }}
+        >
+          Send Another Note
+        </button>
+      </div>
+    );
+  }
+
+  if (status === 'fallback_opened') {
+    return (
+      <div className="contact-status-card info" role="alert">
+        <Mail size={32} className="status-icon" aria-hidden="true" />
+        <div className="status-copy">
+          <h3>Email Client Launched</h3>
+          <p>
+            Your default email application has been launched with your prefilled message addressed to{' '}
+            <strong>{profile.email}</strong>.
+          </p>
+          <p className="status-note">
+            If your mail app did not open automatically, you can copy my email below or send directly.
+          </p>
+        </div>
+        <div className="status-actions">
+          <button
+            type="button"
+            className="primary-action"
+            onClick={handleCopyEmail}
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+            {copied ? 'Copied to Clipboard!' : 'Copy Email Address'}
+          </button>
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={() => setStatus('idle')}
+          >
+            Edit Message
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="contact-form-wrapper">
-      {status === 'error' && (
-        <div className="contact-error" role="alert">
-          <AlertCircle size={18} />
-          Something went wrong. Email me directly at {profile.email}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-        {/* Hidden from users via CSS, skipped by screen readers */}
-        <input 
-          type="text" 
-          name="honeypot" 
-          style={{ display: 'none' }} 
-          tabIndex="-1" 
-          autoComplete="off" 
-          aria-hidden="true" 
+      <form onSubmit={handleSubmit} className="contact-form-inner" noValidate>
+        {/* Honeypot field for bot filtering */}
+        <input
+          type="text"
+          name="honeypot"
+          style={{ display: 'none' }}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
           value={form.honeypot}
           onChange={handleChange}
         />
 
+        <div className="form-row-grid">
+          <div className="form-group">
+            <label htmlFor="cf-name">
+              Your Name <span className="req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="cf-name"
+              name="name"
+              type="text"
+              required
+              minLength={2}
+              maxLength={100}
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Alex Chen"
+              autoComplete="name"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'cf-name-error' : undefined}
+            />
+            {errors.name && (
+              <span className="validation-error" id="cf-name-error" role="alert">
+                {errors.name}
+              </span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="cf-email">
+              Your Email <span className="req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="cf-email"
+              name="email"
+              type="email"
+              required
+              value={form.email}
+              onChange={handleChange}
+              placeholder="e.g. alex@company.com"
+              autoComplete="email"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'cf-email-error' : undefined}
+            />
+            {errors.email && (
+              <span className="validation-error" id="cf-email-error" role="alert">
+                {errors.email}
+              </span>
+            )}
+          </div>
+        </div>
+
         <div className="form-group">
-          <label htmlFor="cf-name">Name</label>
+          <label htmlFor="cf-subject">Subject / Scope</label>
           <input
-            id="cf-name"
-            name="name"
+            id="cf-subject"
+            name="subject"
             type="text"
-            required
-            minLength={2}
-            maxLength={100}
-            value={form.name}
+            maxLength={150}
+            value={form.subject}
             onChange={handleChange}
-            placeholder="Your name"
-            autoComplete="name"
-            aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? "cf-name-error" : undefined}
+            placeholder="e.g. Backend engineering role / Architecture collaboration"
           />
-          {errors.name && <span className="validation-error" id="cf-name-error" role="alert">{errors.name}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="cf-email">Email</label>
-          <input
-            id="cf-email"
-            name="email"
-            type="email"
-            required
-            value={form.email}
-            onChange={handleChange}
-            placeholder="your@email.com"
-            autoComplete="email"
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? "cf-email-error" : undefined}
-          />
-          {errors.email && <span className="validation-error" id="cf-email-error" role="alert">{errors.email}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="cf-message">Message</label>
+          <label htmlFor="cf-message">
+            Project Context or Message <span className="req" aria-hidden="true">*</span>
+          </label>
           <textarea
             id="cf-message"
             name="message"
             required
-            minLength={20}
+            minLength={15}
             maxLength={2000}
             rows={5}
             value={form.message}
             onChange={handleChange}
-            placeholder="Tell me about the opportunity or project..."
+            placeholder="Outline your technical problem, architecture requirement, or opportunity..."
             aria-invalid={!!errors.message}
-            aria-describedby={errors.message ? "cf-message-error" : undefined}
+            aria-describedby={errors.message ? 'cf-message-error' : undefined}
           />
-          {errors.message && <span className="validation-error" id="cf-message-error" role="alert">{errors.message}</span>}
+          {errors.message && (
+            <span className="validation-error" id="cf-message-error" role="alert">
+              {errors.message}
+            </span>
+          )}
         </div>
 
-        <button
-          ref={buttonRef}
-          type="submit"
-          className="primary-action liquid-button"
-          disabled={status === 'submitting'}
-          style={{ overflow: 'hidden', whiteSpace: 'nowrap', minHeight: 48, justifyContent: 'center' }}
-        >
-          {status === 'success' ? (
-            <CheckCircle size={18} />
-          ) : (
-            <>
-              <Send size={18} /> Send Message
-            </>
-          )}
-        </button>
+        <div className="form-submit-row">
+          <button
+            type="submit"
+            className="primary-action submit-btn"
+            disabled={status === 'submitting'}
+          >
+            <Send size={16} aria-hidden="true" />
+            <span>{status === 'submitting' ? 'Dispatching...' : 'Send Message'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="secondary-action copy-email-btn"
+            onClick={handleCopyEmail}
+            title="Copy Neel Shingavi's direct email"
+          >
+            {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+            <span>{copied ? 'Copied to Clipboard!' : `Copy Email (${profile.email})`}</span>
+          </button>
+        </div>
+
+        <p className="contact-footnote">
+          Submitting triggers genuine direct delivery to Neel Shingavi. Direct email:{' '}
+          <a href={`mailto:${profile.email}`} className="email-link">
+            {profile.email}
+          </a>
+        </p>
       </form>
     </div>
   );

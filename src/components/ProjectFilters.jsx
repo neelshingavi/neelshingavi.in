@@ -4,6 +4,7 @@ export const PROJECT_FILTER_CATEGORIES = [
   'All',
   'AI & LLM',
   'Financial & Trading',
+  'Payments & Web3',
   'Automation',
 ];
 
