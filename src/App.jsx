@@ -6,18 +6,17 @@ import {
   ArrowUpRight,
   Braces,
   Code2,
+  Command,
   Database,
   Download,
   ExternalLink,
   Mail,
-  MapPin,
   Phone,
   Rocket,
   Send,
   ServerCog,
   Trophy,
 } from 'lucide-react';
-import { AnimatedCounter } from './components/AnimatedCounter.jsx';
 import { Reveal } from './components/Reveal.jsx';
 import { SkillBadge } from './components/SkillBadge.jsx';
 import { useCanRunBackgroundAnimation } from './hooks/useCanRunBackgroundAnimation.js';
@@ -32,10 +31,17 @@ import { Preloader } from './components/Preloader.jsx';
 import { ProjectCard } from './components/ProjectCard.jsx';
 import { HeroCapabilities } from './components/HeroCapabilities.jsx';
 import { ProjectFilters } from './components/ProjectFilters.jsx';
+import { SystemsNetwork } from './components/SystemsNetwork.jsx';
+import { TradersDeskArchitecture } from './components/TradersDeskArchitecture.jsx';
+import { QueryPilotPipeline } from './components/QueryPilotPipeline.jsx';
+import { CodingActivityShowcase } from './components/CodingActivityShowcase.jsx';
+import { ExperienceTimeline } from './components/ExperienceTimeline.jsx';
+import { AchievementGallery } from './components/AchievementGallery.jsx';
+import { CommandPalette } from './components/CommandPalette.jsx';
 import { analytics } from './utils/analytics.js';
-import { achievements, clubs, education, experience, profile, projects, skills, stats } from './data/portfolio.js';
+import { achievements, clubs, education, experience, profile, projects, skills } from './data/portfolio.js';
 
-const navItems = ['work', 'systems', 'wins', 'contact'];
+const navItems = ['systems', 'experience', 'work', 'wins', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
 
 gsap.registerPlugin(SplitText);
@@ -126,9 +132,32 @@ function App() {
   const [activeSection, setActiveSection] = useState('');
   const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
   const canRunBackground = useCanRunBackgroundAnimation();
+
+  // Global Cmd+K / Ctrl+K listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable);
+
+      if (isInput) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCmdPaletteOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const filteredProjects = useMemo(() => {
     if (selectedCategory === 'All') return projects;
@@ -137,42 +166,6 @@ function App() {
     );
   }, [selectedCategory]);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.timeline-progress-line',
-        { scaleY: 0 },
-        { scaleY: 1, ease: 'none', transformOrigin: 'top',
-          scrollTrigger: { trigger: '.timeline-layout', start: 'top 80%', end: 'bottom 40%', scrub: true } }
-      );
-
-      gsap.utils.toArray('.timeline-block').forEach((block) => {
-        gsap.fromTo(block, 
-          { opacity: 0.25 }, 
-          { opacity: 1, 
-            scrollTrigger: { 
-              trigger: block, 
-              start: 'top 85%', 
-              end: 'center 55%', 
-              scrub: true 
-            } 
-          });
-      });
-
-      gsap.from('.signal-node', {
-        scale: 0.85, opacity: 0,
-        stagger: { each: 0.08, from: 'random' },
-        ease: 'back.out(1.6)',
-        scrollTrigger: { trigger: '.signal-map', start: 'top 75%' },
-      });
-
-      gsap.from('.system-slot', {
-        rotateY: -25, opacity: 0, y: 30,
-        stagger: 0.1, ease: 'power3.out',
-        scrollTrigger: { trigger: '.system-grid', start: 'top 80%' },
-      });
-    });
-    return () => ctx.revert();
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -388,7 +381,15 @@ function App() {
 
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Go to top">
-          <img src="/favicon-96x96.png" alt="Logo" className="brand-logo" />
+          <img
+            src="/favicon-96x96.png"
+            alt="Neel Shingavi Logo"
+            width="24"
+            height="24"
+            loading="eager"
+            decoding="async"
+            className="brand-logo"
+          />
           <small>Product Engineer</small>
         </a>
         <nav className="nav-links" aria-label="Primary navigation" style={{ position: 'relative' }}>
@@ -397,19 +398,39 @@ function App() {
             <MagneticNavItem key={item} item={item} activeSection={activeSection} />
           ))}
         </nav>
-        <MagneticAction
-          className="header-action"
-          href={profile.resume}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Download Neel Shingavi's Resume"
-          onClick={() => analytics.resumeDownloaded()}
-        >
-          <Download size={17} />
-          Resume
-        </MagneticAction>
-        <MobileNav activeSection={activeSection} />
+        <div className="header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            type="button"
+            className="cmd-trigger-btn"
+            onClick={() => setIsCmdPaletteOpen(true)}
+            title="Open Command Palette (⌘K)"
+            aria-label="Open Command Palette"
+          >
+            <Command size={13} aria-hidden="true" />
+            <span className="cmd-label">⌘K</span>
+          </button>
+          <MagneticAction
+            className="header-action"
+            href={profile.resume}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Download Neel Shingavi's Resume"
+            onClick={() => analytics.resumeDownloaded()}
+          >
+            <Download size={17} />
+            Resume
+          </MagneticAction>
+        </div>
+        <MobileNav
+          activeSection={activeSection}
+          onOpenCommandPalette={() => setIsCmdPaletteOpen(true)}
+        />
       </header>
+
+      <CommandPalette
+        isOpen={isCmdPaletteOpen}
+        onClose={() => setIsCmdPaletteOpen(false)}
+      />
 
       <main id="main-content">
         {/* We use #top for 'back to top' targeting */}
@@ -479,74 +500,27 @@ function App() {
               </a>
             </m.div>
           </div>
-
-          <m.aside
-            className="hero-terminal"
-            initial={{ opacity: 0, y: 24 }}
-            animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-            transition={{ delay: 0.7, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            aria-label="Current operational focus"
-          >
-            <div className="terminal-header">
-              <span className="terminal-dot" aria-hidden="true" />
-              <span className="terminal-title">CURRENT_SIGNAL.LOG</span>
-              <span className="terminal-badge">ACTIVE</span>
-            </div>
-            <p className="terminal-desc">
-              Building reliable software where backend architecture, distributed systems, and practical AI meet.
-            </p>
-            <div className="terminal-footer">
-              <div className="terminal-location">
-                <MapPin size={13} aria-hidden="true" />
-                <span>{profile.location}</span>
-              </div>
-              <span className="terminal-avail">Open for roles & builds</span>
-            </div>
-          </m.aside>
-        </section>
-
-        <section className="metric-strip" aria-label="Portfolio metrics">
-          {stats.map((stat) => (
-            <div className={`metric-item ${stat.accent}`} key={stat.label}>
-              <strong>
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} decimals={stat.decimals} />
-              </strong>
-              <span>{stat.label}</span>
-            </div>
-          ))}
         </section>
 
         <section className="about-section section-shell" id="systems" aria-labelledby="systems-heading">
-          <Reveal className="section-heading">
-            <p className="eyebrow">Builder profile</p>
-            <h2 id="systems-heading">Software that moves from idea to production.</h2>
-          </Reveal>
-          <div className="about-grid">
-            <Reveal className="about-copy">
-              <p>
-                I work closest to backend systems, data products, and practical AI. The pattern across my projects is
-                simple: understand the workflow, design the architecture, ship the product, and make sure real users can
-                depend on it.
-              </p>
-              <p>
-                That shows up in QueryPilot analyzing large transaction datasets, TradersDesk running daily broker
-                workflows, and CertiCraft automating event operations with QR validation and email distribution.
-              </p>
+          <div className="about-intro-split">
+            <Reveal className="section-heading">
+              <p className="eyebrow">01 / SYSTEMS & ARCHITECTURE</p>
+              <h2 id="systems-heading">Software that moves from idea to production.</h2>
             </Reveal>
-
-            <div className="system-grid">
-              {['Backend Architecture', 'LLM Analytics', 'Workflow Automation', 'Client Delivery'].map((item, index) => {
-                const Icon = iconMap[index];
-                return <SystemTile key={item} item={item} Icon={Icon} />;
-              })}
-            </div>
           </div>
+
+          <SystemsNetwork />
+
+          {/* Interactive Production Architecture Explorers */}
+          <TradersDeskArchitecture />
+          <QueryPilotPipeline />
         </section>
 
-        <section className="experience-section section-shell" aria-labelledby="experience-heading">
+        <section className="experience-section section-shell" id="experience" aria-labelledby="experience-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Background</p>
+              <p className="eyebrow">02 / EXPERIENCE & BACKGROUND</p>
               <h2 id="experience-heading">Professional experience and academic foundation.</h2>
             </div>
             <MagneticAction
@@ -562,55 +536,12 @@ function App() {
             </MagneticAction>
           </Reveal>
 
-          <div className="timeline-layout">
-            <div className="timeline-progress-line"></div>
-            <div className="timeline-column">
-              <h3 className="timeline-title">Experience</h3>
-              {experience.map((item) => (
-                <div className="timeline-block" key={item.company}>
-                  <span>{item.period}</span>
-                  <h3>{item.company}</h3>
-                  <p>{item.role}</p>
-                  <ul>
-                    {item.points.map((point) => (
-                      <li key={point}>{point}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="timeline-column education-column">
-              <h3 className="timeline-title">Education</h3>
-              {education.map((item) => (
-                <div className="timeline-block education-item" key={item.school}>
-                  <span>{item.period}</span>
-                  <h3>{item.school}</h3>
-                  <p>{item.course}</p>
-                  <strong>{item.result}</strong>
-                </div>
-              ))}
-            </div>
-            <div className="timeline-column">
-              <h3 className="timeline-title">Clubs & Leadership</h3>
-              {clubs.map((item) => (
-                <div className="timeline-block" key={item.company}>
-                  <span>{item.period}</span>
-                  <h3>{item.company}</h3>
-                  <p>{item.role}</p>
-                  <ul>
-                    {item.points.map((point) => (
-                      <li key={point}>{point}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ExperienceTimeline />
         </section>
 
         <section className="work-section section-shell" id="work" aria-labelledby="work-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">Selected work</p>
+            <p className="eyebrow">03 / SELECTED WORK</p>
             <h2 id="work-heading">Projects built around measurable outcomes.</h2>
           </Reveal>
 
@@ -627,11 +558,14 @@ function App() {
               ))}
             </div>
           ) : null}
+
+          {/* Live Developer Velocity & Coding Activity Signals */}
+          <CodingActivityShowcase />
         </section>
 
-        <section className="skills-section section-shell" aria-labelledby="skills-heading">
+        <section className="skills-section section-shell" id="skills" aria-labelledby="skills-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">Stack architecture</p>
+            <p className="eyebrow">04 / STACK ARCHITECTURE</p>
             <h2 id="skills-heading">The tools behind the shipped work.</h2>
           </Reveal>
           <div className="skills-board">
@@ -653,7 +587,7 @@ function App() {
         <section className="wins-section section-shell" id="wins" aria-labelledby="wins-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Competitive proof</p>
+              <p className="eyebrow">05 / COMPETITIVE PROOF</p>
               <h2 id="wins-heading">Hackathon signal, national scale.</h2>
             </div>
             <div className="trophy-pill">
@@ -662,23 +596,18 @@ function App() {
             </div>
           </Reveal>
 
-          <div className="signal-map">
-            {achievements.map((achievement, index) => (
-              <div className={`signal-node ${achievement.tone}`} key={achievement.title}>
-                <span>0{index + 1}</span>
-                <h3>{achievement.title}</h3>
-                <p>{achievement.detail}</p>
-              </div>
-            ))}
-          </div>
+          <AchievementGallery />
         </section>
 
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
-            <p className="eyebrow">Contact</p>
-            <h2 id="contact-heading">Have a problem, a product idea, or a team that ships?</h2>
-            <p>{profile.availability}</p>
-            <div className="contact-actions" style={{marginBottom: '20px'}}>
+            <p className="eyebrow">06 / CONTACT & COLLABORATION</p>
+            <h2 id="contact-heading">Have something worth building?</h2>
+            <p className="contact-availability">
+              Whether you are architecting distributed backend infrastructure, building high-accuracy data pipelines,
+              or seeking a product engineer who delivers client-tested software — let’s connect.
+            </p>
+            <div className="contact-actions" style={{ marginBottom: '24px' }}>
               <MagneticAction
                 className="primary-action"
                 href={`mailto:${profile.email}`}
@@ -689,11 +618,27 @@ function App() {
               </MagneticAction>
               <MagneticAction
                 className="secondary-action"
-                href={`tel:${profile.phone.replaceAll(' ', '')}`}
-                onClick={() => analytics.phoneClicked()}
+                href={profile.links.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit Neel Shingavi's LinkedIn Profile"
+                onClick={() => analytics.socialClicked('linkedin')}
+                aria-label="LinkedIn profile (opens in new tab)"
               >
-                <Phone size={18} />
-                {profile.phone}
+                <ExternalLink size={18} />
+                LinkedIn
+              </MagneticAction>
+              <MagneticAction
+                className="secondary-action"
+                href={profile.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit Neel Shingavi's GitHub Profile"
+                onClick={() => analytics.socialClicked('github')}
+                aria-label="GitHub profile (opens in new tab)"
+              >
+                <ExternalLink size={18} />
+                GitHub
               </MagneticAction>
             </div>
 
@@ -706,22 +651,96 @@ function App() {
         <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
         <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
       </div>
-      <footer>
-        <span>Designed and built for Neel Shingavi.</span>
-        <button
-          onClick={() => {
-            if (lenis) {
-              lenis.scrollTo(0);
-            } else {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          className="back-to-top underline-draw"
-          aria-label="Scroll back to top"
-          style={{ background: 'none', border: 'none', color: 'var(--paper)', textDecoration: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
-        >
-          Back to top ↑
-        </button>
+
+      <footer className="site-footer">
+        <div className="footer-content">
+          <div className="footer-brand-pane">
+            <span className="footer-brand-title">Neel Shingavi</span>
+            <p className="footer-brand-desc">
+              Product Engineer building resilient backend architectures, offline-first systems, and natural-language data pipelines.
+            </p>
+            <div className="footer-status-pill">
+              <span className="footer-status-dot" aria-hidden="true" />
+              <span>Pune, India · Open for high-impact software roles & builds</span>
+            </div>
+          </div>
+
+          <div className="footer-nav-grid">
+            <div className="footer-nav-col">
+              <span className="footer-nav-heading">EXPLORE</span>
+              <ul>
+                <li><a href="#systems">Systems Architecture</a></li>
+                <li><a href="#experience">Experience & Foundation</a></li>
+                <li><a href="#work">Selected Work</a></li>
+                <li><a href="#skills">Stack Architecture</a></li>
+                <li><a href="#wins">Competitive Proof</a></li>
+                <li><a href="#contact">Initiate Contact</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-nav-col">
+              <span className="footer-nav-heading">NETWORK</span>
+              <ul>
+                <li>
+                  <a href={profile.links.github} target="_blank" rel="noopener noreferrer">
+                    <span>GitHub (21 Repos)</span>
+                    <ExternalLink size={13} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={profile.links.leetcode} target="_blank" rel="noopener noreferrer">
+                    <span>LeetCode (169 Solved)</span>
+                    <ExternalLink size={13} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={profile.links.codeforces} target="_blank" rel="noopener noreferrer">
+                    <span>Codeforces (1279 Pupil)</span>
+                    <ExternalLink size={13} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">
+                    <span>LinkedIn Profile</span>
+                    <ExternalLink size={13} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={`mailto:${profile.email}`}>
+                    <span>Direct Email</span>
+                    <Mail size={13} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={profile.resume} target="_blank" rel="noopener noreferrer">
+                    <span>Resume (PDF)</span>
+                    <Download size={13} aria-hidden="true" />
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-bottom-bar">
+          <span className="footer-copyright">
+            © {new Date().getFullYear()} Neel Shingavi. Engineered for production performance, accessibility, and architectural clarity.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              if (lenis) {
+                lenis.scrollTo(0, { duration: 1.2 });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="footer-back-to-top"
+            aria-label="Scroll back to top"
+          >
+            Back to top ↑
+          </button>
+        </div>
       </footer>
     </>
   );

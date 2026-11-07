@@ -11,6 +11,8 @@ export const profile = {
   links: {
     linkedin: 'https://www.linkedin.com/in/neel-shingavi/',
     github: 'https://github.com/neelshingavi',
+    leetcode: 'https://leetcode.com/u/neelshingavi/',
+    codeforces: 'https://codeforces.com/profile/shingavineel',
   },
   summary:
     'Full-Stack Software Engineer with expertise in building scalable web applications, distributed architectures, and AI-integrated data pipelines. Proficient across the stack using Java, Node.js, Next.js, and PostgreSQL, alongside cloud deployment on AWS. Proven track record of accelerating product delivery from responsive client interfaces to secure backend systems.',
@@ -27,7 +29,7 @@ export const capabilityCategories = [
   {
     id: 'ai-analytics',
     label: 'AI & LLM Analytics',
-    tagline: 'RAG Pipelines • Conversational Query Engines • UPI Data Analytics',
+    tagline: 'NL-to-SQL Pipelines • Conversational Query Engines • UPI Data Analytics',
     accent: '#00e5ff',
   },
   {
@@ -61,7 +63,7 @@ export const heroRoles = [
 export const stats = [
   { value: 4, suffix: '', label: 'Client Projects Delivered', accent: 'teal' },
   { value: 9.50, suffix: '', label: 'Current CGPA', accent: 'gold', decimals: 2 },
-  { value: 250, suffix: 'K+', label: 'Transactions Processed', accent: 'signal' },
+  { value: 250, suffix: 'K+', label: 'UPI Records Analyzed', accent: 'signal' },
   { value: 6, suffix: '', label: 'Major Recognitions', accent: 'coral' },
   { value: 5, suffix: 'K+', label: 'Monthly Trades Managed', accent: 'lime' },
 ];
@@ -140,13 +142,13 @@ export const education = [
 export const projects = [
   {
     name: 'QueryPilot',
-    type: 'AI analytics platform',
+    type: 'Natural Language to SQL Analytics Pipeline',
     categories: ['AI & LLM'],
     period: 'Feb 2026 - Apr 2026',
     description:
-      'Engineered an analytical RAG engine using conversational LLM pipelines for natural-language querying across relational databases. Ingested and processed 250,000+ UPI financial transactions to generate contextual business insights and revenue velocity metrics.',
-    impact: ['250,000+ transactions processed', '2nd place at InsightX IIT Bombay', 'Pipeline optimization'],
-    stack: ['Python', 'LangChain', 'DuckDB', 'LLM APIs', 'SQL', 'Data Analytics', 'PostgreSQL'],
+      'Engineered a natural language to SQL analytics pipeline using conversational LLM reasoning and schema-grounded prompt orchestration. Ingested and analyzed 250,000+ UPI financial transactions to extract contextual business insights, spending patterns, and revenue velocity metrics with strict read-only SQL safety guardrails.',
+    impact: ['250,000+ UPI records analyzed', '2nd place at InsightX IIT Bombay', 'Read-only SQL safety guardrails'],
+    stack: ['Python', 'LangChain', 'PostgreSQL', 'LLM APIs', 'SQL', 'Data Analytics'],
     color: 'lime',
   },
   {
@@ -155,8 +157,8 @@ export const projects = [
     categories: ['Financial & Trading'],
     period: 'Mar 2026 - Present',
     description:
-      'Developed a local-first financial ledger and trade management application with a native desktop interface for managing bills, payments, return goods, and commission settlements. Implemented offline-first persistence using SQLite and Hibernate ORM, with PostgreSQL (Supabase) as the cloud backend and incremental push/pull HTTP synchronization for multi-device data consistency.',
-    impact: ['5,000+ monthly transactions', 'Offline-first persistence', 'Multi-device cloud sync'],
+      'Developed a local-first financial ledger and trade management application with a native desktop interface for managing billing, returns, and commission settlements. Handles 5,000+ monthly trade-related records (trade lines, invoices, and bill orders) and 2,000+ client settlement transactions across 3 active clients. Implemented offline-first persistence using SQLite and Hibernate ORM, synchronized with Supabase PostgreSQL via incremental push/pull HTTP replication.',
+    impact: ['5,000+ monthly trade records', '2,000+ client transactions', 'Offline-first SQLite persistence'],
     stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
     color: 'coral',
     photosLink: 'https://drive.google.com/drive/folders/1tmuq4egWo1IHDVIaBjV3EH-x7ZLuNRKr?usp=drive_link',
@@ -164,7 +166,7 @@ export const projects = [
   {
     name: 'PayPerUseAI',
     type: 'Usage-based AI payment gateway',
-    categories: ['AI & LLM', 'Financial & Trading'],
+    categories: ['AI & LLM', 'Financial & Trading', 'Payments & Web3'],
     period: 'Apr 2026 - Jun 2026',
     description:
       'Usage-based payment gateway that dynamically meters and processes multi-model AI inference queries utilizing Algorand smart contracts for secure billing.',

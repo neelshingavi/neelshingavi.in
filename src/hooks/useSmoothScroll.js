@@ -21,6 +21,9 @@ export function useSmoothScroll() {
       anchors: true,
     });
     lenis = instance;
+    if (typeof window !== 'undefined') {
+      window.__lenis = instance;
+    }
 
     // Sync Lenis <-> ScrollTrigger so pinned/scrubbed animations track the smoothed position
     instance.on('scroll', ScrollTrigger.update);
