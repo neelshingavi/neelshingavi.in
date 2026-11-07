@@ -41,7 +41,7 @@ import { CommandPalette } from './components/CommandPalette.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, clubs, education, experience, profile, projects, skills } from './data/portfolio.js';
 
-const navItems = ['systems', 'experience', 'work', 'cadence', 'skills', 'wins', 'architecture', 'contact'];
+const navItems = ['systems', 'experience', 'work', 'cadence', 'skills', 'wins', 'contact'];
 const iconMap = [Database, ServerCog, Braces, Rocket];
 
 gsap.registerPlugin(SplitText);
@@ -336,7 +336,9 @@ function App() {
       const indicator = document.querySelector('.nav-indicator');
       if (active && indicator) {
         const { offsetLeft, offsetWidth } = active;
-        gsap.to(indicator, { x: offsetLeft, width: offsetWidth, duration: 0.45, ease: 'power3.out' });
+        gsap.to(indicator, { x: offsetLeft, width: offsetWidth, opacity: 1, duration: 0.4, ease: 'power3.out' });
+      } else if (indicator) {
+        gsap.to(indicator, { opacity: 0, duration: 0.2 });
       }
     });
     return () => ctx.revert();
@@ -393,12 +395,12 @@ function App() {
           <small>Product Engineer</small>
         </a>
         <nav className="nav-links" aria-label="Primary navigation" style={{ position: 'relative' }}>
-          <div className="nav-indicator" style={{ position: 'absolute', bottom: -6, left: 0, height: 2, background: 'var(--lime)', borderRadius: 2 }} />
+          <div className="nav-indicator" style={{ position: 'absolute', bottom: -2, left: 0, height: 2, background: 'var(--lime)', borderRadius: 2, opacity: 0 }} />
           {navItems.map((item) => (
             <MagneticNavItem key={item} item={item} activeSection={activeSection} />
           ))}
         </nav>
-        <div className="header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="header-actions-group">
           <button
             type="button"
             className="cmd-trigger-btn"

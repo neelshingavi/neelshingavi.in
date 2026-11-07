@@ -10,7 +10,6 @@ const navItems = [
   { label: 'Cadence', href: '#cadence' },
   { label: 'Skills', href: '#skills' },
   { label: 'Wins', href: '#wins' },
-  { label: 'Architecture', href: '#architecture' },
   { label: 'Contact', href: '#contact' },
 ];
 
