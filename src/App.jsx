@@ -677,62 +677,60 @@ function App() {
             </div>
           </div>
 
-          <div className="footer-nav-grid">
-            <div className="footer-nav-col">
-              <span className="footer-nav-heading">EXPLORE</span>
-              <ul>
-                <li><a href="#systems">01 Core Systems & Capabilities</a></li>
-                <li><a href="#experience">02 Experience & Foundation</a></li>
-                <li><a href="#work">03 Selected Work</a></li>
-                <li><a href="#cadence">04 Engineering Cadence</a></li>
-                <li><a href="#skills">05 Stack Architecture</a></li>
-                <li><a href="#wins">06 Competitive Proof</a></li>
-                <li><a href="#architecture">07 Production Architecture</a></li>
-                <li><a href="#contact">08 Initiate Contact</a></li>
-              </ul>
-            </div>
+          <div className="footer-nav-col">
+            <span className="footer-nav-heading">EXPLORE</span>
+            <ul>
+              <li><a href="#systems"><span className="footer-nav-num">01 ·</span> Core Systems & Capabilities</a></li>
+              <li><a href="#experience"><span className="footer-nav-num">02 ·</span> Experience & Foundation</a></li>
+              <li><a href="#work"><span className="footer-nav-num">03 ·</span> Selected Work</a></li>
+              <li><a href="#cadence"><span className="footer-nav-num">04 ·</span> Engineering Cadence</a></li>
+              <li><a href="#skills"><span className="footer-nav-num">05 ·</span> Stack Architecture</a></li>
+              <li><a href="#wins"><span className="footer-nav-num">06 ·</span> Competitive Proof</a></li>
+              <li><a href="#architecture"><span className="footer-nav-num">07 ·</span> Production Architecture</a></li>
+              <li><a href="#contact"><span className="footer-nav-num">08 ·</span> Initiate Contact</a></li>
+            </ul>
+          </div>
 
-            <div className="footer-nav-col">
-              <span className="footer-nav-heading">NETWORK</span>
-              <ul>
-                <li>
-                  <a href={profile.links.github} target="_blank" rel="noopener noreferrer">
-                    <span>GitHub (21 Repos)</span>
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                </li>
-                <li>
-                  <a href={profile.links.leetcode} target="_blank" rel="noopener noreferrer">
-                    <span>LeetCode (169 Solved)</span>
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                </li>
-                <li>
-                  <a href={profile.links.codeforces} target="_blank" rel="noopener noreferrer">
-                    <span>Codeforces (1279 Pupil)</span>
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                </li>
-                <li>
-                  <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">
-                    <span>LinkedIn Profile</span>
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                </li>
-                <li>
-                  <a href={`mailto:${profile.email}`}>
-                    <span>Direct Email</span>
-                    <Mail size={13} aria-hidden="true" />
-                  </a>
-                </li>
-                <li>
-                  <a href={profile.resume} target="_blank" rel="noopener noreferrer">
-                    <span>Resume (PDF)</span>
-                    <Download size={13} aria-hidden="true" />
-                  </a>
-                </li>
-              </ul>
-            </div>
+          <div className="footer-nav-col">
+            <span className="footer-nav-heading">NETWORK</span>
+            <ul>
+              <li>
+                <a href={profile.links.github} target="_blank" rel="noopener noreferrer">
+                  <span>GitHub (21 Repos)</span>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </a>
+              </li>
+              <li>
+                <a href={profile.links.leetcode} target="_blank" rel="noopener noreferrer">
+                  <span>LeetCode (169 Solved)</span>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </a>
+              </li>
+              <li>
+                <a href={profile.links.codeforces} target="_blank" rel="noopener noreferrer">
+                  <span>Codeforces (1279 Pupil)</span>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </a>
+              </li>
+              <li>
+                <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">
+                  <span>LinkedIn Profile</span>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${profile.email}`}>
+                  <span>Direct Email</span>
+                  <Mail size={13} aria-hidden="true" />
+                </a>
+              </li>
+              <li>
+                <a href={profile.resume} target="_blank" rel="noopener noreferrer">
+                  <span>Resume (PDF)</span>
+                  <Download size={13} aria-hidden="true" />
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -752,7 +750,8 @@ function App() {
             className="footer-back-to-top"
             aria-label="Scroll back to top"
           >
-            Back to top ↑
+            <span>Back to top</span>
+            <span className="footer-back-arrow" aria-hidden="true">↑</span>
           </button>
         </div>
       </footer>

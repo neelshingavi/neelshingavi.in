@@ -1179,18 +1179,13 @@ h2 {
   gap: 10px;
 }
 
-footer {
-  display: flex;
-  width: min(1180px, calc(100% - 40px));
-  margin: 0 auto;
-  padding: 36px 0 46px;
-  justify-content: space-between;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-}
-
-footer a {
-  color: var(--paper);
+/* Legacy footer neutralized in favor of .site-footer */
+footer.site-footer {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 @media (max-width: 1040px) {
@@ -1268,8 +1263,7 @@ footer a {
     font-size: 0.86rem;
   }
 
-  .section-shell,
-  footer {
+  .section-shell {
     width: min(100% - 24px, 1180px);
   }
 
@@ -1317,8 +1311,7 @@ footer a {
 
   .hero-actions,
   .contact-actions,
-  .split-heading,
-  footer {
+  .split-heading {
     align-items: stretch;
     flex-direction: column;
   }
