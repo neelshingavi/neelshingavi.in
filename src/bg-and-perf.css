@@ -3487,12 +3487,13 @@ div[id] {
 }
 
 /* Enhanced Editorial Footer */
+footer.site-footer,
 .site-footer {
   display: block !important;
   width: 100%;
   background: #060705;
   border-top: 1px solid rgba(244, 240, 223, 0.08);
-  padding: 68px var(--site-pad, 32px) 36px;
+  padding: clamp(68px, 8vw, 96px) var(--site-pad, 32px) 44px !important;
   color: var(--paper-2);
   position: relative;
   z-index: 2;
@@ -3740,8 +3741,9 @@ div[id] {
   .form-row-grid {
     grid-template-columns: 1fr;
   }
+  footer.site-footer,
   .site-footer {
-    padding: 52px 20px 32px;
+    padding: 56px 20px 36px !important;
   }
   .footer-content {
     grid-template-columns: 1fr 1fr;
