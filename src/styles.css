@@ -1928,6 +1928,7 @@ body[data-section='contact'] {
   font-weight: 700;
   opacity: 0.06;
   pointer-events: none;
+  margin-bottom: 24px;
 }
 
 .footer-marquee span {

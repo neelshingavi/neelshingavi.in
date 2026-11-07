@@ -673,21 +673,30 @@ function App() {
             </p>
             <div className="footer-status-pill">
               <span className="footer-status-dot" aria-hidden="true" />
-              <span>Pune, India · Open for high-impact software roles & builds</span>
+              <span>Pune, India · Available for high-impact roles</span>
             </div>
+            <a href={`mailto:${profile.email}`} className="footer-brand-email">
+              {profile.email}
+            </a>
           </div>
 
           <div className="footer-nav-col">
             <span className="footer-nav-heading">EXPLORE</span>
             <ul>
-              <li><a href="#systems"><span className="footer-nav-num">01 ·</span> Core Systems & Capabilities</a></li>
-              <li><a href="#experience"><span className="footer-nav-num">02 ·</span> Experience & Foundation</a></li>
+              <li><a href="#systems"><span className="footer-nav-num">01 ·</span> Systems & Architecture</a></li>
+              <li><a href="#experience"><span className="footer-nav-num">02 ·</span> Experience & Background</a></li>
               <li><a href="#work"><span className="footer-nav-num">03 ·</span> Selected Work</a></li>
               <li><a href="#cadence"><span className="footer-nav-num">04 ·</span> Engineering Cadence</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-nav-col">
+            <span className="footer-nav-heading">ARCHITECTURE</span>
+            <ul>
               <li><a href="#skills"><span className="footer-nav-num">05 ·</span> Stack Architecture</a></li>
               <li><a href="#wins"><span className="footer-nav-num">06 ·</span> Competitive Proof</a></li>
-              <li><a href="#architecture"><span className="footer-nav-num">07 ·</span> Production Architecture</a></li>
-              <li><a href="#contact"><span className="footer-nav-num">08 ·</span> Initiate Contact</a></li>
+              <li><a href="#architecture"><span className="footer-nav-num">07 ·</span> Production Deep Dives</a></li>
+              <li><a href="#contact"><span className="footer-nav-num">08 ·</span> Contact & Collaboration</a></li>
             </ul>
           </div>
 
