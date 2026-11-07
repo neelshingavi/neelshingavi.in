@@ -17,6 +17,39 @@ export const profile = {
   availability: 'Open for internships, full-time roles, freelance builds, and serious product collaborations.',
 };
 
+export const capabilityCategories = [
+  {
+    id: 'backend',
+    label: 'Backend Systems',
+    tagline: 'Distributed Architecture • Java & Node.js • High-Throughput REST APIs',
+    accent: '#bff205',
+  },
+  {
+    id: 'ai-analytics',
+    label: 'AI & LLM Analytics',
+    tagline: 'RAG Pipelines • Conversational Query Engines • UPI Data Analytics',
+    accent: '#00e5ff',
+  },
+  {
+    id: 'product-eng',
+    label: 'Product Engineering',
+    tagline: 'Full-Stack Execution • Client-Ready Systems • Rapid MVP Delivery',
+    accent: '#a872ff',
+  },
+  {
+    id: 'automation',
+    label: 'Workflow Automation',
+    tagline: 'Document Ingestion Pipelines • Event Automation • Batch QR Systems',
+    accent: '#ff6b6b',
+  },
+  {
+    id: 'database',
+    label: 'Database Engineering',
+    tagline: 'PostgreSQL & Supabase • Local-First SQLite • Offline Sync Ledgers',
+    accent: '#fbc02d',
+  },
+];
+
 export const heroRoles = [
   'Production backend systems',
   'AI analytics products',
@@ -108,6 +141,7 @@ export const projects = [
   {
     name: 'QueryPilot',
     type: 'AI analytics platform',
+    categories: ['AI & LLM'],
     period: 'Feb 2026 - Apr 2026',
     description:
       'Engineered an analytical RAG engine using conversational LLM pipelines for natural-language querying across relational databases. Ingested and processed 250,000+ UPI financial transactions to generate contextual business insights and revenue velocity metrics.',
@@ -118,6 +152,7 @@ export const projects = [
   {
     name: 'TradersDesk',
     type: 'Production trading workflow app',
+    categories: ['Financial & Trading'],
     period: 'Mar 2026 - Present',
     description:
       'Developed a local-first financial ledger and trade management application with a native desktop interface for managing bills, payments, return goods, and commission settlements. Implemented offline-first persistence using SQLite and Hibernate ORM, with PostgreSQL (Supabase) as the cloud backend and incremental push/pull HTTP synchronization for multi-device data consistency.',
@@ -129,6 +164,7 @@ export const projects = [
   {
     name: 'PayPerUseAI',
     type: 'Usage-based AI payment gateway',
+    categories: ['AI & LLM', 'Financial & Trading'],
     period: 'Apr 2026 - Jun 2026',
     description:
       'Usage-based payment gateway that dynamically meters and processes multi-model AI inference queries utilizing Algorand smart contracts for secure billing.',
@@ -139,6 +175,7 @@ export const projects = [
   {
     name: 'CertiCraft',
     type: 'Certificate automation system',
+    categories: ['Automation'],
     period: 'Jan 2026',
     description:
       'Event management platform for certificate generation, participant management, QR validation, and bulk email communication.',
@@ -149,6 +186,7 @@ export const projects = [
   {
     name: 'FounderFlow',
     type: 'Startup operating system',
+    categories: ['Automation'],
     period: 'Dec 2025 - Jan 2026',
     description:
       'Startup workflow platform combining idea validation, roadmap planning, task tracking, dashboards, and team communication into one execution system.',

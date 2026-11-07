@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { m, useScroll, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
@@ -30,6 +30,8 @@ import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Preloader } from './components/Preloader.jsx';
 import { ProjectCard } from './components/ProjectCard.jsx';
+import { HeroCapabilities } from './components/HeroCapabilities.jsx';
+import { ProjectFilters } from './components/ProjectFilters.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, clubs, education, experience, profile, projects, skills, stats } from './data/portfolio.js';
 
@@ -123,38 +125,34 @@ function App() {
   const dotRef = useRef(null);
   const [activeSection, setActiveSection] = useState('');
   const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
   const canRunBackground = useCanRunBackgroundAnimation();
 
+  const filteredProjects = useMemo(() => {
+    if (selectedCategory === 'All') return projects;
+    return projects.filter(
+      (p) => Array.isArray(p.categories) && p.categories.includes(selectedCategory)
+    );
+  }, [selectedCategory]);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.to('.hero-portrait', {
-        yPercent: 14,
-        ease: 'none',
-        scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 0.6 },
-      });
-
-      gsap.from('.project-slot', {
-        y: 60, opacity: 0, rotateX: 8,
-        stagger: 0.09, ease: 'power3.out',
-        scrollTrigger: { trigger: '.project-grid', start: 'top 80%', end: 'top 30%', scrub: 0.5 },
-      });
-
       gsap.fromTo('.timeline-progress-line',
         { scaleY: 0 },
         { scaleY: 1, ease: 'none', transformOrigin: 'top',
-          scrollTrigger: { trigger: '.timeline-layout', start: 'top center', end: 'bottom center', scrub: true } }
+          scrollTrigger: { trigger: '.timeline-layout', start: 'top 80%', end: 'bottom 40%', scrub: true } }
       );
 
       gsap.utils.toArray('.timeline-block').forEach((block) => {
         gsap.fromTo(block, 
-          { opacity: 0.2 }, 
+          { opacity: 0.25 }, 
           { opacity: 1, 
             scrollTrigger: { 
               trigger: block, 
-              start: 'top center', 
-              end: 'center center', 
+              start: 'top 85%', 
+              end: 'center 55%', 
               scrub: true 
             } 
           });
@@ -174,6 +172,44 @@ function App() {
       });
     });
     return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!isFinePointer || prefersReducedMotion) return;
+
+    const heroSection = document.querySelector('.hero-section');
+    if (!heroSection) return;
+
+    let rafId = null;
+    let clientX = 0;
+    let clientY = 0;
+
+    const updateSpotlight = () => {
+      const rect = heroSection.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      heroSection.style.setProperty('--hero-mx', `${x}px`);
+      heroSection.style.setProperty('--hero-my', `${y}px`);
+      rafId = null;
+    };
+
+    const handlePointerMove = (e) => {
+      clientX = e.clientX;
+      clientY = e.clientY;
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateSpotlight);
+      }
+    };
+
+    heroSection.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      heroSection.removeEventListener('pointermove', handlePointerMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -379,6 +415,9 @@ function App() {
         {/* We use #top for 'back to top' targeting */}
         <div id="top"></div>
         <section className="hero-section section-shell" aria-labelledby="hero-title">
+          {/* Reactive pointer spotlight layer for hero */}
+          <div className="hero-spotlight-layer" aria-hidden="true" />
+
           <div className="hero-copy">
             <m.p
               className="eyebrow"
@@ -397,6 +436,9 @@ function App() {
             >
               {profile.summary}
             </m.p>
+
+            <HeroCapabilities />
+
             <m.div
               className="hero-actions"
               initial={{ opacity: 0, y: 22 }}
@@ -438,9 +480,29 @@ function App() {
             </m.div>
           </div>
 
-
-
-
+          <m.aside
+            className="hero-terminal"
+            initial={{ opacity: 0, y: 24 }}
+            animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ delay: 0.7, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+            aria-label="Current operational focus"
+          >
+            <div className="terminal-header">
+              <span className="terminal-dot" aria-hidden="true" />
+              <span className="terminal-title">CURRENT_SIGNAL.LOG</span>
+              <span className="terminal-badge">ACTIVE</span>
+            </div>
+            <p className="terminal-desc">
+              Building reliable software where backend architecture, distributed systems, and practical AI meet.
+            </p>
+            <div className="terminal-footer">
+              <div className="terminal-location">
+                <MapPin size={13} aria-hidden="true" />
+                <span>{profile.location}</span>
+              </div>
+              <span className="terminal-avail">Open for roles & builds</span>
+            </div>
+          </m.aside>
         </section>
 
         <section className="metric-strip" aria-label="Portfolio metrics">
@@ -517,21 +579,21 @@ function App() {
                 </div>
               ))}
             </div>
-            <div className="education-column">
+            <div className="timeline-column education-column">
               <h3 className="timeline-title">Education</h3>
-              {education.map((item, index) => (
-                <Reveal className="education-item" delay={index * 0.08} key={item.school}>
+              {education.map((item) => (
+                <div className="timeline-block education-item" key={item.school}>
                   <span>{item.period}</span>
                   <h3>{item.school}</h3>
                   <p>{item.course}</p>
                   <strong>{item.result}</strong>
-                </Reveal>
+                </div>
               ))}
             </div>
             <div className="timeline-column">
               <h3 className="timeline-title">Clubs & Leadership</h3>
               {clubs.map((item) => (
-                <Reveal className="timeline-block" key={item.company}>
+                <div className="timeline-block" key={item.company}>
                   <span>{item.period}</span>
                   <h3>{item.company}</h3>
                   <p>{item.role}</p>
@@ -540,7 +602,7 @@ function App() {
                       <li key={point}>{point}</li>
                     ))}
                   </ul>
-                </Reveal>
+                </div>
               ))}
             </div>
           </div>
@@ -552,9 +614,15 @@ function App() {
             <h2 id="work-heading">Projects built around measurable outcomes.</h2>
           </Reveal>
 
-          {projects.length > 0 ? (
+          <ProjectFilters
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            projects={projects}
+          />
+
+          {filteredProjects.length > 0 ? (
             <div className="project-grid">
-              {projects.map((project, index) => (
+              {filteredProjects.map((project, index) => (
                 <ProjectCard key={project.name} project={project} index={index} />
               ))}
             </div>
