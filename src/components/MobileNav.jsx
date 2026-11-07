@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Menu, Search, Download } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
+import { lenis } from '../hooks/useSmoothScroll.js';
 
 const navItems = [
   { label: 'Systems', href: '#systems' },
@@ -21,14 +22,35 @@ export function MobileNav({ activeSection, onOpenCommandPalette }) {
     setMounted(true);
   }, []);
 
-  // Close on route change / section click
-  const handleNavClick = () => setOpen(false);
+  // Close on route change / section click with smooth scroll
+  const handleNavClick = (href) => {
+    setOpen(false);
+    if (href && href.startsWith('#')) {
+      setTimeout(() => {
+        const el = document.querySelector(href);
+        if (el) {
+          if (lenis) {
+            lenis.scrollTo(el, { offset: -70, duration: 1.1, force: true });
+          } else {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }, 80);
+    }
+  };
 
-  // Prevent body scroll when open
+  // Prevent body scroll and pause Lenis when open
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      lenis?.stop();
+    } else {
+      document.body.style.overflow = '';
+      lenis?.start();
+    }
     return () => {
       document.body.style.overflow = '';
+      lenis?.start();
     };
   }, [open]);
 
@@ -77,6 +99,7 @@ export function MobileNav({ activeSection, onOpenCommandPalette }) {
                   key="drawer"
                   id="mobile-nav-drawer"
                   className="mobile-nav-drawer"
+                  data-lenis-prevent="true"
                   initial={{ x: '100%' }}
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
@@ -125,7 +148,10 @@ export function MobileNav({ activeSection, onOpenCommandPalette }) {
                         <a
                           href={item.href}
                           className={activeSection === item.href.replace('#', '') ? 'active' : ''}
-                          onClick={handleNavClick}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavClick(item.href);
+                          }}
                         >
                           <span className="mobile-nav-index">0{i + 1}</span>
                           {item.label}

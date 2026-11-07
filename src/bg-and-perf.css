@@ -2885,6 +2885,7 @@ div[id] {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: contain;
   animation: cmdSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2955,8 +2956,10 @@ div[id] {
 }
 
 .cmd-list-container {
-  max-height: 380px;
+  max-height: min(480px, 58vh);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -2964,12 +2967,21 @@ div[id] {
 }
 
 .cmd-list-container::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+}
+
+.cmd-list-container::-webkit-scrollbar-track {
+  background: rgba(244, 240, 223, 0.03);
+  border-radius: 4px;
 }
 
 .cmd-list-container::-webkit-scrollbar-thumb {
-  background: rgba(244, 240, 223, 0.15);
-  border-radius: 3px;
+  background: rgba(244, 240, 223, 0.22);
+  border-radius: 4px;
+}
+
+.cmd-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(191, 242, 5, 0.45);
 }
 
 .cmd-empty-state {

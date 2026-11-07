@@ -2,21 +2,19 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Search,
-  ArrowRight,
+  Home,
+  Layers,
+  Cpu,
+  Trophy,
+  Briefcase,
   ExternalLink,
   Copy,
   Check,
-  FileText,
-  Home,
-  Layers,
-  Briefcase,
-  Trophy,
-  Cpu,
   Mail,
   Code2,
   X,
   CornerDownLeft,
-  Command,
+  Download,
 } from 'lucide-react';
 import { profile } from '../data/portfolio.js';
 import { lenis } from '../hooks/useSmoothScroll.js';
@@ -28,19 +26,21 @@ export function CommandPalette({ isOpen, onClose }) {
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const isKeyboardNavRef = useRef(false);
 
   const navigateTo = (selector) => {
     onClose();
     setTimeout(() => {
-      const el = document.querySelector(selector);
-      if (el) {
-        if (lenis) {
-          lenis.scrollTo(el, { offset: -60, duration: 1.2 });
-        } else {
+      const activeLenis = lenis || (typeof window !== 'undefined' ? window.__lenis : null);
+      if (activeLenis) {
+        activeLenis.scrollTo(selector, { offset: -80, duration: 1.1, force: true });
+      } else {
+        const el = document.querySelector(selector);
+        if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
-    }, 100);
+    }, 120);
   };
 
   const handleCopyEmail = async () => {
@@ -63,82 +63,81 @@ export function CommandPalette({ isOpen, onClose }) {
         onClose();
       }, 1400);
     } catch {
-      // Fallback: window prompt
       window.prompt('Copy email:', profile.email);
     }
   };
 
   const commands = useMemo(() => [
-    // NAVIGATION
+    // NAVIGATION (Aligned exactly with numbered section flow)
     {
       id: 'nav-home',
       category: 'Navigation',
-      label: 'Home / Hero',
-      keywords: 'top start hero intro neel',
+      label: 'Home / Hero Overview',
+      keywords: 'top start hero intro neel overview title',
       icon: Home,
       action: () => navigateTo('#top'),
     },
     {
       id: 'nav-systems',
       category: 'Navigation',
-      label: 'Systems & Architecture',
-      keywords: 'systems backend architecture distributed pipeline tradersdesk querypilot',
+      label: '01 · Core Systems & Capabilities',
+      keywords: 'systems backend architecture capabilities distributed pipelines 01',
       icon: Layers,
       action: () => navigateTo('#systems'),
     },
     {
+      id: 'nav-experience',
+      category: 'Navigation',
+      label: '02 · Experience & Background',
+      keywords: 'experience background timeline education pict roles 02',
+      icon: Briefcase,
+      action: () => navigateTo('#experience'),
+    },
+    {
       id: 'nav-work',
       category: 'Navigation',
-      label: 'Selected Work & Projects',
-      keywords: 'work projects querypilot tradersdesk certicraft payperuseai founderflow',
+      label: '03 · Selected Work & Projects',
+      keywords: 'work projects showcase certicraft payperuseai founderflow 03',
       icon: Briefcase,
       action: () => navigateTo('#work'),
     },
     {
       id: 'nav-cadence',
       category: 'Navigation',
-      label: 'Verified Engineering Cadence & Coding Heatmaps',
-      keywords: 'cadence coding activity heatmaps github leetcode codeforces 04',
+      label: '04 · Verified Engineering Cadence',
+      keywords: 'cadence coding activity heatmaps github leetcode codeforces 04 velocity pulse',
       icon: Code2,
       action: () => navigateTo('#cadence'),
     },
     {
-      id: 'nav-experience',
-      category: 'Navigation',
-      label: 'Professional Experience & Background',
-      keywords: 'experience background script lanes word lane pict education timeline',
-      icon: Briefcase,
-      action: () => navigateTo('#experience'),
-    },
-    {
       id: 'nav-skills',
       category: 'Navigation',
-      label: 'Stack Architecture & Skills',
-      keywords: 'skills stack technologies java python react node postgresql docker',
+      label: '05 · Stack Architecture & Skills',
+      keywords: 'skills stack technologies java python react node postgresql docker aws 05',
       icon: Cpu,
       action: () => navigateTo('#skills'),
     },
     {
       id: 'nav-wins',
       category: 'Navigation',
-      label: 'Competitive Proof & Recognitions',
-      keywords: 'wins awards hackathons iit bombay techsprint meta algorand achievements',
+      label: '06 · Competitive Proof & Wins',
+      keywords: 'wins awards hackathons recognitions iit bombay techsprint meta algorand 06',
       icon: Trophy,
       action: () => navigateTo('#wins'),
     },
     {
       id: 'nav-architecture',
       category: 'Navigation',
-      label: 'Production Architecture & Explorers',
-      keywords: 'architecture system topology tradersdesk querypilot pipeline sync offline local first',
+      label: '07 · Production Architecture Deep Dives',
+      keywords: 'architecture system topology tradersdesk querypilot pipeline sync offline local first 07',
       icon: Layers,
       action: () => navigateTo('#architecture'),
     },
     {
       id: 'nav-contact',
       category: 'Navigation',
-      label: 'Contact & Collaboration',
-      keywords: 'contact email connect hire collaborate message',
+      label: '08 · Contact & Collaboration',
+      keywords: 'contact email connect hire collaborate message pune 08',
       icon: Mail,
       action: () => navigateTo('#contact'),
     },
@@ -147,18 +146,20 @@ export function CommandPalette({ isOpen, onClose }) {
     {
       id: 'proj-td',
       category: 'Projects',
-      label: 'TradersDesk — Production Trading Workflow',
-      keywords: 'tradersdesk java swing android sqlite supabase offline sync saree broker',
+      label: 'TradersDesk — Offline-First Trading Architecture',
+      keywords: 'tradersdesk java swing android sqlite supabase offline sync saree broker architecture',
       icon: Layers,
-      action: () => navigateTo('#systems'),
+      badge: 'Architecture',
+      action: () => navigateTo('#architecture'),
     },
     {
       id: 'proj-qp',
       category: 'Projects',
       label: 'QueryPilot — NL-to-SQL Analytics Pipeline',
-      keywords: 'querypilot natural language sql llm upi analytics langchain postgresql',
+      keywords: 'querypilot natural language sql llm upi analytics langchain postgresql architecture',
       icon: Layers,
-      action: () => navigateTo('#systems'),
+      badge: 'Architecture',
+      action: () => navigateTo('#architecture'),
     },
     {
       id: 'proj-ppu',
@@ -166,6 +167,7 @@ export function CommandPalette({ isOpen, onClose }) {
       label: 'PayPerUseAI — Usage-Based AI Payment Gateway',
       keywords: 'payperuseai algorand web3 blockchain sse pyteal fast api billing',
       icon: Layers,
+      badge: 'Web3 / AI',
       action: () => navigateTo('#work'),
     },
     {
@@ -174,6 +176,7 @@ export function CommandPalette({ isOpen, onClose }) {
       label: 'CertiCraft — Certificate Automation System',
       keywords: 'certicraft certificate qr automation verification email batch pict',
       icon: Layers,
+      badge: 'Automation',
       action: () => navigateTo('#work'),
     },
     {
@@ -182,6 +185,7 @@ export function CommandPalette({ isOpen, onClose }) {
       label: 'FounderFlow — Startup Operating System',
       keywords: 'founderflow startup workflow productivity dashboard roadmap tasks',
       icon: Layers,
+      badge: 'Platform',
       action: () => navigateTo('#work'),
     },
 
@@ -191,7 +195,7 @@ export function CommandPalette({ isOpen, onClose }) {
       category: 'Actions',
       label: 'Download Resume (PDF)',
       keywords: 'resume cv pdf download neel shingavi',
-      icon: FileText,
+      icon: Download,
       badge: 'PDF',
       action: () => {
         onClose();
@@ -211,7 +215,7 @@ export function CommandPalette({ isOpen, onClose }) {
       id: 'act-github',
       category: 'Actions',
       label: 'Open GitHub Profile',
-      keywords: 'github code open source repositories git',
+      keywords: 'github code open source repositories git velocity contributions',
       icon: ExternalLink,
       badge: '21 Repos',
       action: () => {
@@ -223,7 +227,7 @@ export function CommandPalette({ isOpen, onClose }) {
       id: 'act-leetcode',
       category: 'Actions',
       label: 'Open LeetCode Profile',
-      keywords: 'leetcode dsa algorithms problems coding 169',
+      keywords: 'leetcode dsa algorithms problems coding 169 solved rank',
       icon: ExternalLink,
       badge: '169 Solved',
       action: () => {
@@ -247,9 +251,9 @@ export function CommandPalette({ isOpen, onClose }) {
       id: 'act-linkedin',
       category: 'Actions',
       label: 'Open LinkedIn Profile',
-      keywords: 'linkedin professional network connect social',
+      keywords: 'linkedin professional network connect social profile',
       icon: ExternalLink,
-      badge: 'External',
+      badge: 'Connect',
       action: () => {
         onClose();
         window.open(profile.links.linkedin, '_blank', 'noopener,noreferrer');
@@ -283,23 +287,29 @@ export function CommandPalette({ isOpen, onClose }) {
     setSelectedIndex(0);
   }, [search]);
 
-  // Trap focus and restore focus on open/close
+  // Trap focus and lock background scroll on open/close
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement;
       document.body.style.overflow = 'hidden';
+      lenis?.stop();
       // Auto focus input
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     } else {
       document.body.style.overflow = '';
+      lenis?.start();
       setSearch('');
       setSelectedIndex(0);
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
-        previousFocusRef.current.focus();
+        previousFocusRef.current.focus({ preventScroll: true });
       }
     }
+    return () => {
+      document.body.style.overflow = '';
+      lenis?.start();
+    };
   }, [isOpen]);
 
   // Keyboard navigation inside command palette
@@ -314,9 +324,11 @@ export function CommandPalette({ isOpen, onClose }) {
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      isKeyboardNavRef.current = true;
       setSelectedIndex((prev) => (prev + 1) % filteredCommands.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      isKeyboardNavRef.current = true;
       setSelectedIndex((prev) => (prev - 1 + filteredCommands.length) % filteredCommands.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
@@ -327,13 +339,14 @@ export function CommandPalette({ isOpen, onClose }) {
     }
   };
 
-  // Scroll active item into view
+  // Scroll active item into view ONLY when keyboard navigation is used
   useEffect(() => {
-    if (!listRef.current) return;
+    if (!isKeyboardNavRef.current || !listRef.current) return;
     const activeItem = listRef.current.querySelector('.cmd-item.is-selected');
     if (activeItem) {
       activeItem.scrollIntoView({ block: 'nearest' });
     }
+    isKeyboardNavRef.current = false;
   }, [selectedIndex]);
 
   if (!isOpen) return null;
@@ -343,6 +356,7 @@ export function CommandPalette({ isOpen, onClose }) {
   return createPortal(
     <div
       className="cmd-palette-backdrop"
+      data-lenis-prevent="true"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -350,6 +364,7 @@ export function CommandPalette({ isOpen, onClose }) {
     >
       <div
         className="cmd-palette-modal"
+        data-lenis-prevent="true"
         role="dialog"
         aria-modal="true"
         aria-label="Command Palette"
@@ -386,7 +401,14 @@ export function CommandPalette({ isOpen, onClose }) {
         </div>
 
         {/* Results List */}
-        <div className="cmd-list-container" id="cmd-list" ref={listRef} role="listbox">
+        <div
+          className="cmd-list-container"
+          id="cmd-list"
+          ref={listRef}
+          role="listbox"
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+        >
           {filteredCommands.length === 0 ? (
             <div className="cmd-empty-state">
               <p>No matching commands found for &ldquo;{search}&rdquo;</p>
@@ -410,7 +432,10 @@ export function CommandPalette({ isOpen, onClose }) {
                         aria-selected={isSelected}
                         className={`cmd-item ${isSelected ? 'is-selected' : ''}`}
                         onClick={() => cmd.action()}
-                        onMouseEnter={() => setSelectedIndex(thisIndex)}
+                        onMouseEnter={() => {
+                          isKeyboardNavRef.current = false;
+                          setSelectedIndex(thisIndex);
+                        }}
                       >
                         <div className="cmd-item-left">
                           <span className="cmd-item-icon">
@@ -460,4 +485,3 @@ export function CommandPalette({ isOpen, onClose }) {
     document.body
   );
 }
-
