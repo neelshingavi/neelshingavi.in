@@ -8,6 +8,7 @@ import { initGA } from './utils/analytics.js';
 import { reportWebVitals } from './utils/webVitals.js';
 import './styles.css';
 import './bg-and-perf.css';
+import './editorial-design-system.css';
 
 // Initialize analytics after page loads (non-blocking)
 window.addEventListener('load', () => {

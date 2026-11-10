@@ -3,16 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Menu, Search, Download } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { lenis } from '../hooks/useSmoothScroll.js';
-
-const navItems = [
-  { label: 'Systems', href: '#systems' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Work', href: '#work' },
-  { label: 'Cadence', href: '#cadence' },
-  { label: 'Skills', href: '#skills' },
-  { label: 'Wins', href: '#wins' },
-  { label: 'Contact', href: '#contact' },
-];
+import { DESKTOP_NAV_ITEMS } from '../data/navigation.js';
 
 export function MobileNav({ activeSection, onOpenCommandPalette }) {
   const [open, setOpen] = useState(false);
@@ -138,22 +129,22 @@ export function MobileNav({ activeSection, onOpenCommandPalette }) {
                   )}
 
                   <ul className="mobile-nav-list">
-                    {navItems.map((item, i) => (
+                    {DESKTOP_NAV_ITEMS.map((item, i) => (
                       <m.li
-                        key={item.href}
+                        key={item.target}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
                       >
                         <a
-                          href={item.href}
-                          className={activeSection === item.href.replace('#', '') ? 'active' : ''}
+                          href={item.target}
+                          className={activeSection === item.id ? 'active' : ''}
                           onClick={(e) => {
                             e.preventDefault();
-                            handleNavClick(item.href);
+                            handleNavClick(item.target);
                           }}
                         >
-                          <span className="mobile-nav-index">0{i + 1}</span>
+                          <span className="mobile-nav-index">{item.number}</span>
                           {item.label}
                         </a>
                       </m.li>

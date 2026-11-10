@@ -7,7 +7,6 @@ import {
   Sparkles,
   BarChart3,
   Layers,
-  ArrowRight,
   Terminal,
 } from 'lucide-react';
 import { queryPilotPipeline } from '../data/architecture.js';
@@ -30,7 +29,7 @@ export function QueryPilotPipeline() {
   const activeStage = stages.find((s) => s.id === selectedStageId) || stages[0];
 
   return (
-    <div className="querypilot-pipeline-shell" aria-label="QueryPilot NL-to-SQL Pipeline Explorer">
+    <div id="querypilot" className="querypilot-pipeline-shell" aria-label="QueryPilot NL-to-SQL Pipeline Explorer">
       {/* Header */}
       <div className="pipeline-header">
         <div className="pipeline-badge">
@@ -43,7 +42,12 @@ export function QueryPilotPipeline() {
 
       {/* Interactive Stages Stepper & SVG Backbone */}
       <div className="pipeline-flow-container">
-        <svg className="pipeline-svg-backbone" aria-hidden="true">
+        <svg
+          className="pipeline-svg-backbone"
+          viewBox="0 0 1000 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
           <defs>
             <linearGradient id={`${baseId}-pipe-grad`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="var(--lime)" stopOpacity="0.4" />
@@ -56,15 +60,15 @@ export function QueryPilotPipeline() {
             </filter>
           </defs>
 
-          {/* Continuous connection line */}
-          <line x1="5%" y1="50%" x2="95%" y2="50%" className="pipe-wire" />
+          {/* Continuous connection line with numeric coordinates */}
+          <line x1="50" y1="50" x2="950" y2="50" className="pipe-wire" />
 
           {/* Traveling illuminated data pulse */}
           <circle r="4" fill="var(--teal, #00e5ff)" filter={`url(#${baseId}-pipe-glow)`} className="pipe-pulse">
             <animate
               attributeName="cx"
-              from="5%"
-              to="95%"
+              from="50"
+              to="950"
               dur="5s"
               repeatCount="indefinite"
             />
@@ -84,7 +88,7 @@ export function QueryPilotPipeline() {
                 type="button"
                 aria-selected={isSelected}
                 aria-controls={`qp-stage-panel-${stage.id}`}
-                tabIndex={0}
+                tabIndex={isSelected ? 0 : -1}
                 className={`pipeline-stage-node ${isSelected ? 'is-active-stage' : ''}`}
                 onClick={() => setSelectedStageId(stage.id)}
               >
@@ -106,6 +110,7 @@ export function QueryPilotPipeline() {
         role="tabpanel"
         aria-labelledby={`qp-stage-tab-${activeStage.id}`}
         className="pipeline-inspect-drawer"
+        tabIndex={0}
       >
         <div className="inspect-drawer-left">
           <div className="stage-category-pill">{activeStage.category}</div>
@@ -134,4 +139,3 @@ export function QueryPilotPipeline() {
     </div>
   );
 }
-

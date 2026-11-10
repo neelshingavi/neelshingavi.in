@@ -3,18 +3,11 @@ import { m, useScroll, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 import {
-  ArrowUpRight,
-  Braces,
-  Code2,
+  ArrowDown,
   Command,
-  Database,
   Download,
   ExternalLink,
   Mail,
-  Phone,
-  Rocket,
-  Send,
-  ServerCog,
   Trophy,
 } from 'lucide-react';
 import { Reveal } from './components/Reveal.jsx';
@@ -23,7 +16,6 @@ import { useCanRunBackgroundAnimation } from './hooks/useCanRunBackgroundAnimati
 import { useSmoothScroll, lenis } from './hooks/useSmoothScroll.js';
 import { useSectionMood } from './hooks/useSectionMood.js';
 import { useMagnetic } from './hooks/useMagnetic.js';
-import { useTilt } from './hooks/useTilt.js';
 import { MobileNav } from './components/MobileNav.jsx';
 import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
@@ -32,23 +24,27 @@ import { ProjectCard } from './components/ProjectCard.jsx';
 import { HeroCapabilities } from './components/HeroCapabilities.jsx';
 import { ProjectFilters } from './components/ProjectFilters.jsx';
 import { SystemsNetwork } from './components/SystemsNetwork.jsx';
-import { TradersDeskArchitecture } from './components/TradersDeskArchitecture.jsx';
-import { QueryPilotPipeline } from './components/QueryPilotPipeline.jsx';
 import { CodingActivityShowcase } from './components/CodingActivityShowcase.jsx';
 import { ExperienceTimeline } from './components/ExperienceTimeline.jsx';
 import { AchievementGallery } from './components/AchievementGallery.jsx';
-import { CommandPalette } from './components/CommandPalette.jsx';
 import { analytics } from './utils/analytics.js';
-import { achievements, clubs, education, experience, profile, projects, skills } from './data/portfolio.js';
+import { achievements, profile, projects, skills } from './data/portfolio.js';
+import { projectCaseStudies } from './data/caseStudies.js';
+import { DESKTOP_NAV_ITEMS } from './data/navigation.js';
 
-const navItems = ['systems', 'experience', 'work', 'cadence', 'skills', 'wins', 'contact'];
-const iconMap = [Database, ServerCog, Braces, Rocket];
+// Lazy-loaded dialogs for performance & critical-path bundle reduction (Phase C - Task J)
+const ProjectCaseStudyModal = lazy(() =>
+  import('./components/ProjectCaseStudyModal.jsx').then((m) => ({ default: m.ProjectCaseStudyModal }))
+);
+const CommandPalette = lazy(() =>
+  import('./components/CommandPalette.jsx').then((m) => ({ default: m.CommandPalette }))
+);
 
 gsap.registerPlugin(SplitText);
 
 import { ScrubVideoBackground } from './components/ScrubVideoBackground.jsx';
 
-function MagneticNavItem({ item, activeSection }) {
+function MagneticNavItem({ item, label, activeSection }) {
   const ref = useMagnetic(0.3);
   return (
     <a
@@ -57,7 +53,7 @@ function MagneticNavItem({ item, activeSection }) {
       className={activeSection === item ? 'active' : ''}
       aria-current={activeSection === item ? 'page' : undefined}
     >
-      {item}
+      {label || item}
     </a>
   );
 }
@@ -95,18 +91,6 @@ function HeroName({ play }) {
   );
 }
 
-function SystemTile({ item, Icon }) {
-  const tiltRef = useTilt(8);
-  return (
-    <div className="system-slot">
-      <div ref={tiltRef} className="system-tile">
-        <Icon size={24} />
-        <span>{item}</span>
-      </div>
-    </div>
-  );
-}
-
 function MagneticAction({ href, className, onClick, title, target, rel, children, ariaLabel }) {
   const ref = useMagnetic(0.3);
   return (
@@ -132,10 +116,65 @@ function App() {
   const [activeSection, setActiveSection] = useState('');
   const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState(null);
+  const [highlightedSkill, setHighlightedSkill] = useState(null);
   const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
+  const [scrollPercent, setScrollPercent] = useState(0);
+  const visitedSections = useRef(new Set());
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
   const canRunBackground = useCanRunBackgroundAnimation();
+
+  const handleSkillClick = (skillName) => {
+    setHighlightedSkill((prev) => (prev === skillName ? null : skillName));
+  };
+
+  // URL Hash Deep Linking for Project Case Studies (Task D)
+  useEffect(() => {
+    const handleHashSync = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.startsWith('#casestudy-')) {
+        const slug = hash.replace('#casestudy-', '');
+        const targetId = `project-${slug}`;
+        if (projectCaseStudies[targetId]) {
+          setSelectedCaseStudy(projectCaseStudies[targetId]);
+        }
+      } else if (!hash.startsWith('#casestudy-')) {
+        setSelectedCaseStudy((current) => (current ? null : current));
+      }
+    };
+
+    handleHashSync();
+    window.addEventListener('hashchange', handleHashSync);
+    window.addEventListener('popstate', handleHashSync);
+    return () => {
+      window.removeEventListener('hashchange', handleHashSync);
+      window.removeEventListener('popstate', handleHashSync);
+    };
+  }, []);
+
+  const handleOpenCaseStudy = (caseStudy) => {
+    setSelectedCaseStudy(caseStudy);
+    if (caseStudy) {
+      const slug = caseStudy.id.replace('project-', '');
+      window.history.pushState(null, '', `#casestudy-${slug}`);
+    }
+  };
+
+  const handleCloseCaseStudy = () => {
+    setSelectedCaseStudy(null);
+    if (window.location.hash.startsWith('#casestudy-')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+
+  // Keep progressbar aria-valuenow accurately synchronized
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on('change', (v) => {
+      setScrollPercent(Math.round(v * 100));
+    });
+    return unsubscribe;
+  }, [scrollYProgress]);
 
   // Global Cmd+K / Ctrl+K listener
   useEffect(() => {
@@ -165,7 +204,6 @@ function App() {
       (p) => Array.isArray(p.categories) && p.categories.includes(selectedCategory)
     );
   }, [selectedCategory]);
-
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -208,7 +246,7 @@ function App() {
   useEffect(() => {
     // Check user's motion preference before setting up GSAP cursor
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return; // Skip cursor animations entirely
+    if (prefersReducedMotion) return undefined;
 
     const ring = ringRef.current;
     const dot = dotRef.current;
@@ -282,13 +320,18 @@ function App() {
     };
   }, []);
 
+  // Section tracking: track each section once per session
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-            analytics.sectionReached(entry.target.id);
+            const id = entry.target.id;
+            setActiveSection(id);
+            if (!visitedSections.current.has(id)) {
+              visitedSections.current.add(id);
+              analytics.sectionReached(id);
+            }
           }
         });
       },
@@ -300,34 +343,42 @@ function App() {
 
     return () => {
       sections.forEach((sec) => observer.unobserve(sec));
+      observer.disconnect();
     };
   }, []);
 
-  // Title progress %
-  useEffect(() => {
-    const originalTitle = document.title;
-    const unsubscribe = scrollYProgress.on('change', (v) => {
-      const percent = Math.round(v * 100);
-      if (percent > 2 && percent < 98) {
-        document.title = `${percent}% | Neel Shingavi`;
-      } else {
-        document.title = originalTitle;
-      }
-    });
-    return unsubscribe;
-  }, [scrollYProgress]);
-
-  // Track time on page
+  // Track time on page cleanly via document visibilitychange and pagehide
   useEffect(() => {
     const startTime = Date.now();
-    const handleUnload = () => {
-      const seconds = Math.round((Date.now() - startTime) / 1000);
-      analytics.timeOnPage(seconds);
+    let hasLogged = false;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && !hasLogged) {
+        hasLogged = true;
+        const seconds = Math.round((Date.now() - startTime) / 1000);
+        if (seconds > 0) {
+          analytics.timeOnPage(seconds);
+        }
+      }
     };
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') handleUnload();
-    });
-    return () => handleUnload();
+
+    const handlePageHide = () => {
+      if (!hasLogged) {
+        hasLogged = true;
+        const seconds = Math.round((Date.now() - startTime) / 1000);
+        if (seconds > 0) {
+          analytics.timeOnPage(seconds);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
   }, []);
 
   useEffect(() => {
@@ -351,11 +402,13 @@ function App() {
         Skip to main content
       </a>
 
+      {/* Accessible Scroll Progress Bar with dynamic valuenow */}
       <m.div
         className="progress-bar"
         style={{ scaleX }}
         role="progressbar"
         aria-label="Page scroll progress"
+        aria-valuenow={scrollPercent}
         aria-valuemin={0}
         aria-valuemax={100}
       />
@@ -396,8 +449,13 @@ function App() {
         </a>
         <nav className="nav-links" aria-label="Primary navigation" style={{ position: 'relative' }}>
           <div className="nav-indicator" style={{ position: 'absolute', bottom: -2, left: 0, height: 2, background: 'var(--lime)', borderRadius: 2, opacity: 0 }} />
-          {navItems.map((item) => (
-            <MagneticNavItem key={item} item={item} activeSection={activeSection} />
+          {DESKTOP_NAV_ITEMS.map((item) => (
+            <MagneticNavItem
+              key={item.id}
+              item={item.id}
+              label={item.label}
+              activeSection={activeSection}
+            />
           ))}
         </nav>
         <div className="header-actions-group">
@@ -429,15 +487,20 @@ function App() {
         />
       </header>
 
-      <CommandPalette
-        isOpen={isCmdPaletteOpen}
-        onClose={() => setIsCmdPaletteOpen(false)}
-      />
+      {isCmdPaletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette
+            isOpen={isCmdPaletteOpen}
+            onClose={() => setIsCmdPaletteOpen(false)}
+            onOpenCaseStudy={handleOpenCaseStudy}
+          />
+        </Suspense>
+      )}
 
       <main id="main-content">
-        {/* We use #top for 'back to top' targeting */}
+        {/* We use #top and #hero for 'back to top' and hero targeting */}
         <div id="top"></div>
-        <section className="hero-section section-shell" aria-labelledby="hero-title">
+        <section className="hero-section section-shell" id="hero" aria-labelledby="hero-title">
           {/* Reactive pointer spotlight layer for hero */}
           <div className="hero-spotlight-layer" aria-hidden="true" />
 
@@ -469,55 +532,111 @@ function App() {
               transition={{ delay: 0.65, duration: 0.7 }}
             >
               <a
-                className="secondary-action"
-                href="#contact"
-                onClick={() => analytics.ctaClicked('hero_contact')}
+                className="primary-action hero-cta-primary"
+                href="#work"
+                onClick={() => analytics.ctaClicked('hero_explore_work')}
               >
-                <Mail size={18} />
-                Let's connect
+                <span>Explore Selected Work</span>
+                <ArrowDown size={16} aria-hidden="true" />
               </a>
-              <a
-                className="secondary-action"
-                href={profile.links.linkedin}
+              <MagneticAction
+                className="secondary-action hero-cta-secondary"
+                href={profile.resume}
                 target="_blank"
                 rel="noopener noreferrer"
-                title="Visit Neel Shingavi's LinkedIn Profile"
-                onClick={() => analytics.socialClicked('linkedin')}
-                aria-label="LinkedIn profile (opens in new tab)"
+                title="Download full resume PDF"
+                onClick={() => analytics.resumeDownloaded()}
               >
-                <ExternalLink size={18} />
-                LinkedIn
-              </a>
-              <a
-                className="secondary-action"
-                href={profile.links.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Visit Neel Shingavi's GitHub Profile"
-                onClick={() => analytics.socialClicked('github')}
-                aria-label="GitHub profile (opens in new tab)"
-              >
-                <ExternalLink size={18} />
-                GitHub
-              </a>
+                <Download size={16} aria-hidden="true" />
+                <span>Resume (PDF)</span>
+              </MagneticAction>
+
+              <div className="hero-socials-strip" aria-label="Developer Profiles">
+                <a
+                  href={profile.links.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-social-pill"
+                  title="GitHub Profile"
+                  aria-label="GitHub Profile (opens in new tab)"
+                  onClick={() => analytics.socialClicked('github')}
+                >
+                  <ExternalLink size={13} aria-hidden="true" />
+                  <span>GitHub</span>
+                </a>
+                <a
+                  href={profile.links.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-social-pill"
+                  title="LinkedIn Profile"
+                  aria-label="LinkedIn Profile (opens in new tab)"
+                  onClick={() => analytics.socialClicked('linkedin')}
+                >
+                  <ExternalLink size={13} aria-hidden="true" />
+                  <span>LinkedIn</span>
+                </a>
+                <a
+                  href={profile.links.leetcode}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-social-pill"
+                  title="LeetCode Profile"
+                  aria-label="LeetCode Profile (opens in new tab)"
+                  onClick={() => analytics.socialClicked('leetcode')}
+                >
+                  <ExternalLink size={13} aria-hidden="true" />
+                  <span>LeetCode</span>
+                </a>
+                <a
+                  href={profile.links.codeforces}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-social-pill"
+                  title="Codeforces Profile"
+                  aria-label="Codeforces Profile (opens in new tab)"
+                  onClick={() => analytics.socialClicked('codeforces')}
+                >
+                  <ExternalLink size={13} aria-hidden="true" />
+                  <span>Codeforces</span>
+                </a>
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="hero-social-pill"
+                  title="Direct Email"
+                  aria-label="Send direct email"
+                  onClick={() => analytics.emailClicked()}
+                >
+                  <Mail size={13} aria-hidden="true" />
+                  <span>Email</span>
+                </a>
+              </div>
             </m.div>
           </div>
         </section>
 
+        {/* 01 / CORE SYSTEMS & ARCHITECTURE */}
         <section className="about-section section-shell" id="systems" aria-labelledby="systems-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">01 / CORE SYSTEMS & CAPABILITIES</p>
-            <h2 id="systems-heading">Software that moves from idea to production.</h2>
+            <p className="eyebrow">01 / CORE SYSTEMS &amp; ARCHITECTURE</p>
+            <h2 id="systems-heading">Engineering topologies and interactive deep dives.</h2>
+            <p className="section-subtext">
+              Explore the modular service contracts, local-first transaction lifecycles, and NL-to-SQL analytics execution pipelines that power production operations.
+            </p>
           </Reveal>
 
           <SystemsNetwork />
         </section>
 
+        {/* 02 / EXPERIENCE & LEADERSHIP */}
         <section className="experience-section section-shell" id="experience" aria-labelledby="experience-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">02 / EXPERIENCE & BACKGROUND</p>
+              <p className="eyebrow">02 / EXPERIENCE &amp; LEADERSHIP</p>
               <h2 id="experience-heading">Professional experience and academic foundation.</h2>
+              <p className="section-subtext">
+                Engineering internships, technical direction for startup incubators, and student chapter coordination.
+              </p>
             </div>
             <MagneticAction
               className="primary-action"
@@ -535,10 +654,16 @@ function App() {
           <ExperienceTimeline />
         </section>
 
+        {/* 03 / SELECTED WORK (ALL 5 PROJECTS IN COMPACT EDITORIAL GRID) */}
         <section className="work-section section-shell" id="work" aria-labelledby="work-heading">
-          <Reveal className="section-heading">
-            <p className="eyebrow">03 / SELECTED WORK</p>
-            <h2 id="work-heading">Projects built around measurable outcomes.</h2>
+          <Reveal className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">03 / SELECTED WORK</p>
+              <h2 id="work-heading">Production software built for measurable outcomes.</h2>
+              <p className="section-subtext">
+                Offline-first desktop &amp; mobile systems, natural-language analytics pipelines, and distributed payment infrastructure. Select any project for technical architecture and deep-dive specs.
+              </p>
+            </div>
           </Reveal>
 
           <ProjectFilters
@@ -547,46 +672,51 @@ function App() {
             projects={projects}
           />
 
-          {filteredProjects.length > 0 ? (
-            <div className="project-grid">
+          {highlightedSkill && (
+            <div className="skill-filter-banner" role="status" aria-live="polite">
+              <span className="skill-filter-text">
+                Highlighting projects built with <strong>{highlightedSkill}</strong>
+              </span>
+              <button
+                type="button"
+                className="clear-skill-btn"
+                onClick={() => setHighlightedSkill(null)}
+                aria-label="Clear technology filter"
+              >
+                Clear filter ×
+              </button>
+            </div>
+          )}
+
+          {filteredProjects.length > 0 && (
+            <div className={`projects-compact-grid ${selectedCategory !== 'All' ? 'is-filtered' : ''}`}>
               {filteredProjects.map((project, index) => (
-                <ProjectCard key={project.name} project={project} index={index} />
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  onOpenCaseStudy={handleOpenCaseStudy}
+                  highlightedSkill={highlightedSkill}
+                />
               ))}
             </div>
-          ) : null}
+          )}
         </section>
 
+        {/* 04 / VERIFIED ENGINEERING CADENCE */}
         <section className="cadence-section section-shell" id="cadence" aria-labelledby="cadence-heading">
-          {/* Live Developer Velocity & Coding Activity Signals */}
           <CodingActivityShowcase />
         </section>
 
-        <section className="skills-section section-shell" id="skills" aria-labelledby="skills-heading">
-          <Reveal className="section-heading">
-            <p className="eyebrow">05 / STACK ARCHITECTURE</p>
-            <h2 id="skills-heading">The tools behind the shipped work.</h2>
-          </Reveal>
-          <div className="skills-board">
-            {skills.map((group, index) => (
-              <Reveal className="skill-group" delay={index * 0.06} key={group.label}>
-                <h3>{group.label}</h3>
-                <ul className="skills-grid" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {group.items.map((item) => (
-                    <li key={item}>
-                      <SkillBadge name={item} />
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
+        {/* 05 / COMPETITIVE PROOF & RECOGNITIONS */}
         <section className="wins-section section-shell" id="wins" aria-labelledby="wins-heading">
           <Reveal className="section-heading split-heading">
             <div>
-              <p className="eyebrow">06 / COMPETITIVE PROOF</p>
+              <p className="eyebrow">05 / COMPETITIVE PROOF</p>
               <h2 id="wins-heading">Hackathon signal, national scale.</h2>
+              <p className="section-subtext">
+                Top podium finishes at IIT Bombay, PICT ACM, Meta, and Algorand hackathons evaluated against thousands of competing teams.
+              </p>
             </div>
             <div className="trophy-pill">
               <Trophy size={18} />
@@ -597,23 +727,49 @@ function App() {
           <AchievementGallery />
         </section>
 
-        <section className="architecture-section section-shell" id="architecture" aria-labelledby="architecture-heading">
+        {/* 06 / STACK ARCHITECTURE */}
+        <section className="skills-section section-shell" id="skills" aria-labelledby="skills-heading">
           <Reveal className="section-heading">
-            <p className="eyebrow">07 / PRODUCTION ARCHITECTURE</p>
-            <h2 id="architecture-heading">Interactive deep dives into shipped systems.</h2>
-            <p className="architecture-section-sub">
-              Explore the local-first transaction lifecycles, database synchronization boundaries, and NL-to-SQL analytics pipelines that power real-world products.
+            <p className="eyebrow">06 / STACK ARCHITECTURE</p>
+            <h2 id="skills-heading">The technical stack behind the shipped work.</h2>
+            <p className="section-subtext">
+              Verified tools and languages utilized across high-concurrency backends, local persistence engines, and AI analytics pipelines.
             </p>
           </Reveal>
-
-          {/* Interactive Production Architecture Explorers */}
-          <TradersDeskArchitecture />
-          <QueryPilotPipeline />
+          <div className="skills-board">
+            {skills.map((group, index) => (
+              <Reveal
+                className="skill-group"
+                delay={index * 0.05}
+                key={group.label}
+              >
+                <div className="skill-group-header">
+                  <div className="skill-group-meta">
+                    <span className="skill-group-index">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="skill-group-count">{group.items.length} technologies</span>
+                  </div>
+                  <h3>{group.label}</h3>
+                </div>
+                <ul className="skills-grid">
+                  {group.items.map((item) => (
+                    <li key={item}>
+                      <SkillBadge
+                        name={item}
+                        onClick={handleSkillClick}
+                        isHighlighted={highlightedSkill === item}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </div>
         </section>
 
+        {/* 07 / CONTACT & COLLABORATION */}
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
-            <p className="eyebrow">08 / CONTACT & COLLABORATION</p>
+            <p className="eyebrow">07 / CONTACT &amp; COLLABORATION</p>
             <h2 id="contact-heading">Have something worth building?</h2>
             <p className="contact-availability">
               Whether you are architecting distributed backend infrastructure, building high-accuracy data pipelines,
@@ -659,9 +815,20 @@ function App() {
         </section>
       </main>
 
+      {/* Case Study Modal Mount (Lazy Loaded) */}
+      {selectedCaseStudy && (
+        <Suspense fallback={null}>
+          <ProjectCaseStudyModal
+            caseStudy={selectedCaseStudy}
+            isOpen={Boolean(selectedCaseStudy)}
+            onClose={handleCloseCaseStudy}
+          />
+        </Suspense>
+      )}
+
       <div className="footer-marquee">
-        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
-        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · </span>
+        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
+        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
       </div>
 
       <footer className="site-footer">
@@ -673,7 +840,7 @@ function App() {
             </p>
             <div className="footer-status-pill">
               <span className="footer-status-dot" aria-hidden="true" />
-              <span>Pune, India · Available for high-impact roles</span>
+              <span>Pune, India · Product Engineer</span>
             </div>
             <a href={`mailto:${profile.email}`} className="footer-brand-email">
               {profile.email}
@@ -683,20 +850,20 @@ function App() {
           <div className="footer-nav-col">
             <span className="footer-nav-heading">EXPLORE</span>
             <ul>
-              <li><a href="#systems"><span className="footer-nav-num">01 ·</span> Systems & Architecture</a></li>
-              <li><a href="#experience"><span className="footer-nav-num">02 ·</span> Experience & Background</a></li>
+              <li><a href="#systems"><span className="footer-nav-num">01 ·</span> Systems &amp; Architecture</a></li>
+              <li><a href="#experience"><span className="footer-nav-num">02 ·</span> Experience &amp; Leadership</a></li>
               <li><a href="#work"><span className="footer-nav-num">03 ·</span> Selected Work</a></li>
               <li><a href="#cadence"><span className="footer-nav-num">04 ·</span> Engineering Cadence</a></li>
             </ul>
           </div>
 
           <div className="footer-nav-col">
-            <span className="footer-nav-heading">ARCHITECTURE</span>
+            <span className="footer-nav-heading">PROOF &amp; CONNECT</span>
             <ul>
-              <li><a href="#skills"><span className="footer-nav-num">05 ·</span> Stack Architecture</a></li>
-              <li><a href="#wins"><span className="footer-nav-num">06 ·</span> Competitive Proof</a></li>
-              <li><a href="#architecture"><span className="footer-nav-num">07 ·</span> Production Deep Dives</a></li>
-              <li><a href="#contact"><span className="footer-nav-num">08 ·</span> Contact & Collaboration</a></li>
+              <li><a href="#wins"><span className="footer-nav-num">05 ·</span> Competitive Proof</a></li>
+              <li><a href="#skills"><span className="footer-nav-num">06 ·</span> Stack &amp; Education</a></li>
+              <li><a href="#contact"><span className="footer-nav-num">07 ·</span> Contact &amp; Collaboration</a></li>
+              <li><a href="#top"><span className="footer-nav-num">↑ ·</span> Back to Hero</a></li>
             </ul>
           </div>
 
@@ -705,19 +872,19 @@ function App() {
             <ul>
               <li>
                 <a href={profile.links.github} target="_blank" rel="noopener noreferrer">
-                  <span>GitHub (21 Repos)</span>
+                  <span>GitHub Profile</span>
                   <ExternalLink size={13} aria-hidden="true" />
                 </a>
               </li>
               <li>
                 <a href={profile.links.leetcode} target="_blank" rel="noopener noreferrer">
-                  <span>LeetCode (169 Solved)</span>
+                  <span>LeetCode Profile</span>
                   <ExternalLink size={13} aria-hidden="true" />
                 </a>
               </li>
               <li>
                 <a href={profile.links.codeforces} target="_blank" rel="noopener noreferrer">
-                  <span>Codeforces (1279 Pupil)</span>
+                  <span>Codeforces Profile</span>
                   <ExternalLink size={13} aria-hidden="true" />
                 </a>
               </li>

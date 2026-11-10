@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trophy, Award, ExternalLink, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ExternalLink, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { detailedAchievements } from '../data/architecture.js';
+import { lenis } from '../hooks/useSmoothScroll.js';
 
 const getStandingMeta = (title, id) => {
   if (title.includes('1st Position')) return { label: '1st Place Winner', icon: '🥇' };
@@ -16,15 +18,45 @@ const getCleanTitle = (title) => {
 export function AchievementGallery() {
   const [selectedAchievement, setSelectedAchievement] = useState(null);
   const modalCloseBtnRef = useRef(null);
+  const modalBoxRef = useRef(null);
+  const previousFocusRef = useRef(null);
 
-  // Keyboard navigation for modal: Escape to close, Arrow keys to navigate
+  // Keyboard navigation for modal: Escape to close, Arrow keys to navigate, focus restoration, Tab focus containment
   useEffect(() => {
-    if (!selectedAchievement) return;
+    if (!selectedAchievement) {
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
+        previousFocusRef.current = null;
+      }
+      return;
+    }
+
+    previousFocusRef.current = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    lenis?.stop();
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setSelectedAchievement(null);
-      } else if (e.key === 'ArrowRight') {
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = modalBoxRef.current?.querySelectorAll(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      }
+      if (e.key === 'ArrowRight') {
         const currIdx = detailedAchievements.findIndex((a) => a.id === selectedAchievement.id);
         const nextIdx = (currIdx + 1) % detailedAchievements.length;
         setSelectedAchievement(detailedAchievements[nextIdx]);
@@ -37,9 +69,16 @@ export function AchievementGallery() {
 
     window.addEventListener('keydown', handleKeyDown);
     // Focus close button on modal open
-    setTimeout(() => modalCloseBtnRef.current?.focus(), 50);
+    const timer = setTimeout(() => modalCloseBtnRef.current?.focus(), 50);
 
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      if (!window.location.hash.toLowerCase().startsWith('#casestudy-')) {
+        document.body.style.overflow = '';
+        lenis?.start();
+      }
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
+    };
   }, [selectedAchievement]);
 
   return (
@@ -89,8 +128,8 @@ export function AchievementGallery() {
         })}
       </div>
 
-      {/* Accessible Detail Modal */}
-      {selectedAchievement && (
+      {/* Accessible Detail Modal Portaled to Document Body */}
+      {selectedAchievement && typeof document !== 'undefined' && createPortal(
         <div
           className="achievement-modal-backdrop"
           role="dialog"
@@ -99,6 +138,7 @@ export function AchievementGallery() {
           onClick={() => setSelectedAchievement(null)}
         >
           <div
+            ref={modalBoxRef}
             className={`achievement-modal-box tone-${selectedAchievement.tone}`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -196,9 +236,9 @@ export function AchievementGallery() {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 }
-

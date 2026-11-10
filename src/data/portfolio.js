@@ -16,7 +16,7 @@ export const profile = {
   },
   summary:
     'Full-Stack Software Engineer with expertise in building scalable web applications, distributed architectures, and AI-integrated data pipelines. Proficient across the stack using Java, Node.js, Next.js, and PostgreSQL, alongside cloud deployment on AWS. Proven track record of accelerating product delivery from responsive client interfaces to secure backend systems.',
-  availability: 'Open for internships, full-time roles, freelance builds, and serious product collaborations.',
+  availability: 'Open for high-impact software engineering roles, backend systems architecture, and technical collaborations.',
 };
 
 export const capabilityCategories = [
@@ -70,19 +70,26 @@ export const stats = [
 
 export const experience = [
   {
+    id: 'exp-script-lanes',
     company: 'Script Lanes',
     role: 'Full Stack Developer Intern',
+    startDate: '2026-06',
+    endDate: null,
+    status: 'ongoing',
     period: 'Jun 2026 - Present',
     location: 'On-Site',
     points: [
       'Designed and implemented end-to-end AI Notes processing engine for MBBS Mentor, integrating AWS S3 and OpenRouter APIs to automate document ingestion, processing, and parsing workflows.',
       'Engineered localized data aggregation pipelines to process historical user activity and generate automated weekly and monthly concept summaries.',
-      'Upcoming internship focusing on cross-platform mobile app development in the React Native stack.',
     ],
   },
   {
+    id: 'exp-word-lane',
     company: 'Word Lane Tech',
     role: 'Backend Developer and Client Coordination Intern',
+    startDate: '2025-07',
+    endDate: '2025-12',
+    status: 'completed',
     period: 'Jul 2025 - Dec 2025',
     location: 'Remote',
     points: [
@@ -90,13 +97,17 @@ export const experience = [
       'Collaborated with frontend engineering teams to translate product requirements into maintainable backend services, successfully testing and shipping 3 core service layers, while delivering 4 core projects end-to-end.',
       'Built and optimized production systems supporting both desktop and Android workflows, improving reliability and reducing manual operations.',
     ],
-  }
+  },
 ];
 
 export const clubs = [
   {
+    id: 'club-sic',
     company: 'Startup and Innovation Cell (SIC), PICT',
     role: 'Technical Head',
+    startDate: '2026-04',
+    endDate: null,
+    status: 'ongoing',
     period: 'Apr 2026 - Present',
     location: 'Pune',
     points: [
@@ -106,8 +117,12 @@ export const clubs = [
     ],
   },
   {
+    id: 'club-acm',
     company: 'PICT ACM Student Chapter',
     role: 'Complete Club Coordinator',
+    startDate: '2025-08',
+    endDate: null,
+    status: 'ongoing',
     period: 'Aug 2025 - Present',
     location: 'Pune',
     points: [
@@ -115,25 +130,38 @@ export const clubs = [
       'Coordinated multi-disciplinary operations ensuring successful delivery of technical events, workshops, and large-scale hackathons.',
       'Acted as the core liaison between management, student teams, and external sponsors for seamless event execution.',
     ],
-  }
+  },
 ];
 
 export const education = [
   {
+    id: 'edu-pict',
     school: 'Pune Institute of Computer Technology (PICT)',
     course: 'B.Tech in Electronics and Computer Engineering',
+    startDate: '2025-08',
+    endDate: null,
+    expectedEndDate: '2028-05',
+    status: 'ongoing',
     period: 'Aug 2025 - May 2028',
     result: 'CGPA 9.50/10',
   },
   {
+    id: 'edu-diploma',
     school: 'Bharati Vidyapeeth J.N.I.O.T., Katraj, Pune',
     course: 'Diploma in Computer Technology',
+    startDate: '2022-08',
+    endDate: '2025-05',
+    status: 'completed',
     period: 'Aug 2022 - May 2025',
     result: '93.26%',
   },
   {
+    id: 'edu-ssc',
     school: 'St. Vincent High School, Camp, Pune',
     course: 'Secondary and High School (SSC)',
+    startDate: '2015-07',
+    endDate: '2022-05',
+    status: 'completed',
     period: 'Jul 2015 - May 2022',
     result: '87%',
   },
@@ -141,10 +169,42 @@ export const education = [
 
 export const projects = [
   {
+    id: 'project-tradersdesk',
+    name: 'TradersDesk',
+    featured: true,
+    type: 'Production trading workflow app',
+    categories: ['Financial & Trading'],
+    period: 'Mar 2026 - Present',
+    blueprint: '/assets/projects/tradersdesk/tradersdesk-architecture-blueprint.svg',
+    visual: {
+      previewImage: null, // Slot ready for authentic UI screenshot: '/assets/projects/tradersdesk/tradersdesk-preview.webp'
+      architectureImage: '/assets/projects/tradersdesk/tradersdesk-architecture-blueprint.svg',
+      previewType: 'architecture',
+      badgeLabel: 'SYSTEM ARCHITECTURE BLUEPRINT',
+      imageAlt: 'TradersDesk local-first transactional architecture and dual-client synchronization blueprint',
+    },
+    description:
+      'Developed a local-first financial ledger and trade management application with a native desktop interface for managing billing, returns, and commission settlements. Handles 5,000+ monthly trade-related records (trade lines, invoices, and bill orders) and 2,000+ client settlement transactions across 3 active clients. Implemented offline-first persistence using SQLite (desktop via Hibernate ORM, mobile via Flutter sqflite), synchronized with Supabase PostgreSQL via incremental push/pull HTTP replication with eventual consistency.',
+    impact: ['5,000+ monthly trade records', '2,000+ client transactions', 'Offline-first SQLite persistence'],
+    stack: ['Java', 'Swing', 'Flutter', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
+    color: 'coral',
+    photosLink: 'https://drive.google.com/drive/folders/1tmuq4egWo1IHDVIaBjV3EH-x7ZLuNRKr?usp=drive_link',
+  },
+  {
+    id: 'project-querypilot',
     name: 'QueryPilot',
+    featured: true,
     type: 'Natural Language to SQL Analytics Pipeline',
     categories: ['AI & LLM'],
     period: 'Feb 2026 - Apr 2026',
+    blueprint: '/assets/projects/querypilot/querypilot-pipeline-blueprint.svg',
+    visual: {
+      previewImage: null, // Slot ready for authentic UI screenshot: '/assets/projects/querypilot/querypilot-preview.webp'
+      architectureImage: '/assets/projects/querypilot/querypilot-pipeline-blueprint.svg',
+      previewType: 'pipeline',
+      badgeLabel: 'PIPELINE ARCHITECTURE BLUEPRINT',
+      imageAlt: 'QueryPilot natural-language to SQL analytics pipeline and safety gate architecture',
+    },
     description:
       'Engineered a natural language to SQL analytics pipeline using conversational LLM reasoning and schema-grounded prompt orchestration. Ingested and analyzed 250,000+ UPI financial transactions to extract contextual business insights, spending patterns, and revenue velocity metrics with strict read-only SQL safety guardrails.',
     impact: ['250,000+ UPI records analyzed', '2nd place at InsightX IIT Bombay', 'Read-only SQL safety guardrails'],
@@ -152,33 +212,41 @@ export const projects = [
     color: 'lime',
   },
   {
-    name: 'TradersDesk',
-    type: 'Production trading workflow app',
-    categories: ['Financial & Trading'],
-    period: 'Mar 2026 - Present',
-    description:
-      'Developed a local-first financial ledger and trade management application with a native desktop interface for managing billing, returns, and commission settlements. Handles 5,000+ monthly trade-related records (trade lines, invoices, and bill orders) and 2,000+ client settlement transactions across 3 active clients. Implemented offline-first persistence using SQLite and Hibernate ORM, synchronized with Supabase PostgreSQL via incremental push/pull HTTP replication.',
-    impact: ['5,000+ monthly trade records', '2,000+ client transactions', 'Offline-first SQLite persistence'],
-    stack: ['Java', 'Swing', 'Android', 'Maven', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
-    color: 'coral',
-    photosLink: 'https://drive.google.com/drive/folders/1tmuq4egWo1IHDVIaBjV3EH-x7ZLuNRKr?usp=drive_link',
-  },
-  {
+    id: 'project-payperuseai',
     name: 'PayPerUseAI',
+    featured: false,
     type: 'Usage-based AI payment gateway',
-    categories: ['AI & LLM', 'Financial & Trading', 'Payments & Web3'],
+    categories: ['AI & LLM', 'Payments & Web3'],
     period: 'Apr 2026 - Jun 2026',
+    blueprint: '/assets/projects/payperuseai/payperuseai-gateway-blueprint.svg',
+    visual: {
+      previewImage: null, // Slot ready for authentic UI screenshot: '/assets/projects/payperuseai/payperuseai-preview.webp'
+      architectureImage: '/assets/projects/payperuseai/payperuseai-gateway-blueprint.svg',
+      previewType: 'gateway',
+      badgeLabel: 'MICROPAYMENT GATEWAY BLUEPRINT',
+      imageAlt: 'PayPerUseAI Algorand PyTeal smart escrow and FastAPI SSE streaming gateway blueprint',
+    },
     description:
       'Usage-based payment gateway that dynamically meters and processes multi-model AI inference queries utilizing Algorand smart contracts for secure billing.',
     impact: ['Smart escrow settlement (PyTeal)', 'Sub-200ms real-time streaming (SSE)', 'Blockchain-backed ledgers'],
     stack: ['FastAPI', 'Python', 'React.js', 'PyTeal', 'Algorand Blockchain'],
-    color: 'lime',
+    color: 'teal',
   },
   {
+    id: 'project-certicraft',
     name: 'CertiCraft',
+    featured: false,
     type: 'Certificate automation system',
     categories: ['Automation'],
     period: 'Jan 2026',
+    blueprint: '/assets/projects/certicraft/certicraft-automation-blueprint.svg',
+    visual: {
+      previewImage: null, // Slot ready for authentic UI screenshot: '/assets/projects/certicraft/certicraft-preview.webp'
+      architectureImage: '/assets/projects/certicraft/certicraft-automation-blueprint.svg',
+      previewType: 'automation',
+      badgeLabel: 'AUTOMATION SYSTEM BLUEPRINT',
+      imageAlt: 'CertiCraft cryptographic QR validation and batch email delivery pipeline blueprint',
+    },
     description:
       'Event management platform for certificate generation, participant management, QR validation, and bulk email communication.',
     impact: ['300+ participants automated', '80% manual effort reduction', 'Hackathon-winning end-to-end product'],
@@ -186,10 +254,20 @@ export const projects = [
     color: 'teal',
   },
   {
+    id: 'project-founderflow',
     name: 'FounderFlow',
+    featured: false,
     type: 'Startup operating system',
     categories: ['Automation'],
     period: 'Dec 2025 - Jan 2026',
+    blueprint: '/assets/projects/founderflow/founderflow-system-blueprint.svg',
+    visual: {
+      previewImage: null, // Slot ready for authentic UI screenshot: '/assets/projects/founderflow/founderflow-preview.webp'
+      architectureImage: '/assets/projects/founderflow/founderflow-system-blueprint.svg',
+      previewType: 'system',
+      badgeLabel: 'OPERATING SYSTEM BLUEPRINT',
+      imageAlt: 'FounderFlow idea scorecard heuristics and milestone dependency DAG blueprint',
+    },
     description:
       'Startup workflow platform combining idea validation, roadmap planning, task tracking, dashboards, and team communication into one execution system.',
     impact: ['Roadmap and task execution pipelines', 'Centralized founder dashboard', 'Built around startup productivity workflows'],
@@ -209,27 +287,27 @@ export const achievements = [
 
 export const skills = [
   {
-    label: 'Languages',
-    items: ['Java', 'Python', 'C/C++', 'SQL', 'TypeScript', 'JavaScript'],
+    label: 'Languages & Core CS',
+    items: ['Java', 'Python', 'C/C++', 'SQL', 'TypeScript', 'JavaScript', 'DSA', 'OOP'],
   },
   {
-    label: 'Frameworks',
-    items: ['Next.js', 'Node.js', 'Express.js', 'JavaFX', 'Swing', 'LLM APIs'],
+    label: 'Backend & API Architecture',
+    items: ['Node.js', 'Express.js', 'FastAPI', 'REST APIs', 'Hibernate ORM', 'System Design'],
   },
   {
-    label: 'Databases',
-    items: ['SQLite', 'PostgreSQL', 'Supabase', 'MongoDB', 'Redis'],
+    label: 'Databases & Data Engineering',
+    items: ['PostgreSQL', 'SQLite', 'Supabase', 'MongoDB', 'Redis', 'Pandas', 'DBMS & Indexing'],
   },
   {
-    label: 'Tools',
-    items: ['Git', 'GitHub', 'Docker', 'AWS S3/EC2', 'Maven', 'VS Code'],
+    label: 'Frontend & Mobile',
+    items: ['React.js', 'Next.js', 'Java Swing', 'Android', 'Tailwind CSS', 'Framer Motion'],
   },
   {
-    label: 'Core CS',
-    items: ['DSA', 'OOP', 'DBMS', 'OS', 'CN', 'System Design'],
+    label: 'AI & LLM Engineering',
+    items: ['LangChain', 'OpenRouter', 'LLM APIs', 'Data Analytics', 'Prompt Engineering', 'NL-to-SQL Pipelines'],
   },
   {
-    label: 'Professional',
-    items: ['Leadership', 'Problem Solving', 'Team Player', 'Public Speaking', 'Agile / Scrum', 'Time Management'],
+    label: 'Infrastructure & Systems',
+    items: ['AWS S3/EC2', 'Docker', 'Git', 'GitHub', 'Maven', 'Linux / Bash', 'OS & Networking'],
   },
 ];

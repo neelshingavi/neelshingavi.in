@@ -1,72 +1,133 @@
 import { memo, useCallback } from 'react';
 import { useTilt } from '../hooks/useTilt.js';
-import { ArrowUpRight, FolderGit2 } from 'lucide-react';
-import { AnimatedMetric } from './AnimatedMetric.jsx';
+import { ArrowUpRight, BookOpen, CheckCircle2, ExternalLink, FolderGit2 } from 'lucide-react';
+import { projectCaseStudies } from '../data/caseStudies.js';
 
-export const ProjectCard = memo(function ProjectCard({ project, index }) {
-  const tiltRef = useTilt(6);
+/**
+ * Compact Editorial Project Card
+ * Displays flagship & production software in a scannable layout without visual bloat.
+ * Blueprints & interactive architecture explorers open inside ProjectCaseStudyModal.
+ */
+export const ProjectCard = memo(function ProjectCard({
+  project,
+  index,
+  onOpenCaseStudy,
+  highlightedSkill,
+}) {
+  const tiltRef = useTilt(3);
 
   const handleMouseMove = useCallback((e) => {
-    // Only update spotlight if user has fine pointer
     if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       return;
     }
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    card.style.setProperty('--card-mx', `${x}px`);
-    card.style.setProperty('--card-my', `${y}px`);
+    card.style.setProperty('--card-mx', `${e.clientX - rect.left}px`);
+    card.style.setProperty('--card-my', `${e.clientY - rect.top}px`);
   }, []);
 
-  const isFlagship = index === 0 || index === 1;
+  const isFlagship = Boolean(project.featured);
+  const cardDomId = project.id || `project-${project.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+  const caseStudy = projectCaseStudies[project.id];
+  const isSkillMatched = highlightedSkill
+    ? project.stack?.some((s) => s.toLowerCase() === highlightedSkill.toLowerCase())
+    : false;
+  const isSkillDimmed = Boolean(highlightedSkill && !isSkillMatched);
+
+  const handleCaseStudyClick = () => {
+    if (caseStudy && onOpenCaseStudy) {
+      onOpenCaseStudy(caseStudy);
+    }
+  };
+
+  const indexStr = String(index + 1).padStart(2, '0');
+  const maxVisibleTags = isFlagship ? 6 : 4;
+  const visibleStack = project.stack?.slice(0, maxVisibleTags) || [];
+  const hiddenStackCount = Math.max(0, (project.stack?.length || 0) - maxVisibleTags);
 
   return (
-    <div className={`project-slot ${isFlagship ? 'is-flagship-slot' : ''}`} data-index={index}>
-      <div
-        ref={tiltRef}
-        className={`project-card ${project.color} ${isFlagship ? 'is-flagship' : ''}`}
-        onMouseMove={handleMouseMove}
-      >
-        <div className="project-index">0{index + 1}</div>
-
-        <div className="project-main-content">
-          <div className="project-meta-line">
-            <span className="project-type-tag">{project.type}</span>
-            {project.period && <span className="project-period-tag">{project.period}</span>}
-          </div>
-          <h3 className="project-title">{project.name}</h3>
-          <p className="project-desc">{project.description}</p>
+    <article
+      id={cardDomId}
+      ref={tiltRef}
+      onMouseMove={handleMouseMove}
+      className={`project-compact-card tone-${project.color || 'lime'} ${isFlagship ? 'is-flagship' : ''} ${isSkillMatched ? 'is-skill-matched' : ''} ${isSkillDimmed ? 'is-skill-dimmed' : ''}`}
+      aria-labelledby={`title-${cardDomId}`}
+    >
+      {/* Card Header Meta */}
+      <div className="compact-card-meta">
+        <div className="compact-meta-left">
+          <span className="compact-index">
+            {isFlagship ? `${indexStr} // FLAGSHIP` : indexStr}
+          </span>
+          {project.categories?.[0] && (
+            <span className="compact-category">{project.categories[0]}</span>
+          )}
         </div>
+        {project.period && <span className="compact-period">{project.period}</span>}
+      </div>
 
-        <div className="impact-list" aria-label="Key outcomes">
+      {/* Title & Role/Type */}
+      <h3 id={`title-${cardDomId}`} className="compact-project-title">
+        {project.name}
+      </h3>
+      <p className="compact-project-type">{project.type}</p>
+
+      {/* Description */}
+      <p className="compact-project-desc">{project.description}</p>
+
+      {/* Verified Outcomes */}
+      {Array.isArray(project.impact) && project.impact.length > 0 && (
+        <ul className="compact-outcomes-list" aria-label="Verified outcomes">
           {project.impact.map((item) => (
-            <AnimatedMetric key={item} text={item} />
+            <li key={item} className="compact-outcome-item">
+              <CheckCircle2 size={13} className="outcome-icon" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
           ))}
-        </div>
+        </ul>
+      )}
 
-        <div className="stack-list" aria-label="Technology stack">
-          {project.stack.map((item) => (
-            <em key={item} className="tech-tag">
-              {item}
-            </em>
+      {/* Technology Stack Tags */}
+      {visibleStack.length > 0 && (
+        <div className="compact-stack-list" aria-label="Technologies used">
+          {visibleStack.map((tech) => (
+            <span key={tech} className="tech-badge">
+              {tech}
+            </span>
           ))}
+          {hiddenStackCount > 0 && (
+            <span className="secondary-tech-more">+{hiddenStackCount}</span>
+          )}
         </div>
+      )}
+
+      {/* Footer Actions Bar */}
+      <div className="compact-actions-bar">
+        <button
+          type="button"
+          className={isFlagship ? 'primary-showcase-btn' : 'secondary-read-btn compact-read-btn'}
+          onClick={handleCaseStudyClick}
+          aria-label={`Read technical case study for ${project.name}`}
+        >
+          {isFlagship && <BookOpen size={14} aria-hidden="true" />}
+          <span>{isFlagship ? 'Technical Deep Dive' : 'Read Case Study'}</span>
+          <ArrowUpRight size={14} aria-hidden="true" />
+        </button>
 
         {project.photosLink && (
           <a
             href={project.photosLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="project-photos-link"
-            aria-label={`View production photos for ${project.name} on Google Drive (opens in new tab)`}
+            className="secondary-showcase-btn"
+            title="View verified client deployment photos on Google Drive"
           >
-            <FolderGit2 size={14} className="preview-icon" aria-hidden="true" />
-            <span>View photos</span>
-            <ArrowUpRight size={14} className="cta-arrow" aria-hidden="true" />
+            <FolderGit2 size={14} aria-hidden="true" />
+            <span>Client Photos</span>
+            <ExternalLink size={13} aria-hidden="true" />
           </a>
         )}
       </div>
-    </div>
+    </article>
   );
 });

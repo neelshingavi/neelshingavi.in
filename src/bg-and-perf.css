@@ -720,7 +720,7 @@ body::after {
   grid-template-columns: 1fr;
   gap: 24px;
   width: 100%;
-  margin-bottom: 56px;
+  margin-bottom: 0;
 }
 
 @media (min-width: 960px) {
@@ -2114,20 +2114,49 @@ body::after {
   padding-left: 28px;
 }
 
-.timeline-laser-line {
+.timeline-rail-track {
   position: absolute;
   left: 6px;
-  top: 14px;
-  bottom: 24px;
+  top: 28px;
+  bottom: 28px;
   width: 2px;
-  background: linear-gradient(180deg, var(--lime) 0%, var(--teal, #00e5ff) 50%, var(--coral, #ff6b6b) 100%);
+  background: rgba(244, 240, 223, 0.1);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.timeline-laser-line {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--lime) 0%, var(--teal, #00e5ff) 55%, var(--coral, #ff6b6b) 100%);
   border-radius: 2px;
   box-shadow: 0 0 10px rgba(191, 242, 5, 0.45);
+  transform-origin: top center;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+.timeline-laser-tip {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 12px var(--lime), 0 0 20px rgba(191, 242, 5, 0.7);
+  opacity: 0;
+  transform: translate3d(-50%, 0, 0);
+  will-change: transform, opacity;
 }
 
 .timeline-node-entry {
   position: relative;
   margin-bottom: 24px;
+}
+
+.timeline-node-entry:last-child {
+  margin-bottom: 0;
 }
 
 .timeline-node-dot {
@@ -2145,14 +2174,22 @@ body::after {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--lime);
-  box-shadow: 0 0 8px var(--lime);
-  transition: all 0.25s ease;
+  background: rgba(244, 240, 223, 0.25);
+  border: 1px solid rgba(244, 240, 223, 0.25);
+  transform: scale(0.85);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
+.timeline-node-entry.is-reached .dot-inner,
 .timeline-node-entry.is-current-role .dot-inner {
   background: var(--lime);
-  box-shadow: 0 0 12px var(--lime);
+  border-color: var(--lime);
+  box-shadow: 0 0 10px var(--lime);
+  transform: scale(1.1);
+}
+
+.timeline-node-entry.is-reached .timeline-node-card {
+  border-color: rgba(191, 242, 5, 0.24);
 }
 
 .dot-pulse-ring {
@@ -2299,10 +2336,8 @@ body::after {
 }
 
 .timeline-card-drawer {
-  padding: 0 24px 22px;
+  padding: 16px 24px 22px;
   border-top: 1px solid rgba(244, 240, 223, 0.06);
-  padding-top: 16px;
-  animation: fadeInDrawer 0.25s ease;
 }
 
 .timeline-points-list {
@@ -2843,8 +2878,12 @@ body::after {
   .sys-packet,
   .arch-packet,
   .pipe-pulse,
-  .dot-pulse-ring {
+  .dot-pulse-ring,
+  .timeline-laser-tip {
     display: none !important;
+  }
+  .timeline-laser-line {
+    transform: scaleY(1) !important;
   }
   .system-node-card:hover,
   .arch-node-box:hover,

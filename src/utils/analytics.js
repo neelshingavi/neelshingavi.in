@@ -1,4 +1,4 @@
-// Measurement ID — move to environment variable in production
+// Measurement ID — configured via environment variable
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
 // Load GA4 script dynamically (don't block render)
@@ -14,12 +14,9 @@ export function initGA() {
   window.gtag = function gtag() { window.dataLayer.push(arguments); };
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, {
-    // Disable cookies for GDPR compliance
     storage: 'none',
     client_storage: 'none',
-    // Anonymize IP for privacy
     anonymize_ip: true,
-    // Sampling
     send_page_view: true,
   });
 }
@@ -27,7 +24,7 @@ export function initGA() {
 // ─── Custom Event Tracking ────────────────────────────────────────
 
 export function trackEvent(eventName, params = {}) {
-  if (!window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag) return;
   window.gtag('event', eventName, params);
 }
 
@@ -69,19 +66,37 @@ export const analytics = {
     event_label: projectName,
   }),
 
-  // Section reached (via IntersectionObserver)
+  // Section reached (tracked once per page session)
   sectionReached: (section) => trackEvent('section_reached', {
     event_category: 'scroll',
     event_label: section,
   }),
 
-  // Contact form submitted
+  // Contact form submitted via API
+  contactApiSubmitted: () => trackEvent('contact_api_success', {
+    event_category: 'lead',
+    event_label: 'web3forms',
+  }),
+
+  // Mailto fallback initiated
+  contactMailtoInitiated: () => trackEvent('contact_mailto_initiated', {
+    event_category: 'lead',
+    event_label: 'mailto_fallback',
+  }),
+
+  // Email address copied
+  emailCopied: () => trackEvent('contact_email_copied', {
+    event_category: 'contact',
+    event_label: 'clipboard',
+  }),
+
+  // Legacy alias for compatibility
   contactFormSubmitted: () => trackEvent('contact_form_submit', {
     event_category: 'lead',
     event_label: 'contact_form',
   }),
 
-  // Time on page (call at window.beforeunload)
+  // Time on page
   timeOnPage: (seconds) => trackEvent('time_on_page', {
     event_category: 'engagement',
     value: seconds,

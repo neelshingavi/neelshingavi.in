@@ -1,14 +1,12 @@
 import { useState, useId } from 'react';
 import {
   Layers,
-  ArrowRight,
   Database,
   Cloud,
   RefreshCw,
   Cpu,
   MonitorSmartphone,
   CheckCircle,
-  ExternalLink,
 } from 'lucide-react';
 import { tradersDeskArchitecture } from '../data/architecture.js';
 
@@ -26,8 +24,7 @@ export function TradersDeskArchitecture() {
   const [activeFlowStep, setActiveFlowStep] = useState(1);
   const baseId = useId();
 
-  const { title, summary, nodes, connections, dataFlowSteps } = tradersDeskArchitecture;
-
+  const { title, summary, nodes, dataFlowSteps } = tradersDeskArchitecture;
   const activeNode = nodes.find((n) => n.id === activeNodeId) || nodes[0];
 
   const handleStepClick = (step) => {
@@ -36,7 +33,7 @@ export function TradersDeskArchitecture() {
   };
 
   return (
-    <div className="architecture-explorer-shell" aria-label="TradersDesk Architecture Explorer">
+    <div id="tradersdesk" className="architecture-explorer-shell" aria-label="TradersDesk Architecture Explorer">
       {/* Explorer Top Bar & View Mode Toggle */}
       <div className="explorer-header">
         <div className="explorer-title-area">
@@ -75,7 +72,12 @@ export function TradersDeskArchitecture() {
         {viewMode === 'architecture' ? (
           <div className="architecture-diagram-wrap">
             {/* SVG Connecting Flow Lines */}
-            <svg className="architecture-svg" aria-hidden="true">
+            <svg
+              className="architecture-svg"
+              viewBox="0 0 1000 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
               <defs>
                 <linearGradient id={`${baseId}-line-grad`} x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="var(--coral, #ff6b6b)" stopOpacity="0.4" />
@@ -90,10 +92,10 @@ export function TradersDeskArchitecture() {
 
               {/* Connecting path between sequential nodes */}
               <line
-                x1="10%"
-                y1="50%"
-                x2="90%"
-                y2="50%"
+                x1="100"
+                y1="50"
+                x2="900"
+                y2="50"
                 className="arch-backbone-line"
               />
 
@@ -101,14 +103,14 @@ export function TradersDeskArchitecture() {
               <circle r="4" fill="var(--lime)" filter={`url(#${baseId}-glow)`} className="arch-packet">
                 <animate
                   attributeName="cx"
-                  from="10%"
-                  to="90%"
+                  from="100"
+                  to="900"
                   dur="4.5s"
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="cy"
-                  values="50%; 50%; 50%"
+                  values="50; 50; 50"
                   dur="4.5s"
                   repeatCount="indefinite"
                 />
@@ -129,7 +131,7 @@ export function TradersDeskArchitecture() {
                     type="button"
                     aria-selected={isSelected}
                     aria-controls={`td-node-panel-${node.id}`}
-                    tabIndex={0}
+                    tabIndex={isSelected ? 0 : -1}
                     className={`arch-node-box ${isSelected ? 'is-selected' : ''}`}
                     onClick={() => setActiveNodeId(node.id)}
                   >
@@ -186,6 +188,7 @@ export function TradersDeskArchitecture() {
           role="tabpanel"
           aria-labelledby={`td-node-tab-${activeNode.id}`}
           className="node-inspect-card"
+          tabIndex={0}
         >
           <div className="inspect-header">
             <div>
@@ -207,11 +210,11 @@ export function TradersDeskArchitecture() {
           <div className="inspect-verification-footer">
             <div className="verify-item">
               <CheckCircle size={14} className="verify-check" aria-hidden="true" />
-              <span>Offline-first resilience guaranteed</span>
+              <span>Resilient offline execution</span>
             </div>
             <div className="verify-item">
               <CheckCircle size={14} className="verify-check" aria-hidden="true" />
-              <span>ACID-compliant local persistence</span>
+              <span>Local transactional SQLite persistence</span>
             </div>
           </div>
         </div>
@@ -219,4 +222,3 @@ export function TradersDeskArchitecture() {
     </div>
   );
 }
-

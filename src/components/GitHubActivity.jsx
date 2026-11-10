@@ -1,135 +1,159 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { GitCommit, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { profile } from '../data/portfolio.js';
+import {
+  DATA_STATES,
+  readCache,
+  writeCache,
+  formatTimeAgo,
+  formatTooltipDate,
+  buildAligned52WeekGrid,
+  safeNumber,
+} from '../utils/codingDataHelpers.js';
 
 const GITHUB_USERNAME = 'neelshingavi';
 const CACHE_KEY = `github_contrib_${GITHUB_USERNAME}`;
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-// Relative time formatter for cached data
-function formatTimeAgo(timestamp) {
-  if (!timestamp) return 'recently';
-  const diffMinutes = Math.floor((Date.now() - timestamp) / 60000);
-  if (diffMinutes < 1) return 'just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
-
 export function GitHubActivity() {
   const [data, setData] = useState(null);
-  const [dataState, setDataState] = useState('LOADING'); // 'LIVE' | 'CACHED' | 'UNAVAILABLE'
+  const [dataState, setDataState] = useState(DATA_STATES.LOADING);
   const [cacheTime, setCacheTime] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const gridContainerRef = useRef(null);
 
-  const fetchContributions = async (forceBypassCache = false) => {
-    // 1. Try LocalStorage Cache if not bypassing
+  const fetchContributions = async (abortSignal, forceBypassCache = false) => {
+    // 1. Try Cache if not bypassing
     if (!forceBypassCache) {
-      try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.payload?.contributions?.length > 0) {
-            setData(parsed.payload);
-            setCacheTime(parsed.timestamp);
-            setDataState('CACHED');
-            return;
-          }
-        }
-      } catch {
-        // LocalStorage unavailable
+      const cached = readCache(CACHE_KEY, CACHE_TTL_MS);
+      if (cached && !cached.isStale && cached.payload?.contributions?.length > 0) {
+        setData(cached.payload);
+        setCacheTime(cached.timestamp);
+        setDataState(DATA_STATES.CACHED);
+        return;
       }
     }
 
-    // 2. Fetch from verified GitHub contributions proxy
+    // 2. Fetch live data from GitHub contributions proxy
     try {
       const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`, {
-        signal: AbortSignal.timeout(6000),
+        signal: abortSignal,
       });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
-      if (json && json.contributions && json.contributions.length > 0) {
-        setData(json);
-        const now = Date.now();
-        setCacheTime(now);
-        setDataState('LIVE');
+      // Schema validation
+      if (
+        json &&
+        typeof json === 'object' &&
+        Array.isArray(json.contributions) &&
+        json.contributions.length > 0 &&
+        json.total &&
+        typeof json.total.lastYear === 'number'
+      ) {
+        // Optionally fetch public repo count from GitHub user API
+        let publicRepos = null;
         try {
-          localStorage.setItem(
-            CACHE_KEY,
-            JSON.stringify({ timestamp: now, payload: json })
-          );
+          const userRes = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, {
+            signal: abortSignal,
+          });
+          if (userRes.ok) {
+            const userJson = await userRes.json();
+            if (typeof userJson.public_repos === 'number') {
+              publicRepos = userJson.public_repos;
+            }
+          }
         } catch {
-          // ignore storage quota error
+          // Non-critical: repo count can remain null
         }
+
+        const payload = {
+          ...json,
+          publicRepos,
+        };
+
+        const now = Date.now();
+        setData(payload);
+        setCacheTime(now);
+        setDataState(DATA_STATES.LIVE);
+        writeCache(CACHE_KEY, payload);
         return;
       }
-    } catch {
-      // Fetch failed
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      // Network/parse failure: fall through to cache fallback
     }
 
-    // 3. Fallback: Check if stale cache is available
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.payload?.contributions?.length > 0) {
-          setData(parsed.payload);
-          setCacheTime(parsed.timestamp);
-          setDataState('CACHED');
-          return;
-        }
-      }
-    } catch {
-      // ignore
+    // 3. Fallback: Use stale cache if present
+    const staleCache = readCache(CACHE_KEY, Infinity);
+    if (staleCache && staleCache.payload?.contributions?.length > 0) {
+      setData(staleCache.payload);
+      setCacheTime(staleCache.timestamp);
+      setDataState(DATA_STATES.CACHED);
+      return;
     }
 
-    // 4. If completely unavailable, set UNAVAILABLE state without fabricated numbers
+    // 4. Truly Unavailable: Do NOT fabricate numbers
     setData(null);
-    setDataState('UNAVAILABLE');
+    setDataState(DATA_STATES.UNAVAILABLE);
   };
 
   useEffect(() => {
-    let isMounted = true;
-    fetchContributions().then(() => {
-      if (!isMounted) return;
-    });
+    const controller = new AbortController();
+    fetchContributions(controller.signal);
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, []);
 
   const handleManualRefresh = async () => {
+    if (isRefreshing) return;
     setIsRefreshing(true);
-    await fetchContributions(true);
-    setIsRefreshing(false);
+    const controller = new AbortController();
+    try {
+      await fetchContributions(controller.signal, true);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  // Full 52-week dataset (364 days) matching the past year summary
-  const yearDays = useMemo(() => {
-    if (!data?.contributions || data.contributions.length === 0) return [];
-    // Full 52 weeks (364 days) aligned to latest date
-    return data.contributions.slice(-364);
+  // Build aligned 52-week calendar grid using local timezone date normalization
+  const { weeks, totalYearContributions } = useMemo(() => {
+    if (!data?.contributions || data.contributions.length === 0) {
+      return { weeks: [], totalYearContributions: null };
+    }
+
+    const countMap = new Map();
+    for (const item of data.contributions) {
+      if (item && item.date && typeof item.count === 'number') {
+        countMap.set(item.date, item.count);
+      }
+    }
+
+    const { weeks: alignedWeeks, allDays } = buildAligned52WeekGrid(countMap, (count) => {
+      if (count >= 10) return 4;
+      if (count >= 5) return 3;
+      if (count >= 2) return 2;
+      if (count >= 1) return 1;
+      return 0;
+    });
+
+    // Calculate sum of contributions strictly within the aligned 52-week window
+    const windowSum = allDays.reduce((acc, d) => acc + (d.isFuture ? 0 : d.count), 0);
+
+    return {
+      weeks: alignedWeeks,
+      totalYearContributions: windowSum,
+    };
   }, [data]);
 
-  // Group days into 7-day columns (weeks)
-  const weeks = useMemo(() => {
-    const list = [];
-    for (let i = 0; i < yearDays.length; i += 7) {
-      list.push(yearDays.slice(i, i + 7));
-    }
-    return list;
-  }, [yearDays]);
-
-  const totalContributions = data?.total?.lastYear || 560;
+  const publicRepos = safeNumber(data?.publicRepos, null);
 
   const handleCellHover = (e, day) => {
-    if (!gridContainerRef.current) return;
+    if (!gridContainerRef.current || day.isFuture) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const parentRect = gridContainerRef.current.getBoundingClientRect();
     setTooltipPos({
@@ -143,27 +167,17 @@ export function GitHubActivity() {
     setHoveredDay(null);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   return (
     <div className="github-activity-shell" aria-label="GitHub Developer Activity">
       <div className="gh-header">
         <div className="gh-title-group">
           <div className="gh-badge">
             <GitCommit size={14} aria-hidden="true" />
-            <span>REPOSITORY PULSE & CADENCE</span>
+            <span>REPOSITORY CADENCE & GIT COMMITS</span>
           </div>
           <h3 className="gh-heading">Codebase Velocity & Open Source Signal</h3>
           <p className="gh-sub">
-            Verified production commits, pull requests, and software development cadence across 21 public and client repositories.
+            Public repository contributions, commit velocity, and open-source cadence recorded on GitHub.
           </p>
         </div>
 
@@ -172,7 +186,7 @@ export function GitHubActivity() {
             type="button"
             className="gh-refresh-btn"
             onClick={handleManualRefresh}
-            disabled={isRefreshing}
+            disabled={isRefreshing || dataState === DATA_STATES.LOADING}
             title="Refresh GitHub activity from API"
             aria-label="Refresh GitHub contribution data"
           >
@@ -196,39 +210,55 @@ export function GitHubActivity() {
       {/* GitHub Summary Stat Chips */}
       <div className="gh-stats-row">
         <div className="gh-stat-chip">
-          <strong className="gh-stat-val">21</strong>
-          <span className="gh-stat-label">Public Repositories</span>
+          <strong className="gh-stat-val">
+            {dataState === DATA_STATES.LOADING
+              ? '—'
+              : publicRepos !== null
+                ? publicRepos
+                : 'Verified'}
+          </strong>
+          <span className="gh-stat-label">
+            {publicRepos !== null ? 'Public Repositories' : 'GitHub Profile'}
+          </span>
         </div>
         <div className="gh-stat-chip">
           <strong className="gh-stat-val">
-            {dataState === 'UNAVAILABLE' ? '560+' : `${totalContributions}`}
+            {dataState === DATA_STATES.LOADING
+              ? '—'
+              : dataState === DATA_STATES.UNAVAILABLE
+                ? 'Unavailable'
+                : totalYearContributions !== null
+                  ? totalYearContributions
+                  : '—'}
           </strong>
           <span className="gh-stat-label">
-            {dataState === 'UNAVAILABLE' ? 'Verified (Profile Total)' : 'Past Year Contributions'}
+            {dataState === DATA_STATES.UNAVAILABLE
+              ? 'Contribution Data'
+              : 'Past 52-Week Contributions'}
           </span>
         </div>
         <div className="gh-stat-chip">
           <strong className="gh-stat-val">Python · JS · Java</strong>
-          <span className="gh-stat-label">Core Production Languages</span>
+          <span className="gh-stat-label">Primary Languages</span>
         </div>
         <div className="gh-stat-chip">
           <div className="gh-data-status">
-            {dataState === 'LIVE' && (
+            {dataState === DATA_STATES.LIVE && (
               <span className="gh-state-pill live">
                 <CheckCircle2 size={12} /> Live Sync
               </span>
             )}
-            {dataState === 'CACHED' && (
+            {dataState === DATA_STATES.CACHED && (
               <span className="gh-state-pill cached">
                 <Clock size={12} /> Cached ({formatTimeAgo(cacheTime)})
               </span>
             )}
-            {dataState === 'UNAVAILABLE' && (
+            {dataState === DATA_STATES.UNAVAILABLE && (
               <span className="gh-state-pill unavailable">
-                <AlertCircle size={12} /> Profile Snapshot
+                <AlertCircle size={12} /> Unavailable
               </span>
             )}
-            {dataState === 'LOADING' && (
+            {dataState === DATA_STATES.LOADING && (
               <span className="gh-state-pill loading">
                 <RefreshCw size={12} className="spin-icon" /> Fetching...
               </span>
@@ -238,15 +268,14 @@ export function GitHubActivity() {
         </div>
       </div>
 
-      {/* Contribution Calendar Heatmap or Graceful Unavailable Fallback */}
-      {dataState === 'UNAVAILABLE' ? (
-        <div className="gh-fallback-card" role="region" aria-label="GitHub Profile Fallback">
+      {/* Contribution Calendar Heatmap or Truthful Unavailable State */}
+      {dataState === DATA_STATES.UNAVAILABLE ? (
+        <div className="gh-fallback-card" role="region" aria-label="GitHub Data Status">
           <div className="gh-fallback-content">
             <AlertCircle size={28} className="gh-fallback-icon" />
-            <h4>Live Contribution API Temporarily Unreachable</h4>
+            <h4>Contribution data currently unavailable</h4>
             <p>
-              GitHub contribution data could not be retrieved live from the external provider.
-              You can verify the full 21 repositories, commit velocity, and open-source contributions directly on GitHub.
+              The external GitHub contributions provider is currently unreachable. You can view Neel Shingavi&apos;s verified public repositories and latest commits directly on GitHub.
             </p>
             <a
               href={profile.links.github}
@@ -260,10 +289,15 @@ export function GitHubActivity() {
             </a>
           </div>
         </div>
+      ) : dataState === DATA_STATES.LOADING && !data ? (
+        <div className="gh-loading-card" style={{ padding: '36px', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+          <RefreshCw size={24} className="spin-icon" style={{ margin: '0 auto 12px', display: 'block' }} />
+          <p>Retrieving verified GitHub contribution activity...</p>
+        </div>
       ) : (
         <div className="gh-calendar-wrapper" ref={gridContainerRef}>
           {/* Floating Tooltip */}
-          {hoveredDay && (
+          {hoveredDay && !hoveredDay.isFuture && (
             <div
               className="gh-tooltip"
               style={{
@@ -274,7 +308,7 @@ export function GitHubActivity() {
               role="tooltip"
             >
               <strong>{hoveredDay.count} contribution{hoveredDay.count === 1 ? '' : 's'}</strong>
-              <span>{formatDate(hoveredDay.date)}</span>
+              <span>{formatTooltipDate(hoveredDay.date)}</span>
             </div>
           )}
 
@@ -290,17 +324,18 @@ export function GitHubActivity() {
                   {week.map((day) => {
                     const isHovered = hoveredDay?.date === day.date;
                     return (
-                      <button
+                      <span
                         key={day.date}
-                        type="button"
                         role="gridcell"
-                        aria-label={`${day.count} contributions on ${day.date}`}
-                        className={`gh-cal-cell level-${day.level || 0} ${isHovered ? 'is-hovered' : ''}`}
+                        aria-label={
+                          day.isFuture
+                            ? undefined
+                            : `${day.count} contribution${day.count === 1 ? '' : 's'} on ${day.date}`
+                        }
+                        className={`gh-cal-cell level-${day.level || 0} ${isHovered ? 'is-hovered' : ''} ${day.isFuture ? 'is-future' : ''}`}
                         onMouseEnter={(e) => handleCellHover(e, day)}
                         onMouseLeave={handleCellLeave}
-                        onFocus={(e) => handleCellHover(e, day)}
-                        onBlur={handleCellLeave}
-                        tabIndex={0}
+                        tabIndex={-1}
                       />
                     );
                   })}
@@ -312,8 +347,8 @@ export function GitHubActivity() {
           {/* Legend & Verification Attribution */}
           <div className="gh-cal-footer">
             <span className="gh-footer-caption">
-              52-Week Activity Window · {totalContributions} verified contributions
-              {dataState === 'CACHED' && cacheTime ? ` · Last refreshed ${formatTimeAgo(cacheTime)}` : ''}
+              52-Week Activity Window · {totalYearContributions ?? 0} verified contributions
+              {dataState === DATA_STATES.CACHED && cacheTime ? ` · Cached ${formatTimeAgo(cacheTime)}` : ''}
             </span>
             <div className="gh-legend" aria-hidden="true">
               <span>Less</span>
