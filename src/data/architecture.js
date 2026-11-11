@@ -285,7 +285,7 @@ export const detailedAchievements = [
     title: 'Finalist — Meta x PyTorch Hackathon',
     organization: 'Meta / PyTorch Ecosystem',
     year: '2025',
-    scale: 'Top 1.5% · 52k Teams',
+    scale: '52k Teams',
     role: 'Core Engineer',
     project: 'AI Engineering',
     summary:
@@ -322,7 +322,7 @@ export const detailedAchievements = [
     title: "2nd Position — Indradhanu'25 Project Competition",
     organization: 'State-Level Technical Summit',
     year: '2025',
-    scale: '250+ Projects Evaluated',
+    scale: '250+ Projects',
     role: 'Lead Architect',
     project: 'Software Systems',
     summary:

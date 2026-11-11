@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Code2, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { leetcodeConfig } from '../data/codingProfiles.js';
+import { CodingActivityHeader } from './CodingActivityHeader.jsx';
 import {
   DATA_STATES,
   readCache,
@@ -182,43 +183,23 @@ export function LeetCodeActivity() {
 
   return (
     <div className="github-activity-shell leetcode-activity-shell" aria-label="LeetCode Algorithmic Activity">
-      <div className="gh-header">
-        <div className="gh-title-group">
-          <div className="gh-badge lc-badge">
-            <Code2 size={14} aria-hidden="true" />
-            <span>DATA STRUCTURES & ALGORITHMIC SOLVING</span>
-          </div>
-          <h3 className="gh-heading">Algorithmic Precision & Problem Solving</h3>
-          <p className="gh-sub">
-            Verified algorithmic problems solved across dynamic programming, graph algorithms, and data structures.
-          </p>
-        </div>
-
-        <div className="gh-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            type="button"
-            className="gh-refresh-btn lc-refresh-btn"
-            onClick={handleManualRefresh}
-            disabled={isRefreshing || dataState === DATA_STATES.LOADING}
-            title="Refresh LeetCode activity from API"
-            aria-label="Refresh LeetCode activity data"
-          >
-            <RefreshCw size={13} className={isRefreshing ? 'spin-icon' : ''} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-
-          <a
-            href={leetcodeConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="gh-profile-btn lc-profile-btn"
-            title="Visit Neel Shingavi on LeetCode"
-          >
-            <span>leetcode.com/u/{leetcodeConfig.username}</span>
-            <ExternalLink size={14} aria-hidden="true" />
-          </a>
-        </div>
-      </div>
+      <CodingActivityHeader
+        badgeIcon={Code2}
+        badgeClassName="lc-badge"
+        badgeText="DATA STRUCTURES & ALGORITHMIC SOLVING"
+        heading="Algorithmic Precision & Problem Solving"
+        subtext="Verified algorithmic problems solved across dynamic programming, graph algorithms, and data structures."
+        onRefresh={handleManualRefresh}
+        isRefreshing={isRefreshing}
+        isLoading={dataState === DATA_STATES.LOADING}
+        refreshClassName="lc-refresh-btn"
+        refreshTitle="Refresh LeetCode activity from API"
+        refreshAriaLabel="Refresh LeetCode activity data"
+        profileUrl={leetcodeConfig.profileUrl}
+        profileClassName="lc-profile-btn"
+        profileTitle="Visit Neel Shingavi on LeetCode"
+        profileLabel={`leetcode.com/u/${leetcodeConfig.username}`}
+      />
 
       {/* LeetCode Summary Stat Chips */}
       <div className="gh-stats-row lc-stats-row">
