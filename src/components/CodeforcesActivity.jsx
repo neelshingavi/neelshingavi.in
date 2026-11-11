@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Trophy, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { codeforcesConfig } from '../data/codingProfiles.js';
+import { CodingActivityHeader } from './CodingActivityHeader.jsx';
 import {
   DATA_STATES,
   readCache,
@@ -212,43 +213,23 @@ export function CodeforcesActivity() {
 
   return (
     <div className="github-activity-shell codeforces-activity-shell" aria-label="Codeforces Competitive Programming Activity">
-      <div className="gh-header">
-        <div className="gh-title-group">
-          <div className="gh-badge cf-badge">
-            <Trophy size={14} aria-hidden="true" />
-            <span>COMPETITIVE PROGRAMMING & TIMED CONTESTS</span>
-          </div>
-          <h3 className="gh-heading">Contest Performance & Div. 2 Velocity</h3>
-          <p className="gh-sub">
-            Verified competitive programming ratings, timed contest rounds, and submissions recorded on Codeforces.
-          </p>
-        </div>
-
-        <div className="gh-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            type="button"
-            className="gh-refresh-btn cf-refresh-btn"
-            onClick={handleManualRefresh}
-            disabled={isRefreshing || dataState === DATA_STATES.LOADING}
-            title="Refresh Codeforces activity from API"
-            aria-label="Refresh Codeforces activity data"
-          >
-            <RefreshCw size={13} className={isRefreshing ? 'spin-icon' : ''} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-
-          <a
-            href={codeforcesConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="gh-profile-btn cf-profile-btn"
-            title="Visit Neel Shingavi on Codeforces"
-          >
-            <span>codeforces.com/profile/{codeforcesConfig.username}</span>
-            <ExternalLink size={14} aria-hidden="true" />
-          </a>
-        </div>
-      </div>
+      <CodingActivityHeader
+        badgeIcon={Trophy}
+        badgeClassName="cf-badge"
+        badgeText="COMPETITIVE PROGRAMMING & TIMED CONTESTS"
+        heading="Contest Performance & Div. 2 Velocity"
+        subtext="Verified competitive programming ratings, timed contest rounds, and submissions recorded on Codeforces."
+        onRefresh={handleManualRefresh}
+        isRefreshing={isRefreshing}
+        isLoading={dataState === DATA_STATES.LOADING}
+        refreshClassName="cf-refresh-btn"
+        refreshTitle="Refresh Codeforces activity from API"
+        refreshAriaLabel="Refresh Codeforces activity data"
+        profileUrl={codeforcesConfig.profileUrl}
+        profileClassName="cf-profile-btn"
+        profileTitle="Visit Neel Shingavi on Codeforces"
+        profileLabel={`codeforces.com/profile/${codeforcesConfig.username}`}
+      />
 
       {/* Codeforces Summary Stat Chips */}
       <div className="gh-stats-row cf-stats-row">

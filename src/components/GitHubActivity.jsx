@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { GitCommit, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { GitCommit, RefreshCw, AlertCircle, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
 import { profile } from '../data/portfolio.js';
+import { CodingActivityHeader } from './CodingActivityHeader.jsx';
 import {
   DATA_STATES,
   readCache,
@@ -169,43 +170,20 @@ export function GitHubActivity() {
 
   return (
     <div className="github-activity-shell" aria-label="GitHub Developer Activity">
-      <div className="gh-header">
-        <div className="gh-title-group">
-          <div className="gh-badge">
-            <GitCommit size={14} aria-hidden="true" />
-            <span>REPOSITORY CADENCE & GIT COMMITS</span>
-          </div>
-          <h3 className="gh-heading">Codebase Velocity & Open Source Signal</h3>
-          <p className="gh-sub">
-            Public repository contributions, commit velocity, and open-source cadence recorded on GitHub.
-          </p>
-        </div>
-
-        <div className="gh-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            type="button"
-            className="gh-refresh-btn"
-            onClick={handleManualRefresh}
-            disabled={isRefreshing || dataState === DATA_STATES.LOADING}
-            title="Refresh GitHub activity from API"
-            aria-label="Refresh GitHub contribution data"
-          >
-            <RefreshCw size={13} className={isRefreshing ? 'spin-icon' : ''} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-
-          <a
-            href={profile.links.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="gh-profile-btn"
-            title="Visit Neel Shingavi on GitHub"
-          >
-            <span>github.com/{GITHUB_USERNAME}</span>
-            <ExternalLink size={14} aria-hidden="true" />
-          </a>
-        </div>
-      </div>
+      <CodingActivityHeader
+        badgeIcon={GitCommit}
+        badgeText="REPOSITORY CADENCE & GIT COMMITS"
+        heading="Codebase Velocity & Open Source Signal"
+        subtext="Public repository contributions, commit velocity, and open-source cadence recorded on GitHub."
+        onRefresh={handleManualRefresh}
+        isRefreshing={isRefreshing}
+        isLoading={dataState === DATA_STATES.LOADING}
+        refreshTitle="Refresh GitHub activity from API"
+        refreshAriaLabel="Refresh GitHub contribution data"
+        profileUrl={profile.links.github}
+        profileTitle="Visit Neel Shingavi on GitHub"
+        profileLabel={`github.com/${GITHUB_USERNAME}`}
+      />
 
       {/* GitHub Summary Stat Chips */}
       <div className="gh-stats-row">
