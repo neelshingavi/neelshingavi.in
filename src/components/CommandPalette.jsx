@@ -15,11 +15,25 @@ import {
   X,
   CornerDownLeft,
   Download,
+  BookOpen,
 } from 'lucide-react';
 import { profile } from '../data/portfolio.js';
 import { lenis } from '../hooks/useSmoothScroll.js';
+import { SECTIONS, PROJECT_COMMANDS } from '../data/navigation.js';
+import { projectCaseStudies } from '../data/caseStudies.js';
 
-export function CommandPalette({ isOpen, onClose }) {
+const sectionIconMap = {
+  work: Briefcase,
+  systems: Layers,
+  experience: Briefcase,
+  cadence: Code2,
+  skills: Cpu,
+  wins: Trophy,
+  architecture: Layers,
+  contact: Mail,
+};
+
+export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -68,126 +82,58 @@ export function CommandPalette({ isOpen, onClose }) {
   };
 
   const commands = useMemo(() => [
-    // NAVIGATION (Aligned exactly with numbered section flow)
+    // Home Action
     {
       id: 'nav-home',
       category: 'Navigation',
       label: 'Home / Hero Overview',
-      keywords: 'top start hero intro neel overview title',
+      keywords: 'top start hero intro neel overview title home',
       icon: Home,
       action: () => navigateTo('#top'),
     },
-    {
-      id: 'nav-systems',
+    // SECTIONS (Direct from centralized configuration)
+    ...SECTIONS.map((sec) => ({
+      id: `nav-${sec.id}`,
       category: 'Navigation',
-      label: '01 · Core Systems & Capabilities',
-      keywords: 'systems backend architecture capabilities distributed pipelines 01',
-      icon: Layers,
-      action: () => navigateTo('#systems'),
-    },
-    {
-      id: 'nav-experience',
-      category: 'Navigation',
-      label: '02 · Experience & Background',
-      keywords: 'experience background timeline education pict roles 02',
-      icon: Briefcase,
-      action: () => navigateTo('#experience'),
-    },
-    {
-      id: 'nav-work',
-      category: 'Navigation',
-      label: '03 · Selected Work & Projects',
-      keywords: 'work projects showcase certicraft payperuseai founderflow 03',
-      icon: Briefcase,
-      action: () => navigateTo('#work'),
-    },
-    {
-      id: 'nav-cadence',
-      category: 'Navigation',
-      label: '04 · Verified Engineering Cadence',
-      keywords: 'cadence coding activity heatmaps github leetcode codeforces 04 velocity pulse',
-      icon: Code2,
-      action: () => navigateTo('#cadence'),
-    },
-    {
-      id: 'nav-skills',
-      category: 'Navigation',
-      label: '05 · Stack Architecture & Skills',
-      keywords: 'skills stack technologies java python react node postgresql docker aws 05',
-      icon: Cpu,
-      action: () => navigateTo('#skills'),
-    },
-    {
-      id: 'nav-wins',
-      category: 'Navigation',
-      label: '06 · Competitive Proof & Wins',
-      keywords: 'wins awards hackathons recognitions iit bombay techsprint meta algorand 06',
-      icon: Trophy,
-      action: () => navigateTo('#wins'),
-    },
-    {
-      id: 'nav-architecture',
-      category: 'Navigation',
-      label: '07 · Production Architecture Deep Dives',
-      keywords: 'architecture system topology tradersdesk querypilot pipeline sync offline local first 07',
-      icon: Layers,
-      action: () => navigateTo('#architecture'),
-    },
-    {
-      id: 'nav-contact',
-      category: 'Navigation',
-      label: '08 · Contact & Collaboration',
-      keywords: 'contact email connect hire collaborate message pune 08',
-      icon: Mail,
-      action: () => navigateTo('#contact'),
-    },
+      label: `${sec.number} · ${sec.fullTitle}`,
+      keywords: sec.keywords,
+      icon: sectionIconMap[sec.id] || Layers,
+      action: () => navigateTo(sec.target),
+    })),
 
-    // PROJECTS
-    {
-      id: 'proj-td',
+    // PROJECTS (Direct deep links to architecture workbench or case study modal)
+    ...PROJECT_COMMANDS.map((proj) => ({
+      id: proj.id,
       category: 'Projects',
-      label: 'TradersDesk — Offline-First Trading Architecture',
-      keywords: 'tradersdesk java swing android sqlite supabase offline sync saree broker architecture',
+      label: proj.label,
+      keywords: proj.keywords,
       icon: Layers,
-      badge: 'Architecture',
-      action: () => navigateTo('#architecture'),
-    },
-    {
-      id: 'proj-qp',
-      category: 'Projects',
-      label: 'QueryPilot — NL-to-SQL Analytics Pipeline',
-      keywords: 'querypilot natural language sql llm upi analytics langchain postgresql architecture',
-      icon: Layers,
-      badge: 'Architecture',
-      action: () => navigateTo('#architecture'),
-    },
-    {
-      id: 'proj-ppu',
-      category: 'Projects',
-      label: 'PayPerUseAI — Usage-Based AI Payment Gateway',
-      keywords: 'payperuseai algorand web3 blockchain sse pyteal fast api billing',
-      icon: Layers,
-      badge: 'Web3 / AI',
-      action: () => navigateTo('#work'),
-    },
-    {
-      id: 'proj-cc',
-      category: 'Projects',
-      label: 'CertiCraft — Certificate Automation System',
-      keywords: 'certicraft certificate qr automation verification email batch pict',
-      icon: Layers,
-      badge: 'Automation',
-      action: () => navigateTo('#work'),
-    },
-    {
-      id: 'proj-ff',
-      category: 'Projects',
-      label: 'FounderFlow — Startup Operating System',
-      keywords: 'founderflow startup workflow productivity dashboard roadmap tasks',
-      icon: Layers,
-      badge: 'Platform',
-      action: () => navigateTo('#work'),
-    },
+      badge: proj.badge,
+      action: () => {
+        if (proj.caseStudyId && projectCaseStudies[proj.caseStudyId] && onOpenCaseStudy) {
+          onClose();
+          onOpenCaseStudy(projectCaseStudies[proj.caseStudyId]);
+          return;
+        }
+        navigateTo(proj.target);
+      },
+    })),
+
+    // CASE STUDIES (Direct technical case study modal triggers)
+    ...Object.values(projectCaseStudies).map((cs) => ({
+      id: `cs-${cs.id}`,
+      category: 'Case Studies',
+      label: `Case Study: ${cs.name} — Technical Architecture`,
+      keywords: `case study architecture ${cs.name.toLowerCase()} decisions tradeoffs outcomes deep dive`,
+      icon: BookOpen,
+      badge: 'Case Study',
+      action: () => {
+        onClose();
+        if (onOpenCaseStudy) {
+          onOpenCaseStudy(cs);
+        }
+      },
+    })),
 
     // ACTIONS
     {
@@ -217,7 +163,7 @@ export function CommandPalette({ isOpen, onClose }) {
       label: 'Open GitHub Profile',
       keywords: 'github code open source repositories git velocity contributions',
       icon: ExternalLink,
-      badge: '21 Repos',
+      badge: 'GitHub',
       action: () => {
         onClose();
         window.open(profile.links.github, '_blank', 'noopener,noreferrer');
@@ -227,9 +173,9 @@ export function CommandPalette({ isOpen, onClose }) {
       id: 'act-leetcode',
       category: 'Actions',
       label: 'Open LeetCode Profile',
-      keywords: 'leetcode dsa algorithms problems coding 169 solved rank',
+      keywords: 'leetcode dsa algorithms problems coding solved rank',
       icon: ExternalLink,
-      badge: '169 Solved',
+      badge: 'LeetCode',
       action: () => {
         onClose();
         window.open(profile.links.leetcode, '_blank', 'noopener,noreferrer');
@@ -239,9 +185,9 @@ export function CommandPalette({ isOpen, onClose }) {
       id: 'act-codeforces',
       category: 'Actions',
       label: 'Open Codeforces Profile',
-      keywords: 'codeforces cp competitive programming contest rating pupil 1279',
+      keywords: 'codeforces cp competitive programming contest rating pupil',
       icon: ExternalLink,
-      badge: '1279 Pupil',
+      badge: 'Codeforces',
       action: () => {
         onClose();
         window.open(profile.links.codeforces, '_blank', 'noopener,noreferrer');
@@ -298,8 +244,10 @@ export function CommandPalette({ isOpen, onClose }) {
         inputRef.current?.focus();
       }, 50);
     } else {
-      document.body.style.overflow = '';
-      lenis?.start();
+      if (!window.location.hash.toLowerCase().startsWith('#casestudy-')) {
+        document.body.style.overflow = '';
+        lenis?.start();
+      }
       setSearch('');
       setSelectedIndex(0);
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
@@ -307,8 +255,10 @@ export function CommandPalette({ isOpen, onClose }) {
       }
     }
     return () => {
-      document.body.style.overflow = '';
-      lenis?.start();
+      if (!window.location.hash.toLowerCase().startsWith('#casestudy-')) {
+        document.body.style.overflow = '';
+        lenis?.start();
+      }
     };
   }, [isOpen]);
 
@@ -402,82 +352,66 @@ export function CommandPalette({ isOpen, onClose }) {
 
         {/* Results List */}
         <div
-          className="cmd-list-container"
-          id="cmd-list"
           ref={listRef}
+          id="cmd-list"
+          className="cmd-results-list"
           role="listbox"
-          data-lenis-prevent="true"
-          onWheel={(e) => e.stopPropagation()}
+          aria-label="Available commands"
         >
           {filteredCommands.length === 0 ? (
             <div className="cmd-empty-state">
-              <p>No matching commands found for &ldquo;{search}&rdquo;</p>
-              <small>Try searching for &quot;TradersDesk&quot;, &quot;Experience&quot;, &quot;Resume&quot;, or &quot;Contact&quot;.</small>
+              <p>No results found for &ldquo;{search}&rdquo;</p>
+              <span>Try searching for &quot;Projects&quot;, &quot;Systems&quot;, or &quot;Resume&quot;</span>
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, items]) => (
-              <div key={category} className="cmd-group">
-                <div className="cmd-group-title">{category}</div>
-                <div className="cmd-group-items">
-                  {items.map((cmd) => {
-                    const thisIndex = flatCounter++;
-                    const isSelected = thisIndex === selectedIndex;
-                    const IconComponent = cmd.icon;
+              <div key={category} className="cmd-category-group" role="group" aria-label={category}>
+                <div className="cmd-category-header">{category}</div>
+                {items.map((cmd) => {
+                  const itemIndex = flatCounter++;
+                  const isSelected = itemIndex === selectedIndex;
+                  const Icon = cmd.icon;
 
-                    return (
-                      <div
-                        key={cmd.id}
-                        id={`cmd-${cmd.id}`}
-                        role="option"
-                        aria-selected={isSelected}
-                        className={`cmd-item ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => cmd.action()}
-                        onMouseEnter={() => {
-                          isKeyboardNavRef.current = false;
-                          setSelectedIndex(thisIndex);
-                        }}
-                      >
-                        <div className="cmd-item-left">
-                          <span className="cmd-item-icon">
-                            <IconComponent size={16} aria-hidden="true" />
-                          </span>
-                          <span className="cmd-item-label">{cmd.label}</span>
-                        </div>
-                        <div className="cmd-item-right">
-                          {cmd.badge && (
-                            <span className={`cmd-item-badge ${cmd.badge === 'Copied!' ? 'success' : ''}`}>
-                              {cmd.badge}
-                            </span>
-                          )}
-                          {isSelected && (
-                            <span className="cmd-item-enter">
-                              <CornerDownLeft size={13} aria-hidden="true" />
-                            </span>
-                          )}
-                        </div>
+                  return (
+                    <div
+                      key={cmd.id}
+                      id={`cmd-${cmd.id}`}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`cmd-item ${isSelected ? 'is-selected' : ''}`}
+                      onClick={() => cmd.action()}
+                      onMouseEnter={() => {
+                        setSelectedIndex(itemIndex);
+                      }}
+                    >
+                      <div className="cmd-item-left">
+                        <Icon size={16} className="cmd-item-icon" aria-hidden="true" />
+                        <span className="cmd-item-label">{cmd.label}</span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="cmd-item-right">
+                        {cmd.badge && <span className="cmd-item-badge">{cmd.badge}</span>}
+                        {isSelected && <CornerDownLeft size={13} className="cmd-enter-icon" aria-hidden="true" />}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ))
           )}
         </div>
 
-        {/* Footer Shortcut Hints */}
+        {/* Footer Shortcut Bar */}
         <div className="cmd-footer">
-          <div className="cmd-shortcut-hint">
-            <kbd className="cmd-kbd">↑</kbd>
-            <kbd className="cmd-kbd">↓</kbd>
-            <span>to navigate</span>
-          </div>
-          <div className="cmd-shortcut-hint">
-            <kbd className="cmd-kbd">↵</kbd>
-            <span>to select</span>
-          </div>
-          <div className="cmd-shortcut-hint">
-            <kbd className="cmd-kbd">ESC</kbd>
-            <span>to close</span>
+          <div className="cmd-footer-hints">
+            <span className="cmd-hint">
+              <kbd>↑</kbd> <kbd>↓</kbd> to navigate
+            </span>
+            <span className="cmd-hint">
+              <kbd>↵</kbd> to select
+            </span>
+            <span className="cmd-hint">
+              <kbd>ESC</kbd> to close
+            </span>
           </div>
         </div>
       </div>

@@ -1,40 +1,33 @@
 import { useState } from 'react';
-import { GitCommit, Code2, Trophy, Layers } from 'lucide-react';
+import { GitCommit, Code2, Trophy } from 'lucide-react';
 import { GitHubActivity } from './GitHubActivity.jsx';
 import { LeetCodeActivity } from './LeetCodeActivity.jsx';
 import { CodeforcesActivity } from './CodeforcesActivity.jsx';
 
 export function CodingActivityShowcase() {
-  const [activePlatform, setActivePlatform] = useState('github'); // 'github' | 'leetcode' | 'codeforces' | 'all'
+  const [activePlatform, setActivePlatform] = useState('github'); // 'github' | 'leetcode' | 'codeforces'
 
   const platforms = [
     {
       id: 'github',
       label: 'GitHub',
       icon: GitCommit,
-      highlight: '21 Repos · 1000 Commits',
+      highlight: 'Open Source Cadence',
       tone: 'lime',
     },
     {
       id: 'leetcode',
       label: 'LeetCode',
       icon: Code2,
-      highlight: '169 Solved · 83E/78M/8H',
+      highlight: 'Algorithmic Problem Solving',
       tone: 'amber',
     },
     {
       id: 'codeforces',
       label: 'Codeforces',
       icon: Trophy,
-      highlight: '1279 Rating · Pupil',
+      highlight: 'Div. 2 Competitive Contests',
       tone: 'cyan',
-    },
-    {
-      id: 'all',
-      label: 'All Signals',
-      icon: Layers,
-      highlight: 'Full Proof Suite',
-      tone: 'violet',
     },
   ];
 
@@ -44,7 +37,7 @@ export function CodingActivityShowcase() {
       <div className="activity-tabs-header">
         <div className="activity-tabs-intro">
           <p className="eyebrow activity-tabs-tag">04 / VERIFIED ENGINEERING CADENCE</p>
-          <h2 className="activity-tabs-title" id="cadence-heading">Development & Algorithmic Track Record</h2>
+          <h2 className="activity-tabs-title" id="cadence-heading">Development &amp; Algorithmic Track Record</h2>
         </div>
 
         <div className="activity-platform-tabs" role="tablist" aria-label="Coding platform selectors">
@@ -59,7 +52,7 @@ export function CodingActivityShowcase() {
                 id={`tab-${p.id}`}
                 aria-selected={isActive}
                 aria-controls={`panel-${p.id}`}
-                tabIndex={0}
+                tabIndex={isActive ? 0 : -1}
                 className={`platform-tab tone-${p.tone} ${isActive ? 'is-active' : ''}`}
                 onClick={() => setActivePlatform(p.id)}
               >
@@ -93,16 +86,7 @@ export function CodingActivityShowcase() {
             <CodeforcesActivity />
           </div>
         )}
-
-        {activePlatform === 'all' && (
-          <div id="panel-all" role="tabpanel" aria-labelledby="tab-all" className="activity-panel-wrap stacked-all">
-            <GitHubActivity />
-            <LeetCodeActivity />
-            <CodeforcesActivity />
-          </div>
-        )}
       </div>
     </div>
   );
 }
-

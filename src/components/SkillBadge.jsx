@@ -126,16 +126,33 @@ const LOGO_MAP = {
   'HTTP API Integration': { icon: Globe, color: '#14b8a6', isCustomSvg: false },
 };
 
-export const SkillBadge = ({ name }) => {
+export const SkillBadge = ({ name, onClick, isHighlighted }) => {
   const config = LOGO_MAP[name] || { icon: Code2, color: '#64748b', isCustomSvg: false };
   const IconComponent = config.icon;
   const magRef = useMagnetic(0.2);
 
+  const handleClick = () => {
+    if (onClick) onClick(name);
+  };
+
+  const handleKeyDown = (e) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick(name);
+    }
+  };
+
   return (
     <span 
       ref={magRef}
-      className="skill-badge" 
+      className={`skill-badge ${isHighlighted ? 'is-highlighted' : ''} ${onClick ? 'is-clickable' : ''}`} 
       style={{ '--hover-color': config.color }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-pressed={onClick ? Boolean(isHighlighted) : undefined}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      title={onClick ? (isHighlighted ? `Click to clear filter for ${name}` : `Click to highlight projects built with ${name}`) : undefined}
     >
       {config.isCustomSvg ? (
         <div aria-hidden="true" focusable="false" className="skill-icon-wrapper" style={{ display: 'flex' }}>

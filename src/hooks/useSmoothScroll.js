@@ -40,7 +40,24 @@ export function useSmoothScroll() {
     // Sync Lenis <-> ScrollTrigger so pinned/scrubbed animations track the smoothed position
     instance.on('scroll', ScrollTrigger.update);
 
+    // Live listener for OS reduced motion preference changes while page remains open
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionChange = (e) => {
+      const reduced = e.matches;
+      if (instance && instance.options) {
+        instance.options.duration = reduced ? 0 : 1.15;
+        instance.options.smoothWheel = !reduced;
+        instance.options.lerp = reduced ? 1 : 0.1;
+      }
+    };
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleMotionChange);
+    }
+
     return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleMotionChange);
+      }
       instance.destroy();
       lenis = null;
     };

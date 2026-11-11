@@ -51,7 +51,7 @@ export function ProjectFilters({
   return (
     <div
       className="project-filters"
-      role="tablist"
+      role="group"
       aria-label="Filter projects by category"
     >
       {categories.map((category, idx) => {
@@ -63,10 +63,8 @@ export function ProjectFilters({
           <button
             key={category}
             id={domId}
-            role="tab"
             type="button"
-            aria-selected={isSelected}
-            tabIndex={isSelected ? 0 : -1}
+            aria-pressed={isSelected}
             className={`filter-pill ${isSelected ? 'is-active' : ''}`}
             onClick={() => onSelectCategory?.(category)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
@@ -81,4 +79,3 @@ export function ProjectFilters({
     </div>
   );
 }
-

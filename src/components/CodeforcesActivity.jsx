@@ -1,194 +1,202 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Trophy, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { codeforcesConfig } from '../data/codingProfiles.js';
+import {
+  DATA_STATES,
+  readCache,
+  writeCache,
+  formatTimeAgo,
+  formatTooltipDate,
+  timestampToLocalDateKey,
+  buildAligned52WeekGrid,
+  safeNumber,
+} from '../utils/codingDataHelpers.js';
 
 const CACHE_KEY = `codeforces_contrib_${codeforcesConfig.username}`;
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-function formatTimeAgo(timestamp) {
-  if (!timestamp) return 'recently';
-  const diffMinutes = Math.floor((Date.now() - timestamp) / 60000);
-  if (diffMinutes < 1) return 'just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
-
-function build52WeekGrid(dayCounts) {
-  const days = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const countMap = new Map();
-  if (dayCounts) {
-    for (const [key, val] of Object.entries(dayCounts)) {
-      countMap.set(key, Number(val));
-    }
-  }
-
-  for (let i = 363; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const iso = d.toISOString().split('T')[0];
-    const count = countMap.get(iso) || 0;
-
-    let level = 0;
-    if (count >= 6) level = 4;
-    else if (count >= 4) level = 3;
-    else if (count >= 2) level = 2;
-    else if (count >= 1) level = 1;
-
-    days.push({ date: iso, count, level });
-  }
-
-  return days;
-}
-
 export function CodeforcesActivity() {
-  const [data, setData] = useState(codeforcesConfig.staticSnapshot);
-  const [dataState, setDataState] = useState('CACHED');
-  const [cacheTime, setCacheTime] = useState(Date.now() - 3600000);
+  const [data, setData] = useState(null);
+  const [dataState, setDataState] = useState(DATA_STATES.LOADING);
+  const [cacheTime, setCacheTime] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const gridContainerRef = useRef(null);
 
-  const fetchCodeforcesData = async (forceBypassCache = false) => {
+  const fetchCodeforcesData = async (abortSignal, forceBypassCache = false) => {
+    // 1. Check local cache
     if (!forceBypassCache) {
-      try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.payload?.rating) {
-            setData(parsed.payload);
-            setCacheTime(parsed.timestamp);
-            setDataState('CACHED');
-            return;
-          }
-        }
-      } catch {
-        // localStorage error
+      const cached = readCache(CACHE_KEY, CACHE_TTL_MS);
+      if (cached && !cached.isStale && typeof cached.payload?.rating === 'number') {
+        setData(cached.payload);
+        setCacheTime(cached.timestamp);
+        setDataState(DATA_STATES.CACHED);
+        return;
       }
     }
 
+    // 2. Fetch live endpoints sequentially or with controlled spacing to prevent rate limiting
     try {
-      const [resUser, resRating, resStatus] = await Promise.all([
-        fetch(codeforcesConfig.apiUrlInfo, { signal: AbortSignal.timeout(6000) }),
-        fetch(codeforcesConfig.apiUrlRating, { signal: AbortSignal.timeout(6000) }),
-        fetch(codeforcesConfig.apiUrlStatus, { signal: AbortSignal.timeout(6000) }),
-      ]);
-
-      if (!resUser.ok) throw new Error('Codeforces API user info failed');
+      // Step A: user.info (Mandatory)
+      const resUser = await fetch(codeforcesConfig.apiUrlInfo, { signal: abortSignal });
+      if (!resUser.ok) throw new Error(`user.info HTTP ${resUser.status}`);
       const jsonUser = await resUser.json();
-      const jsonRating = resRating.ok ? await resRating.json() : { result: [] };
-      const jsonStatus = resStatus.ok ? await resStatus.json() : { result: [] };
+      if (jsonUser.status !== 'OK' || !Array.isArray(jsonUser.result) || !jsonUser.result[0]) {
+        throw new Error('user.info payload invalid');
+      }
+      const u = jsonUser.result[0];
 
-      if (jsonUser.status === 'OK' && jsonUser.result?.[0]) {
-        const u = jsonUser.result[0];
-        const dayCounts = {};
-        let solvedCount = 0;
-        const uniqueSolved = new Set();
-
-        for (const sub of (jsonStatus.result || [])) {
-          const dt = new Date(sub.creationTimeSeconds * 1000).toISOString().split('T')[0];
-          dayCounts[dt] = (dayCounts[dt] || 0) + 1;
-          if (sub.verdict === 'OK') {
-            const pid = sub.problem.contestId + '-' + sub.problem.index;
-            if (!uniqueSolved.has(pid)) {
-              uniqueSolved.add(pid);
-              solvedCount++;
+      // Step B: user.rating (Rated contest history)
+      let ratedContestsCount = null;
+      let bestContestRank = null;
+      try {
+        const resRating = await fetch(codeforcesConfig.apiUrlRating, { signal: abortSignal });
+        if (resRating.ok) {
+          const jsonRating = await resRating.json();
+          if (jsonRating.status === 'OK' && Array.isArray(jsonRating.result)) {
+            ratedContestsCount = jsonRating.result.length;
+            if (jsonRating.result.length > 0) {
+              const ranks = jsonRating.result
+                .map((r) => r.rank)
+                .filter((rn) => typeof rn === 'number' && rn > 0);
+              if (ranks.length > 0) {
+                bestContestRank = Math.min(...ranks);
+              }
             }
           }
         }
-
-        const payload = {
-          rating: u.rating || 1279,
-          maxRating: u.maxRating || 1279,
-          rank: u.rank || 'pupil',
-          maxRank: u.maxRank || 'pupil',
-          contestsCount: jsonRating.result?.length || 4,
-          bestRank: 390,
-          solvedCount: solvedCount || 46,
-          totalSubmissions: jsonStatus.result?.length || 71,
-          dayCounts,
-        };
-
-        setData(payload);
-        const now = Date.now();
-        setCacheTime(now);
-        setDataState('LIVE');
-        try {
-          localStorage.setItem(
-            CACHE_KEY,
-            JSON.stringify({ timestamp: now, payload })
-          );
-        } catch {
-          // ignore
-        }
-        return;
+      } catch {
+        // user.rating failure is handled gracefully
       }
-    } catch {
-      // Use fallback
+
+      // Step C: user.status (Sample of submissions for calendar)
+      let dayCounts = {};
+      let recentUniqueSolved = 0;
+      let totalSubmissionsSample = 0;
+      try {
+        const resStatus = await fetch(codeforcesConfig.apiUrlStatus, { signal: abortSignal });
+        if (resStatus.ok) {
+          const jsonStatus = await resStatus.json();
+          if (jsonStatus.status === 'OK' && Array.isArray(jsonStatus.result)) {
+            totalSubmissionsSample = jsonStatus.result.length;
+            const uniqueSolvedSet = new Set();
+
+            for (const sub of jsonStatus.result) {
+              if (sub && sub.creationTimeSeconds) {
+                const localDate = timestampToLocalDateKey(sub.creationTimeSeconds);
+                if (localDate) {
+                  dayCounts[localDate] = (dayCounts[localDate] || 0) + 1;
+                }
+                if (sub.verdict === 'OK' && sub.problem) {
+                  const probKey = `${sub.problem.contestId || ''}-${sub.problem.index || ''}`;
+                  uniqueSolvedSet.add(probKey);
+                }
+              }
+            }
+            recentUniqueSolved = uniqueSolvedSet.size;
+          }
+        }
+      } catch {
+        // status failure is handled gracefully
+      }
+
+      const payload = {
+        rating: safeNumber(u.rating, 0),
+        maxRating: safeNumber(u.maxRating, safeNumber(u.rating, 0)),
+        rank: u.rank || 'unrated',
+        maxRank: u.maxRank || u.rank || 'unrated',
+        ratedContestsCount,
+        bestContestRank,
+        recentUniqueSolved,
+        totalSubmissionsSample,
+        dayCounts,
+      };
+
+      const now = Date.now();
+      setData(payload);
+      setCacheTime(now);
+      setDataState(DATA_STATES.LIVE);
+      writeCache(CACHE_KEY, payload);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      // Network/parse failure: check stale cache or documented snapshot
     }
 
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.payload?.rating) {
-          setData(parsed.payload);
-          setCacheTime(parsed.timestamp);
-          setDataState('CACHED');
-          return;
-        }
-      }
-    } catch {
-      // ignore
+    // 3. Fallback: Stale cache
+    const staleCache = readCache(CACHE_KEY, Infinity);
+    if (staleCache && typeof staleCache.payload?.rating === 'number') {
+      setData(staleCache.payload);
+      setCacheTime(staleCache.timestamp);
+      setDataState(DATA_STATES.CACHED);
+      return;
     }
 
-    setData(codeforcesConfig.staticSnapshot);
-    setDataState('CACHED');
+    // 4. Fallback: Documented snapshot
+    if (codeforcesConfig.staticSnapshot && typeof codeforcesConfig.staticSnapshot.rating === 'number') {
+      setData(codeforcesConfig.staticSnapshot);
+      setDataState(DATA_STATES.SNAPSHOT);
+      return;
+    }
+
+    // 5. Unavailable
+    setData(null);
+    setDataState(DATA_STATES.UNAVAILABLE);
   };
 
   useEffect(() => {
-    let isMounted = true;
-    fetchCodeforcesData().then(() => {
-      if (!isMounted) return;
-    });
+    const controller = new AbortController();
+    fetchCodeforcesData(controller.signal);
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, []);
 
   const handleManualRefresh = async () => {
+    if (isRefreshing) return;
     setIsRefreshing(true);
-    await fetchCodeforcesData(true);
-    setIsRefreshing(false);
+    const controller = new AbortController();
+    try {
+      await fetchCodeforcesData(controller.signal, true);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  const yearDays = useMemo(() => {
-    return build52WeekGrid(data?.dayCounts || codeforcesConfig.staticSnapshot.dayCounts);
+  const { weeks, sampleWindowSubmissionCount } = useMemo(() => {
+    const countMap = new Map();
+    if (data?.dayCounts && typeof data.dayCounts === 'object') {
+      for (const [key, val] of Object.entries(data.dayCounts)) {
+        countMap.set(key, Number(val || 0));
+      }
+    }
+
+    const { weeks: alignedWeeks, allDays } = buildAligned52WeekGrid(countMap, (count) => {
+      if (count >= 6) return 4;
+      if (count >= 4) return 3;
+      if (count >= 2) return 2;
+      if (count >= 1) return 1;
+      return 0;
+    });
+
+    const windowCount = allDays.reduce((acc, d) => acc + (d.isFuture ? 0 : d.count), 0);
+
+    return {
+      weeks: alignedWeeks,
+      sampleWindowSubmissionCount: windowCount,
+    };
   }, [data]);
 
-  const weeks = useMemo(() => {
-    const list = [];
-    for (let i = 0; i < yearDays.length; i += 7) {
-      list.push(yearDays.slice(i, i + 7));
-    }
-    return list;
-  }, [yearDays]);
-
-  const rating = data?.rating || codeforcesConfig.staticSnapshot.rating;
-  const rank = data?.rank || codeforcesConfig.staticSnapshot.rank;
-  const contestsCount = data?.contestsCount || codeforcesConfig.staticSnapshot.contestsCount;
-  const solvedCount = data?.solvedCount || codeforcesConfig.staticSnapshot.solvedCount;
-  const totalSubmissions = data?.totalSubmissions || codeforcesConfig.staticSnapshot.totalSubmissions;
-  const bestRank = data?.bestRank || codeforcesConfig.staticSnapshot.bestRank;
+  const rating = safeNumber(data?.rating, null);
+  const rank = data?.rank || '—';
+  const ratedContestsCount = safeNumber(data?.ratedContestsCount, null);
+  const recentUniqueSolved = safeNumber(data?.recentUniqueSolved, null);
+  const totalSubmissionsSample = safeNumber(data?.totalSubmissionsSample, null);
+  const bestContestRank = safeNumber(data?.bestContestRank, null);
 
   const handleCellHover = (e, day) => {
-    if (!gridContainerRef.current) return;
+    if (!gridContainerRef.current || day.isFuture) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const parentRect = gridContainerRef.current.getBoundingClientRect();
     setTooltipPos({
@@ -202,27 +210,17 @@ export function CodeforcesActivity() {
     setHoveredDay(null);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   return (
     <div className="github-activity-shell codeforces-activity-shell" aria-label="Codeforces Competitive Programming Activity">
       <div className="gh-header">
         <div className="gh-title-group">
           <div className="gh-badge cf-badge">
             <Trophy size={14} aria-hidden="true" />
-            <span>COMPETITIVE PROGRAMMING & CONTEST SIGNALS</span>
+            <span>COMPETITIVE PROGRAMMING & TIMED CONTESTS</span>
           </div>
           <h3 className="gh-heading">Contest Performance & Div. 2 Velocity</h3>
           <p className="gh-sub">
-            Real-time competitive programming ratings, timed contest rounds, and problem submissions on Codeforces.
+            Verified competitive programming ratings, timed contest rounds, and submissions recorded on Codeforces.
           </p>
         </div>
 
@@ -231,7 +229,7 @@ export function CodeforcesActivity() {
             type="button"
             className="gh-refresh-btn cf-refresh-btn"
             onClick={handleManualRefresh}
-            disabled={isRefreshing}
+            disabled={isRefreshing || dataState === DATA_STATES.LOADING}
             title="Refresh Codeforces activity from API"
             aria-label="Refresh Codeforces activity data"
           >
@@ -255,34 +253,64 @@ export function CodeforcesActivity() {
       {/* Codeforces Summary Stat Chips */}
       <div className="gh-stats-row cf-stats-row">
         <div className="gh-stat-chip">
-          <strong className="gh-stat-val cf-val">{rating}</strong>
+          <strong className="gh-stat-val cf-val">
+            {dataState === DATA_STATES.LOADING ? '—' : rating !== null ? rating : '—'}
+          </strong>
           <span className="gh-stat-label">Rating · {rank.toUpperCase()}</span>
         </div>
         <div className="gh-stat-chip">
-          <strong className="gh-stat-val cf-val">Rank {bestRank}</strong>
-          <span className="gh-stat-label">Div. 2 Best Contest Rank</span>
+          <strong className="gh-stat-val cf-val">
+            {dataState === DATA_STATES.LOADING
+              ? '—'
+              : bestContestRank !== null
+                ? `Rank #${bestContestRank}`
+                : ratedContestsCount !== null
+                  ? `${ratedContestsCount} Rated Rounds`
+                  : '—'}
+          </strong>
+          <span className="gh-stat-label">
+            {bestContestRank !== null ? 'Best Contest Placement' : 'Contest Participation'}
+          </span>
         </div>
         <div className="gh-stat-chip">
           <strong className="gh-stat-val cf-val">
-            {solvedCount}+ Solved
+            {dataState === DATA_STATES.LOADING
+              ? '—'
+              : recentUniqueSolved !== null
+                ? `${recentUniqueSolved} Solved`
+                : '—'}
           </strong>
-          <span className="gh-stat-label">{contestsCount} Contests · {totalSubmissions} Submissions</span>
+          <span className="gh-stat-label">
+            {totalSubmissionsSample !== null
+              ? `Sample (${totalSubmissionsSample} Submissions)`
+              : 'Recent Submissions'}
+          </span>
         </div>
         <div className="gh-stat-chip">
           <div className="gh-data-status">
-            {dataState === 'LIVE' && (
+            {dataState === DATA_STATES.LIVE && (
               <span className="gh-state-pill live">
                 <CheckCircle2 size={12} /> Live Sync
               </span>
             )}
-            {dataState === 'CACHED' && (
+            {dataState === DATA_STATES.CACHED && (
               <span className="gh-state-pill cached cf-cached">
                 <Clock size={12} /> Cached ({formatTimeAgo(cacheTime)})
               </span>
             )}
-            {dataState === 'UNAVAILABLE' && (
+            {dataState === DATA_STATES.SNAPSHOT && (
               <span className="gh-state-pill unavailable">
-                <AlertCircle size={12} /> Verified Snapshot
+                <AlertCircle size={12} /> Snapshot ({codeforcesConfig.staticSnapshot.capturedAt})
+              </span>
+            )}
+            {dataState === DATA_STATES.UNAVAILABLE && (
+              <span className="gh-state-pill unavailable">
+                <AlertCircle size={12} /> Unavailable
+              </span>
+            )}
+            {dataState === DATA_STATES.LOADING && (
+              <span className="gh-state-pill loading">
+                <RefreshCw size={12} className="spin-icon" /> Fetching...
               </span>
             )}
           </div>
@@ -291,71 +319,99 @@ export function CodeforcesActivity() {
       </div>
 
       {/* Submission Calendar Heatmap */}
-      <div className="gh-calendar-wrapper" ref={gridContainerRef}>
-        {hoveredDay && (
+      {dataState === DATA_STATES.UNAVAILABLE ? (
+        <div className="gh-fallback-card" role="region" aria-label="Codeforces Data Status">
+          <div className="gh-fallback-content">
+            <AlertCircle size={28} className="gh-fallback-icon" />
+            <h4>Codeforces data currently unavailable</h4>
+            <p>
+              Codeforces public API is temporarily unreachable or rate-limited. You can inspect Neel Shingavi&apos;s verified contest rating history and submissions directly on Codeforces.
+            </p>
+            <a
+              href={codeforcesConfig.profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="primary-action"
+              style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              <span>View @{codeforcesConfig.username} on Codeforces</span>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+      ) : dataState === DATA_STATES.LOADING && !data ? (
+        <div className="gh-loading-card" style={{ padding: '36px', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+          <RefreshCw size={24} className="spin-icon" style={{ margin: '0 auto 12px', display: 'block' }} />
+          <p>Retrieving verified Codeforces rating and submissions...</p>
+        </div>
+      ) : (
+        <div className="gh-calendar-wrapper" ref={gridContainerRef}>
+          {hoveredDay && !hoveredDay.isFuture && (
+            <div
+              className="gh-tooltip cf-tooltip"
+              style={{
+                left: `${tooltipPos.x}px`,
+                top: `${tooltipPos.y}px`,
+                transform: 'translate(-50%, -100%)',
+              }}
+              role="tooltip"
+            >
+              <strong>{hoveredDay.count} submission{hoveredDay.count === 1 ? '' : 's'}</strong>
+              <span>{formatTooltipDate(hoveredDay.date)}</span>
+            </div>
+          )}
+
           <div
-            className="gh-tooltip cf-tooltip"
-            style={{
-              left: `${tooltipPos.x}px`,
-              top: `${tooltipPos.y}px`,
-              transform: 'translate(-50%, -100%)',
-            }}
-            role="tooltip"
+            className="gh-calendar-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label="52-week Codeforces activity timeline. Scroll horizontally if needed."
           >
-            <strong>{hoveredDay.count} submission{hoveredDay.count === 1 ? '' : 's'}</strong>
-            <span>{formatDate(hoveredDay.date)}</span>
+            <div className="gh-calendar-grid cf-grid" role="grid" aria-label="52-Week Codeforces Submission Calendar">
+              {weeks.map((week, wIdx) => (
+                <div key={wIdx} className="gh-cal-col" role="row">
+                  {week.map((day) => {
+                    const isHovered = hoveredDay?.date === day.date;
+                    return (
+                      <span
+                        key={day.date}
+                        role="gridcell"
+                        aria-label={
+                          day.isFuture
+                            ? undefined
+                            : `${day.count} submission${day.count === 1 ? '' : 's'} on ${day.date}`
+                        }
+                        className={`gh-cal-cell cf-cal-cell level-${day.level || 0} ${isHovered ? 'is-hovered' : ''} ${day.isFuture ? 'is-future' : ''}`}
+                        onMouseEnter={(e) => handleCellHover(e, day)}
+                        onMouseLeave={handleCellLeave}
+                        tabIndex={-1}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        <div
-          className="gh-calendar-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label="52-week Codeforces activity timeline. Scroll horizontally if needed."
-        >
-          <div className="gh-calendar-grid cf-grid" role="grid" aria-label="52-Week Codeforces Submission Calendar">
-            {weeks.map((week, wIdx) => (
-              <div key={wIdx} className="gh-cal-col" role="row">
-                {week.map((day) => {
-                  const isHovered = hoveredDay?.date === day.date;
-                  return (
-                    <button
-                      key={day.date}
-                      type="button"
-                      role="gridcell"
-                      aria-label={`${day.count} submissions on ${day.date}`}
-                      className={`gh-cal-cell cf-cal-cell level-${day.level || 0} ${isHovered ? 'is-hovered' : ''}`}
-                      onMouseEnter={(e) => handleCellHover(e, day)}
-                      onMouseLeave={handleCellLeave}
-                      onFocus={(e) => handleCellHover(e, day)}
-                      onBlur={handleCellLeave}
-                      tabIndex={0}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+          {/* Legend & Verification Attribution */}
+          <div className="gh-cal-footer">
+            <span className="gh-footer-caption">
+              52-Week Contest Timeline · Rating: {rating ?? '—'} ({rank}) · {sampleWindowSubmissionCount} recent submissions sampled
+              {dataState === DATA_STATES.CACHED && cacheTime ? ` · Cached ${formatTimeAgo(cacheTime)}` : ''}
+              {dataState === DATA_STATES.SNAPSHOT ? ` · Documented snapshot from ${codeforcesConfig.staticSnapshot.capturedAt}` : ''}
+            </span>
+            <div className="gh-legend cf-legend" aria-hidden="true">
+              <span>Less</span>
+              <span className="legend-cell cf-legend-cell level-0" />
+              <span className="legend-cell cf-legend-cell level-1" />
+              <span className="legend-cell cf-legend-cell level-2" />
+              <span className="legend-cell cf-legend-cell level-3" />
+              <span className="legend-cell cf-legend-cell level-4" />
+              <span>More</span>
+            </div>
           </div>
         </div>
-
-        {/* Legend & Verification Attribution */}
-        <div className="gh-cal-footer">
-          <span className="gh-footer-caption">
-            52-Week Contest Activity · Rating: {rating} ({rank}) · {solvedCount}+ unique problems solved
-            {dataState === 'CACHED' && cacheTime ? ` · Last refreshed ${formatTimeAgo(cacheTime)}` : ''}
-          </span>
-          <div className="gh-legend cf-legend" aria-hidden="true">
-            <span>Less</span>
-            <span className="legend-cell cf-legend-cell level-0" />
-            <span className="legend-cell cf-legend-cell level-1" />
-            <span className="legend-cell cf-legend-cell level-2" />
-            <span className="legend-cell cf-legend-cell level-3" />
-            <span className="legend-cell cf-legend-cell level-4" />
-            <span>More</span>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
-

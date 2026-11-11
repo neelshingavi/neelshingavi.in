@@ -1,5 +1,5 @@
 /**
- * Architecture and technical pipeline specifications for Phase 02
+ * Architecture and technical pipeline specifications
  * Verified against Neel Shingavi's shipped software and technical stack.
  */
 
@@ -25,8 +25,8 @@ export const systemsCapabilities = [
     summary:
       'Building production analytical reasoning pipelines that convert natural language queries into accurate, schema-grounded database operations.',
     details: [
-      'Context-grounded prompt engineering and few-shot SQL generation using LangChain.',
-      'Strict read-only safety guardrails preventing unauthorized data manipulation.',
+      'Context-grounded prompt orchestration and few-shot SQL generation using LangChain.',
+      'Strict read-only safety guardrails allowing SELECT statements and blocking destructive keywords.',
       'Contextual insight extraction over large transaction volumes (250K+ UPI records).',
       'Revenue velocity metrics and automated trend identification for business users.',
     ],
@@ -56,7 +56,7 @@ export const systemsCapabilities = [
       'Local-first desktop interface built with Java Swing for textile trading brokers.',
       'Companion Android mobile workflows for field reconciliation and cloud synchronization.',
       'End-to-end delivery of 4 client projects with active production usage.',
-      'Offline-first reliability ensuring business continuity without internet connectivity.',
+      'Resilient offline-first persistence ensuring business continuity without internet connectivity.',
     ],
     tech: ['Java Swing', 'Android', 'Maven', 'Supabase', 'SQLite'],
   },
@@ -71,10 +71,10 @@ export const tradersDeskArchitecture = {
       id: 'client',
       label: 'Client Applications',
       role: 'Cross-Platform UI',
-      tech: 'Java Swing (Desktop) · Android (Mobile)',
+      tech: 'Java Swing (Desktop) · Flutter (Mobile)',
       description:
-        'Dual-client interface designed for rapid daily operations. Native Java Swing provides high-density keyboard-driven desktop entry for office billing; Android client provides mobile ledger access for field visits.',
-      metrics: '5,000+ monthly trade records · 2,000+ client transactions',
+        'Dual-client interface designed for rapid daily operations. Native Java Swing provides high-density keyboard-driven desktop entry for office billing; Flutter client provides mobile ledger access for field visits.',
+      metrics: '5,000+ monthly trade-related records · 2,000+ client transactions across 3 clients',
       flowStep: 1,
     },
     {
@@ -84,7 +84,7 @@ export const tradersDeskArchitecture = {
       tech: 'Core Java · Hibernate ORM · DAO Layer',
       description:
         'Enforces transaction integrity, commission settlement rules, returns calculation, and ledger reconciliation. Implements the Data Access Object (DAO) pattern to abstract persistence from UI components.',
-      metrics: 'Zero-latency UI response',
+      metrics: 'Sub-millisecond local responses for ledger operations',
       flowStep: 2,
     },
     {
@@ -93,8 +93,8 @@ export const tradersDeskArchitecture = {
       role: 'Offline-First Storage',
       tech: 'SQLite Database · Embedded Engine',
       description:
-        'Zero-configuration embedded SQLite database resides directly on the client machine. Guarantees 100% offline capability so brokers can record trades, print invoices, and update balances during network outages.',
-      metrics: 'Instant read/write operations',
+        'Zero-configuration embedded SQLite database resides directly on client machines (desktop Hibernate, mobile sqflite). Provides local ACID execution so brokers can record trades, print invoices, and update balances during network outages.',
+      metrics: 'Instant local read/write transactions (Local ACID)',
       flowStep: 3,
     },
     {
@@ -103,14 +103,14 @@ export const tradersDeskArchitecture = {
       role: 'Push / Pull Reconciliation',
       tech: 'Incremental HTTP Sync · Delta Queue',
       description:
-        'Monitors local ledger mutations using timestamped changelogs. When an active internet connection is detected, asynchronously pushes local diffs and pulls remote updates to ensure multi-device consistency.',
-      metrics: 'Non-blocking background thread',
+        'Monitors local ledger mutations using changelogs with monotonic timestamps and change vectors. When internet connectivity is detected, asynchronously pushes local diffs and pulls remote updates.',
+      metrics: 'Non-blocking background sync thread',
       flowStep: 4,
     },
     {
       id: 'cloud_db',
       label: 'Cloud Persistence',
-      role: 'Centralized Master Replica',
+      role: 'Centralized Cloud Store',
       tech: 'Supabase · Managed PostgreSQL',
       description:
         'Centralized cloud database serving as the durable source of truth. Stores encrypted broker ledger snapshots, multi-device backup archives, and enables synchronized state across desktop and mobile devices.',
@@ -120,7 +120,7 @@ export const tradersDeskArchitecture = {
   ],
   connections: [
     { from: 'client', to: 'logic', label: 'User Actions & Forms' },
-    { from: 'logic', to: 'local_db', label: 'ACID Local Writes' },
+    { from: 'logic', to: 'local_db', label: 'Local SQLite Transactions' },
     { from: 'local_db', to: 'sync', label: 'Delta Mutation Log' },
     { from: 'sync', to: 'cloud_db', label: 'HTTPS Push / Pull' },
   ],
@@ -134,13 +134,13 @@ export const tradersDeskArchitecture = {
     {
       step: 2,
       title: 'Immediate Local Commit',
-      desc: 'Business logic validates ledger calculations and writes atomically to local SQLite with zero network delay.',
+      desc: 'Business logic validates ledger calculations and writes atomically to local SQLite transactions with zero network delay.',
       nodeId: 'local_db',
     },
     {
       step: 3,
       title: 'Mutation Queued',
-      desc: 'The sync engine registers an incremental delta entry with a cryptographic timestamp.',
+      desc: 'The sync engine registers an incremental mutation record with a monotonic timestamp and change vector.',
       nodeId: 'sync',
     },
     {
@@ -153,7 +153,7 @@ export const tradersDeskArchitecture = {
 };
 
 export const queryPilotPipeline = {
-  title: 'QueryPilot NL-to-SQL Analytics Pipeline',
+  title: 'Natural Language to SQL Analytics Pipeline',
   summary:
     'A Natural Language to SQL analytics pipeline that enables business users to query 250,000+ UPI transaction records in conversational English and receive verified SQL execution results.',
   stages: [
@@ -173,7 +173,7 @@ export const queryPilotPipeline = {
       tech: 'Relational Schema · DDL Metadata',
       description:
         'Extracts table schemas, column types, foreign key relationships, and representative categorical values into a structured context bundle.',
-      sample: 'Tables: transactions(id, amount, merchant, timestamp, status, upi_ref)',
+      sample: 'Tables: transactions(id, amount, merchant, category, timestamp, status, latency_ms, upi_ref)',
     },
     {
       id: 'nl_query',
@@ -182,7 +182,7 @@ export const queryPilotPipeline = {
       tech: 'Conversational Input · Query Normalization',
       description:
         'User asks conversational business questions (e.g. "What was our highest-velocity merchant category last month?") without needing SQL knowledge.',
-      sample: '"Show total transaction volume and failure rates by merchant category for Q1"',
+      sample: '"Show total transaction volume and average latency by merchant category for successful payments"',
     },
     {
       id: 'llm_reasoning',
@@ -197,10 +197,10 @@ export const queryPilotPipeline = {
       id: 'safety_gate',
       name: 'SQL Validation & Safety Gate',
       category: 'Security Layer',
-      tech: 'SQL Parser · Read-Only Guardrails',
+      tech: 'Read-Only Guardrails · Keyword Filter',
       description:
-        'Verifies that generated queries are strictly read-only SELECT statements. Rejects destructive operations (DROP, DELETE, UPDATE) and prevents SQL injection.',
-      sample: 'Safety: PASS (ReadOnly, SyntaxValid, TargetTableValid)',
+        'Verifies that generated queries are strictly read-only SELECT statements. Rejects destructive operations (DROP, DELETE, UPDATE, INSERT, ALTER) to preserve data integrity.',
+      sample: 'Safety Check: PASS (ReadOnly: true, StatementType: SELECT, DisallowedTokens: 0)',
     },
     {
       id: 'execution',
@@ -209,7 +209,7 @@ export const queryPilotPipeline = {
       tech: 'PostgreSQL · Analytical SQL Engine',
       description:
         'Executes the verified SQL query against the indexed PostgreSQL relational database with execution time profiling.',
-      sample: 'SELECT category, SUM(amount), AVG(latency_ms) FROM transactions GROUP BY category;',
+      sample: 'SELECT category, COUNT(id) AS txn_count, SUM(amount) AS total_volume, AVG(latency_ms) AS avg_latency FROM transactions WHERE status = \'SUCCESS\' GROUP BY category ORDER BY total_volume DESC;',
     },
     {
       id: 'insights',
@@ -218,7 +218,7 @@ export const queryPilotPipeline = {
       tech: 'Contextual Analytics · Velocity Metrics',
       description:
         'Synthesizes tabular SQL results into conversational summaries, trend identification, and actionable business intelligence.',
-      sample: 'Insight: Electronics lead at ₹4.2M volume; failure rate dropped 1.8% week-over-week.',
+      sample: 'Illustrative Insight: Electronics lead at ₹4.2M volume; failure rate dropped 1.8% week-over-week.',
     },
   ],
 };
@@ -240,8 +240,8 @@ export const detailedAchievements = [
       'Presented live system demonstration to senior engineering and data science judges.',
     ],
     tone: 'lime',
-    linkText: 'View Project Details',
-    projectAnchor: '#work',
+    linkText: 'View Case Study',
+    projectAnchor: '#casestudy-querypilot',
   },
   {
     id: 'techsprint',
@@ -259,8 +259,8 @@ export const detailedAchievements = [
       'Integrated bulk email queuing system reducing manual organizer effort by 80%.',
     ],
     tone: 'gold',
-    linkText: 'View Project Details',
-    projectAnchor: '#work',
+    linkText: 'View Case Study',
+    projectAnchor: '#casestudy-certicraft',
   },
   {
     id: 'gdg',
@@ -303,36 +303,36 @@ export const detailedAchievements = [
     title: 'Finalist — Algorand HackSeries 3.0',
     organization: 'Algorand Foundation',
     year: '2026',
-    scale: 'Top 30 of 800+',
-    role: 'Core Engineer',
+    scale: 'Top 30 of 800+ Teams',
+    role: 'Team Leader',
     project: 'PayPerUseAI',
     summary:
       'Selected in the top 30 teams for building PayPerUseAI, a decentralized usage-based AI payment gateway metering model inference via PyTeal smart contracts.',
     impact: [
-      'Implemented smart escrow contract logic on Algorand for micropayments.',
-      'Engineered sub-200ms Server-Sent Events (SSE) streaming for real-time inference billing.',
+      'Architected smart contract escrow settlements on Algorand testnet.',
+      'Engineered SSE streaming endpoint for sub-200ms model response delivery.',
+      'Demonstrated production micropayment flow for multi-tenant LLM inference.',
     ],
-    tone: 'lime',
-    linkText: 'View Project Details',
-    projectAnchor: '#work',
+    tone: 'gold',
+    linkText: 'View Case Study',
+    projectAnchor: '#casestudy-payperuseai',
   },
   {
     id: 'indradhanu',
     title: "2nd Position — Indradhanu'25 Project Competition",
     organization: 'State-Level Technical Summit',
     year: '2025',
-    scale: '250+ Projects',
-    role: 'Team Leader',
+    scale: '250+ Projects Evaluated',
+    role: 'Lead Architect',
     project: 'Software Systems',
     summary:
       'Awarded 2nd position at the state level for engineering practical, high-impact software systems addressing business operational bottlenecks.',
     impact: [
-      'Evaluated on software architecture robustness, code maintainability, and client readiness.',
-      'Demonstrated end-to-end working software with offline persistence and cloud synchronization.',
+      'Built and demonstrated modular business management system with local-first workflows.',
+      'Awarded top marks for system design practicality and execution quality.',
     ],
     tone: 'teal',
     linkText: 'View Background',
-    projectAnchor: '#systems',
+    projectAnchor: '#experience',
   },
 ];
-
