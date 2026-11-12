@@ -1455,13 +1455,31 @@
 @media (max-width: 768px) {
   .hero-section {
     min-height: auto;
-    padding-top: 100px;
-    padding-bottom: 60px;
+    padding-top: 84px;
+    padding-bottom: 42px;
+  }
+
+  .hero-capabilities-shell {
+    margin: 16px 0 18px;
+    padding: 12px 14px;
+  }
+
+  .capabilities-tablist {
+    gap: 6px;
+  }
+
+  .capability-pill {
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: 11px;
+    gap: 5px;
   }
 
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+    margin-top: 20px;
   }
 
   .hero-cta-primary,
@@ -1470,25 +1488,54 @@
   }
 
   .hero-socials-strip {
-    justify-content: center;
+    justify-content: flex-start;
     margin-left: 0;
-    margin-top: 8px;
+    margin-top: 6px;
+    gap: 8px;
+  }
+
+  .hero-social-pill {
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  .project-filters {
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .filter-pill {
+    min-height: 40px;
+    padding: 7px 12px;
+    font-size: 0.78rem;
   }
 
   .secondary-projects-grid,
   .projects-compact-grid,
   .projects-compact-grid.is-filtered {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 14px;
   }
 
   .project-compact-card {
-    padding: 20px;
+    padding: 18px;
+  }
+
+  .compact-actions-bar {
+    gap: 8px;
+  }
+
+  .compact-actions-bar .primary-showcase-btn,
+  .compact-actions-bar .secondary-read-btn,
+  .compact-actions-bar .secondary-showcase-btn {
+    min-height: 42px;
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .footer-content {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 16px;
   }
 
   .case-study-dialog {
@@ -1516,6 +1563,13 @@
 
   .showcase-title {
     font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 

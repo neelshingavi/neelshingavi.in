@@ -55,14 +55,14 @@ body {
     linear-gradient(0deg, rgba(7, 5, 11, 0.7), transparent 40%);
 }
 
-/* The dim: fully visible hero at the top of the page, calm and readable
-   behind the cards further down. Static fallback first... */
+/* The dim: fully visible hero at the top of the page, gently dimmed further down
+   so the ambient portrait/video stays visible in margins while cards stay crisp. */
 .bg-shade::after {
   content: '';
   position: absolute;
   inset: 0;
   background: #07050b;
-  opacity: 0.97;
+  opacity: 0.58;
 }
 
 /* ...then driven by scroll position with ZERO JavaScript where supported
@@ -76,11 +76,11 @@ body {
     animation-timing-function: linear;
     animation-fill-mode: both;
     animation-timeline: scroll(root);
-    animation-range: 0px 110vh;
+    animation-range: 0px 140vh;
   }
   @keyframes bg-dim-in {
     to {
-      opacity: 0.985;
+      opacity: 0.66;
     }
   }
 }
@@ -112,7 +112,7 @@ body {
 .signal-node {
   background:
     linear-gradient(180deg, rgba(244, 240, 223, 0.07), rgba(244, 240, 223, 0.02)),
-    rgba(9, 6, 14, 0.82);
+    rgba(9, 6, 14, 0.9);
 }
 
 .site-header {
@@ -804,7 +804,7 @@ body::after {
   padding: 20px 22px;
   background:
     linear-gradient(180deg, rgba(244, 240, 223, 0.05), rgba(244, 240, 223, 0.015)),
-    rgba(12, 9, 20, 0.7);
+    rgba(12, 9, 20, 0.9);
   border: 1px solid rgba(244, 240, 223, 0.12);
   border-radius: 6px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
@@ -2240,7 +2240,7 @@ body::after {
 .timeline-node-card {
   background:
     linear-gradient(180deg, rgba(244, 240, 223, 0.05), rgba(244, 240, 223, 0.015)),
-    rgba(12, 9, 20, 0.7);
+    rgba(12, 9, 20, 0.9);
   border: 1px solid rgba(244, 240, 223, 0.12);
   border-radius: 6px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
@@ -2861,8 +2861,52 @@ body::after {
 }
 
 @media (max-width: 768px) {
+  .hero-section {
+    overflow: clip;
+  }
+  .hero-spotlight-layer {
+    inset: 0;
+  }
+  .cadence-section {
+    padding: 56px 0;
+  }
+  .activity-tabs-header {
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .activity-tabs-title {
+    font-size: 1.55rem;
+    line-height: 1.15;
+  }
+  .activity-platform-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .platform-tab {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 6px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .platform-tab-badge {
+    display: none;
+  }
+  .platform-tab-name {
+    font-size: 0.76rem;
+  }
   .systems-tiles-grid {
     grid-template-columns: 1fr;
+  }
+  .system-node-card {
+    min-height: auto;
+    padding: 16px;
+  }
+  .system-detail-drawer {
+    padding: 18px 16px;
   }
   .drawer-specs-grid {
     grid-template-columns: 1fr;
@@ -2870,7 +2914,11 @@ body::after {
   .architecture-explorer-shell,
   .querypilot-pipeline-shell,
   .github-activity-shell {
-    padding: 24px 18px;
+    padding: 20px 16px;
+  }
+  .gh-heading {
+    font-size: 1.38rem;
+    line-height: 1.2;
   }
   .gh-header {
     display: flex;
@@ -2901,10 +2949,12 @@ body::after {
   .gh-refresh-btn {
     padding: 6px 10px;
     font-size: 0.72rem;
+    min-height: 36px;
   }
   .gh-profile-btn {
     min-width: 0;
     max-width: 100%;
+    min-height: 36px;
     padding: 6px 10px;
     font-size: 0.72rem;
   }
@@ -2915,6 +2965,11 @@ body::after {
   }
   .gh-profile-btn svg {
     flex-shrink: 0;
+  }
+  .gh-cal-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
   .architecture-diagram-wrap {
     padding: 10px 0;
@@ -2933,19 +2988,104 @@ body::after {
   }
   .gh-stats-row {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .gh-stat-chip {
+    padding: 11px 12px;
+  }
+  .gh-stat-val {
+    font-size: 0.92rem;
+  }
+  .timeline-filter-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .timeline-tab-pill {
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.74rem;
+  }
+  .unified-timeline-stream {
+    padding-left: 22px;
+  }
+  .timeline-rail-track {
+    left: 4px;
+  }
+  .timeline-node-dot {
+    left: -24px;
+    top: 18px;
   }
   .timeline-card-header {
+    position: relative;
     flex-direction: column;
+    padding: 16px;
     gap: 10px;
   }
-  .card-header-meta {
+  .card-header-main {
+    padding-right: 28px;
+  }
+  .card-type-row {
     flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .card-type-badge {
+    white-space: nowrap;
+    font-size: 0.64rem;
+  }
+  .card-company-name {
+    font-size: 1.18rem;
+  }
+  .card-header-meta {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .expand-chevron {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+  }
+  .timeline-card-drawer {
+    padding: 14px 16px 18px;
   }
   .achievements-cards-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .achievement-card-interactive {
+    padding: 18px 16px;
+  }
+  .ach-card-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ach-inspect-link {
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
   }
   .achievement-modal-box {
-    padding: 22px 20px;
+    padding: 22px 18px;
+  }
+  .form-submit-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .submit-btn,
+  .copy-email-btn {
+    width: 100%;
+  }
+  .copy-email-btn {
+    padding: 0 12px;
+    font-size: 0.78rem;
+    white-space: nowrap;
   }
 }
 
@@ -3863,29 +4003,45 @@ footer.site-footer,
     padding: 56px 20px 36px !important;
   }
   .footer-content {
-    grid-template-columns: 1fr 1fr;
-    gap: 32px 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 16px;
   }
   .footer-brand-pane {
     grid-column: 1 / -1;
+  }
+  .footer-nav-col:last-child {
+    grid-column: 1 / -1;
+  }
+  .footer-nav-col:last-child ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
   }
   .footer-status-pill {
     white-space: normal;
   }
   .footer-nav-col a {
     white-space: normal;
+    align-items: flex-start;
+    line-height: 1.35;
+    font-size: 0.84rem;
+  }
+  .footer-nav-num {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .footer-bottom-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    margin-top: 40px;
+    margin-top: 32px;
   }
 }
 
-@media (max-width: 480px) {
-  .footer-content {
+@media (max-width: 359px) {
+  .footer-content,
+  .footer-nav-col:last-child ul {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 20px;
   }
 }
