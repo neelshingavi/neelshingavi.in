@@ -1,37 +1,69 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 
-/**
- * Lightweight, non-blocking initial page transition.
- * Immediately reveals the hero without artificial delays or fake percentage counters.
- */
 export function Preloader({ onComplete }) {
-  const [fading, setFading] = useState(false);
+  const root = useRef(null);
+  const completedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
-  useEffect(() => {
-    // Reveal meaningful hero content immediately without blocking or delay
-    onComplete?.();
-    const timer = setTimeout(() => {
-      setFading(true);
-    }, 60);
+  useLayoutEffect(() => {
+    const finish = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      onCompleteRef.current?.();
+    };
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finish();
+      return undefined;
+    }
 
-  if (fading) return null;
+    const nameLines = document.querySelectorAll('.fx-name-line > span');
+    const lights = document.querySelector('.fx-lights');
 
-  return (
-    <div
-      className="preloader-quick-veil"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 99999,
-        background: '#0b0c09',
-        pointerEvents: 'none',
-        opacity: fading ? 0 : 1,
-        transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}
-      aria-hidden="true"
-    />
-  );
+    const tl = gsap.timeline({ onComplete: finish });
+
+    if (nameLines.length) {
+      gsap.set(nameLines, { yPercent: 110 });
+    }
+    if (lights) {
+      gsap.set(lights, { opacity: 1 });
+    }
+
+    tl.to(
+      root.current,
+      { clipPath: 'inset(0 0 100% 0)', duration: 0.65, ease: 'power4.inOut' },
+      0
+    );
+
+    if (lights) {
+      tl.to(lights, { opacity: 0, duration: 0.9, ease: 'power2.out' }, 0.08);
+    }
+
+    if (nameLines.length) {
+      tl.to(
+        nameLines,
+        { yPercent: 0, duration: 0.82, stagger: 0.08, ease: 'power4.out' },
+        0.2
+      );
+    }
+
+    const skip = () => {
+      tl.progress(1);
+    };
+
+    window.addEventListener('keydown', skip, { once: true });
+    window.addEventListener('pointerdown', skip, { once: true });
+
+    return () => {
+      window.removeEventListener('keydown', skip);
+      window.removeEventListener('pointerdown', skip);
+      tl.kill();
+      if (lights) gsap.set(lights, { opacity: 0 });
+      if (nameLines.length) gsap.set(nameLines, { yPercent: 0 });
+    };
+  }, []);
+
+  return <div ref={root} className="fx-curtain" aria-hidden="true" />;
 }

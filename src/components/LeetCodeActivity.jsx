@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Code2, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { leetcodeConfig } from '../data/codingProfiles.js';
 import { CodingActivityHeader } from './CodingActivityHeader.jsx';
+import { useHeatmapRipple } from '../hooks/useHeatmapRipple.js';
 import {
   DATA_STATES,
   readCache,
@@ -24,6 +25,7 @@ export function LeetCodeActivity() {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const gridContainerRef = useRef(null);
+  useHeatmapRipple(gridContainerRef, Boolean(data && dataState !== DATA_STATES.LOADING));
 
   const fetchLeetCodeData = async (abortSignal, forceBypassCache = false) => {
     // 1. Check local cache if not forcing refresh

@@ -33,11 +33,11 @@ export function CodingActivityShowcase() {
 
   return (
     <div className="coding-activity-showcase-shell" aria-label="Developer Velocity & Coding Activity Signals">
-      {/* Top Platform Switcher Tabs */}
+      {/* Top Section Heading + Platform Switcher Tabs */}
       <div className="activity-tabs-header">
-        <div className="activity-tabs-intro">
-          <p className="eyebrow activity-tabs-tag">04 / VERIFIED ENGINEERING CADENCE</p>
-          <h2 className="activity-tabs-title" id="cadence-heading">Development &amp; Algorithmic Track Record</h2>
+        <div className="section-heading activity-tabs-intro">
+          <p className="eyebrow">04 / VERIFIED ENGINEERING CADENCE</p>
+          <h2 id="cadence-heading">Development &amp; Algorithmic <em className="fx-accent">Track Record.</em></h2>
         </div>
 
         <div className="activity-platform-tabs" role="tablist" aria-label="Coding platform selectors">

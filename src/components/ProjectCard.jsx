@@ -1,7 +1,8 @@
-import { memo, useCallback } from 'react';
+import { memo, useRef } from 'react';
 import { useTilt } from '../hooks/useTilt.js';
-import { ArrowUpRight, BookOpen, CheckCircle2, ExternalLink, FolderGit2 } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CheckCircle2, ExternalLink, FolderGit2, Play } from 'lucide-react';
 import { projectCaseStudies } from '../data/caseStudies.js';
+import { projectsForSkill } from '../data/skillGraph.js';
 
 /**
  * Compact Editorial Project Card
@@ -14,29 +15,24 @@ export const ProjectCard = memo(function ProjectCard({
   onOpenCaseStudy,
   highlightedSkill,
 }) {
-  const tiltRef = useTilt(3);
+  const tiltRef = useTilt(7);
+  const cardRef = useRef(null);
 
-  const handleMouseMove = useCallback((e) => {
-    if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      return;
-    }
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    card.style.setProperty('--card-mx', `${e.clientX - rect.left}px`);
-    card.style.setProperty('--card-my', `${e.clientY - rect.top}px`);
-  }, []);
+  const setRefs = (el) => {
+    tiltRef.current = el;
+    cardRef.current = el;
+  };
 
   const isFlagship = Boolean(project.featured);
   const cardDomId = project.id || `project-${project.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   const caseStudy = projectCaseStudies[project.id];
-  const isSkillMatched = highlightedSkill
-    ? project.stack?.some((s) => s.toLowerCase() === highlightedSkill.toLowerCase())
-    : false;
-  const isSkillDimmed = Boolean(highlightedSkill && !isSkillMatched);
+  const matchedIds = highlightedSkill ? projectsForSkill(highlightedSkill) : [];
+  const isSkillMatched = matchedIds.includes(project.id);
+  const isSkillDimmed = Boolean(highlightedSkill && matchedIds.length > 0 && !isSkillMatched);
 
-  const handleCaseStudyClick = () => {
+  const handleCaseStudyClick = (openSim = false) => {
     if (caseStudy && onOpenCaseStudy) {
-      onOpenCaseStudy(caseStudy);
+      onOpenCaseStudy(caseStudy, cardRef.current, openSim);
     }
   };
 
@@ -48,8 +44,8 @@ export const ProjectCard = memo(function ProjectCard({
   return (
     <article
       id={cardDomId}
-      ref={tiltRef}
-      onMouseMove={handleMouseMove}
+      ref={setRefs}
+      data-cursor="Open"
       className={`project-compact-card tone-${project.color || 'lime'} ${isFlagship ? 'is-flagship' : ''} ${isSkillMatched ? 'is-skill-matched' : ''} ${isSkillDimmed ? 'is-skill-dimmed' : ''}`}
       aria-labelledby={`title-${cardDomId}`}
     >
@@ -106,13 +102,26 @@ export const ProjectCard = memo(function ProjectCard({
         <button
           type="button"
           className={isFlagship ? 'primary-showcase-btn' : 'secondary-read-btn compact-read-btn'}
-          onClick={handleCaseStudyClick}
+          onClick={() => handleCaseStudyClick(false)}
           aria-label={`Read technical case study for ${project.name}`}
         >
           {isFlagship && <BookOpen size={14} aria-hidden="true" />}
           <span>{isFlagship ? 'Technical Deep Dive' : 'Read Case Study'}</span>
           <ArrowUpRight size={14} aria-hidden="true" />
         </button>
+
+        {isFlagship && caseStudy && (
+          <button
+            type="button"
+            className="secondary-showcase-btn"
+            data-cursor="Play"
+            onClick={() => handleCaseStudyClick(true)}
+            aria-label={`Try interactive simulation for ${project.name}`}
+          >
+            <Play size={13} aria-hidden="true" />
+            <span>Try Sim</span>
+          </button>
+        )}
 
         {project.photosLink && (
           <a

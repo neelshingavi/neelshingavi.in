@@ -55,7 +55,7 @@ export const projectCaseStudies = {
       'Zero recorded ledger corruption or billing dropouts across 3 active brokerages over 6+ months of daily physical operation, backed by SQLite write-ahead logging (WAL) and local transaction journaling.',
       'Verified physical client deployment with photographic proof and commercial operational history.',
     ],
-    stack: ['Java', 'Java Swing', 'Flutter', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'REST APIs'],
+    stack: ['Java', 'Java Swing', 'Flutter', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'REST APIs', 'Android', 'Maven', 'SQL', 'OOP', 'DBMS & Indexing', 'System Design'],
   },
 
   'project-querypilot': {
@@ -109,7 +109,7 @@ export const projectCaseStudies = {
       '142ms benchmarked execution time on indexed PostgreSQL tables (using B-tree indices on merchant, category, timestamp under local EXPLAIN ANALYZE runs over 250K indexed rows).',
       'Zero safety violations across rigorous adversarial testing rounds during live jury evaluation.',
     ],
-    stack: ['Python', 'LangChain', 'PostgreSQL', 'LLM APIs', 'Pandas', 'SQL', 'Data Analytics'],
+    stack: ['Python', 'LangChain', 'PostgreSQL', 'LLM APIs', 'Pandas', 'SQL', 'Data Analytics', 'NL-to-SQL Pipelines', 'Prompt Engineering', 'DBMS & Indexing', 'FastAPI', 'REST APIs', 'OpenRouter', 'System Design'],
   },
 
   'project-payperuseai': {
@@ -128,18 +128,19 @@ export const projectCaseStudies = {
     problem:
       'Current AI providers lock users into rigid monthly subscriptions or opaque prepaid credits, charging high platform fees and holding unspent user funds in custodial lock-in.',
     productDescription:
-      'A non-custodial gateway combining a high-concurrency FastAPI streaming proxy with PyTeal smart contracts on Algorand Layer 1, enabling micro-billing that settles token inference costs in real time.',
+      'A non-custodial gateway combining a high-concurrency FastAPI streaming proxy and LangChain multi-model LLM routing layer with PyTeal smart contracts on Algorand Layer 1, enabling real-time per-token inference metering and atomic micro-settlement.',
     architecture: [
-      'FastAPI async proxy handling real-time Server-Sent Events (SSE) token streaming.',
-      'Token consumption metering engine calculating sub-cent inference cost per chunk.',
-      'Algorand Layer 1 smart escrow contract written in PyTeal managing deposit locks.',
-      'Cryptographically signed state proofs validating consumption before fund release.',
+      'LangChain multi-model orchestration & OpenRouter / LLM API routing with streaming token-callback hooks.',
+      'FastAPI async proxy handling real-time Server-Sent Events (SSE) token streaming and REST metering endpoints.',
+      'Structured prompt engineering guardrails and token consumption metering engine calculating sub-cent cost per chunk.',
+      'Algorand Layer 1 smart escrow contract written in PyTeal managing deposit locks and cryptographic signed state proofs before fund release.',
+      'React.js + TypeScript + Tailwind CSS inference cockpit displaying real-time escrow balance and token receipts.',
     ],
     technicalDecisions: [
       {
-        decision: 'Server-Sent Events (SSE) Streaming',
+        decision: 'LangChain Multi-Model Routing + Server-Sent Events (SSE) Streaming',
         rationale:
-          'Maintained sub-200ms real-time token streaming to clients while concurrently updating the in-memory inference counter.',
+          'Unified heterogeneous LLM API providers through LangChain streaming callbacks while maintaining sub-200ms real-time SSE token delivery and atomic in-memory token accounting.',
       },
       {
         decision: 'Algorand L1 Smart Contracts (PyTeal)',
@@ -156,7 +157,7 @@ export const projectCaseStudies = {
       'Demonstrated end-to-end token-level billing with sub-200ms streaming latency.',
       'Eliminated custodial escrow liabilities through trustless PyTeal smart contract settlement.',
     ],
-    stack: ['FastAPI', 'Python', 'React.js', 'PyTeal', 'Algorand Blockchain', 'SSE'],
+    stack: ['FastAPI', 'Python', 'LangChain', 'LLM APIs', 'OpenRouter', 'Prompt Engineering', 'React.js', 'TypeScript', 'Tailwind CSS', 'REST APIs', 'System Design', 'PyTeal', 'Algorand Blockchain', 'SSE'],
   },
 
   'project-certicraft': {
@@ -203,7 +204,7 @@ export const projectCaseStudies = {
       'Automated credential issuance for 300+ symposium participants in under 4 minutes.',
       '80% reduction in organizer manual effort with 0% credential duplication or forgery.',
     ],
-    stack: ['Web Development', 'QR Cryptographic Systems', 'Email Queues', 'Node.js'],
+    stack: ['Node.js', 'Express.js', 'REST APIs', 'JavaScript', 'React.js', 'Tailwind CSS', 'System Design', 'QR Cryptographic Systems', 'Email Queues'],
   },
 
   'project-founderflow': {
@@ -248,7 +249,7 @@ export const projectCaseStudies = {
       'Streamlined startup workflow planning into a unified, actionable cockpit.',
       'Accelerated founder milestone tracking by consolidating disparate task tools.',
     ],
-    stack: ['Workflow Automation', 'Product Design', 'Dashboards', 'React.js', 'State Management'],
+    stack: ['React.js', 'TypeScript', 'JavaScript', 'Tailwind CSS', 'Framer Motion', 'DSA', 'Node.js', 'REST APIs', 'System Design', 'Workflow Automation', 'Product Design', 'Dashboards'],
   },
 };
 

@@ -17,10 +17,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function ExperienceTimeline() {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'work' | 'leadership' | 'education'
-  const [expandedIds, setExpandedIds] = useState({
-    'exp-script-lanes': true,
-    'exp-word-lane': true,
-  });
+  const [expandedIds, setExpandedIds] = useState({});
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches

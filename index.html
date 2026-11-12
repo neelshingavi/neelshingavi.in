@@ -47,10 +47,11 @@
     <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@800&display=swap" rel="stylesheet" />
     
-    <!-- Preload Hero Poster -->
+    <!-- Preload Hero Poster & Cutout -->
     <link rel="preload" as="image" href="/assets/bg/poster.v1.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/bg/cutout.v1.webp" type="image/webp" />
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -106,16 +107,6 @@
               "position": 1,
               "item": {
                 "@type": "SoftwareApplication",
-                "name": "QueryPilot",
-                "applicationCategory": "AnalyticsApplication",
-                "description": "Natural Language to SQL analytics pipeline that analyzes 250,000+ UPI transaction records for contextual business insights."
-              }
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "item": {
-                "@type": "SoftwareApplication",
                 "name": "TradersDesk",
                 "applicationCategory": "BusinessApplication",
                 "description": "Local-first financial ledger and trading workflow system managing 5,000+ monthly trade records with SQLite and Supabase PostgreSQL replication."
@@ -123,12 +114,42 @@
             },
             {
               "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "SoftwareApplication",
+                "name": "QueryPilot",
+                "applicationCategory": "AnalyticsApplication",
+                "description": "Natural Language to SQL analytics pipeline that analyzes 250,000+ UPI transaction records for contextual business insights."
+              }
+            },
+            {
+              "@type": "ListItem",
               "position": 3,
+              "item": {
+                "@type": "SoftwareApplication",
+                "name": "PayPerUseAI",
+                "applicationCategory": "DeveloperApplication",
+                "description": "Decentralized usage-based AI payment gateway metering SSE token streams via PyTeal smart contracts on Algorand."
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 4,
               "item": {
                 "@type": "SoftwareApplication",
                 "name": "CertiCraft",
                 "applicationCategory": "UtilityApplication",
-                "description": "Event management platform for certificate generation, participant management, and QR validation."
+                "description": "Event management platform for batch certificate generation, cryptographic QR validation, and rate-limited email delivery."
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 5,
+              "item": {
+                "@type": "SoftwareApplication",
+                "name": "FounderFlow",
+                "applicationCategory": "BusinessApplication",
+                "description": "Startup operating system combining idea validation scorecards, dependency DAG milestones, and execution dashboards."
               }
             }
           ]
@@ -161,22 +182,40 @@
                 <li>Engineered localized data aggregation pipelines to process historical user activity.</li>
               </ul>
             </article>
+            <article>
+              <h3>Backend Developer &amp; Client Coordination Intern - Word Lane Tech</h3>
+              <p>Jul 2025 - Dec 2025</p>
+              <ul>
+                <li>Developed modular RESTful APIs using Node.js and Express.js and shipped 4 core projects end-to-end across desktop and Android workflows.</li>
+              </ul>
+            </article>
           </section>
           <section>
-            <h2>Selected Work & Projects</h2>
+            <h2>Selected Work &amp; Projects</h2>
+            <article>
+              <h3>TradersDesk - Production trading workflow app</h3>
+              <p>Desktop and mobile platform for saree brokers to manage billing, payments, commissions, returns, and cloud-synced daily workflows.</p>
+              <p>Stack: Java, Java Swing, Flutter, SQLite, Hibernate ORM, PostgreSQL, Supabase, REST APIs</p>
+            </article>
             <article>
               <h3>QueryPilot - AI analytics platform</h3>
               <p>LLM-powered analytics platform that turns UPI transaction data into contextual business insights, spending patterns, revenue trends, and customer behavior intelligence.</p>
-              <p>Stack: Python, LLM APIs, SQL, Data Analytics, PostgreSQL</p>
+              <p>Stack: Python, LangChain, PostgreSQL, LLM APIs, Pandas, SQL, Data Analytics</p>
             </article>
             <article>
-              <h3>TradersDesk - Production trading workflow app</h3>
-              <p>Desktop and Android platform for saree brokers to manage billing, payments, commissions, returns, and cloud-synced daily workflows.</p>
-              <p>Stack: Java, Swing, Android, Maven, SQLite, PostgreSQL</p>
+              <h3>PayPerUseAI - Usage-based AI payment gateway</h3>
+              <p>Decentralized payment gateway metering multi-model AI inference streams through PyTeal smart escrow contracts on Algorand.</p>
+              <p>Stack: FastAPI, Python, React.js, PyTeal, Algorand Blockchain, SSE</p>
             </article>
             <article>
               <h3>CertiCraft - Certificate automation system</h3>
               <p>Event management platform for certificate generation, participant management, QR validation, and bulk email communication.</p>
+              <p>Stack: Web Development, QR Cryptographic Systems, Email Queues, Node.js</p>
+            </article>
+            <article>
+              <h3>FounderFlow - Startup operating system</h3>
+              <p>Startup workflow platform combining idea validation, roadmap dependency DAG planning, dashboards, and execution workflows.</p>
+              <p>Stack: Workflow Automation, Product Design, Dashboards, React.js, State Management</p>
             </article>
           </section>
           <section>
@@ -194,6 +233,7 @@
       </div>
     </noscript>
     <div class="bg-poster" aria-hidden="true"></div>
+    <div id="fx-depth" aria-hidden="true"></div>
     <div id="root"></div>
     <div class="bg-shade" aria-hidden="true"></div>
     <script type="module" src="/src/main.jsx"></script>

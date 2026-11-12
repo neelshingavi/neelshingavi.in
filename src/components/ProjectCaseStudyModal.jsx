@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, lazy, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
@@ -17,10 +17,19 @@ import { TradersDeskArchitecture } from './TradersDeskArchitecture.jsx';
 import { QueryPilotPipeline } from './QueryPilotPipeline.jsx';
 import { lenis } from '../hooks/useSmoothScroll.js';
 
-export function ProjectCaseStudyModal({ caseStudy, isOpen, onClose }) {
+const SIM_MAP = {
+  'project-tradersdesk': lazy(() => import('./sim/TradersDeskSim.jsx')),
+  'project-querypilot': lazy(() => import('./sim/QueryPilotSim.jsx')),
+  'project-payperuseai': lazy(() => import('./sim/PayPerUseSim.jsx')),
+  'project-certicraft': lazy(() => import('./sim/CertiCraftSim.jsx')),
+  'project-founderflow': lazy(() => import('./sim/FounderFlowSim.jsx')),
+};
+
+export function ProjectCaseStudyModal({ caseStudy, isOpen, onClose, scrollToSim = false }) {
   const closeBtnRef = useRef(null);
   const previousFocusRef = useRef(null);
   const modalRef = useRef(null);
+  const ActiveSim = caseStudy ? SIM_MAP[caseStudy.id] : null;
 
   useEffect(() => {
     if (!isOpen || !caseStudy) {
@@ -60,7 +69,16 @@ export function ProjectCaseStudyModal({ caseStudy, isOpen, onClose }) {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    const timer = setTimeout(() => closeBtnRef.current?.focus(), 50);
+    const timer = setTimeout(() => {
+      if (scrollToSim) {
+        const simEl = document.getElementById('cs-live-sim');
+        if (simEl) {
+          simEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
+      closeBtnRef.current?.focus();
+    }, 60);
 
     return () => {
       document.body.style.overflow = '';
@@ -174,6 +192,14 @@ export function ProjectCaseStudyModal({ caseStudy, isOpen, onClose }) {
             {caseStudy.id === 'project-querypilot' && (
               <div className="cs-embedded-explorer-shell">
                 <QueryPilotPipeline />
+              </div>
+            )}
+
+            {ActiveSim && (
+              <div id="cs-live-sim" className="cs-embedded-explorer-shell">
+                <Suspense fallback={<p className="sim-subnote">Loading interactive simulation…</p>}>
+                  <ActiveSim />
+                </Suspense>
               </div>
             )}
           </div>

@@ -1,9 +1,10 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { m, useScroll, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import {
-  ArrowDown,
   Command,
   Download,
   ExternalLink,
@@ -12,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Reveal } from './components/Reveal.jsx';
 import { SkillBadge } from './components/SkillBadge.jsx';
-import { useCanRunBackgroundAnimation } from './hooks/useCanRunBackgroundAnimation.js';
+import { useBackgroundTier } from './hooks/useCanRunBackgroundAnimation.js';
 import { useSmoothScroll, lenis } from './hooks/useSmoothScroll.js';
 import { useSectionMood } from './hooks/useSectionMood.js';
 import { useMagnetic } from './hooks/useMagnetic.js';
@@ -20,6 +21,8 @@ import { MobileNav } from './components/MobileNav.jsx';
 import { ContactForm } from './components/ContactForm.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Preloader } from './components/Preloader.jsx';
+import { HeroDepth } from './components/HeroDepth.jsx';
+import { useContactShadeLift } from './components/Interlude.jsx';
 import { ProjectCard } from './components/ProjectCard.jsx';
 import { HeroCapabilities } from './components/HeroCapabilities.jsx';
 import { ProjectFilters } from './components/ProjectFilters.jsx';
@@ -30,6 +33,7 @@ import { AchievementGallery } from './components/AchievementGallery.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, profile, projects, skills } from './data/portfolio.js';
 import { projectCaseStudies } from './data/caseStudies.js';
+import { INTERNSHIP_SKILLS, projectsForSkill } from './data/skillGraph.js';
 import { DESKTOP_NAV_ITEMS } from './data/navigation.js';
 
 // Lazy-loaded dialogs for performance & critical-path bundle reduction (Phase C - Task J)
@@ -39,8 +43,7 @@ const ProjectCaseStudyModal = lazy(() =>
 const CommandPalette = lazy(() =>
   import('./components/CommandPalette.jsx').then((m) => ({ default: m.CommandPalette }))
 );
-
-gsap.registerPlugin(SplitText);
+const SkillsConstellation = lazy(() => import('./components/SkillsConstellation.jsx'));
 
 import { ScrubVideoBackground } from './components/ScrubVideoBackground.jsx';
 
@@ -55,39 +58,6 @@ function MagneticNavItem({ item, label, activeSection }) {
     >
       {label || item}
     </a>
-  );
-}
-
-function HeroName({ play }) {
-  const ref = useRef(null);
-  useLayoutEffect(() => {
-    if (!play) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    let split;
-    const ctx = gsap.context(() => {
-      split = new SplitText(ref.current, { type: 'words', wordsClass: 'word' });
-      if (prefersReducedMotion) { 
-        gsap.set(split.words, { opacity: 1, y: 0 }); 
-        return; 
-      }
-
-      gsap.fromTo(split.words,
-        { y: 15, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.85, stagger: 0.04, ease: 'power3.out', delay: 0.1 }
-      );
-    }, ref);
-
-    return () => {
-      if (split) split.revert();
-      ctx.revert();
-    };
-  }, [play]);
-  return (
-    <h1 id="hero-title">
-      <span ref={ref} aria-hidden="true">Neel<br/>Shingavi</span>
-      <span className="sr-only">Neel Shingavi</span>
-    </h1>
   );
 }
 
@@ -108,22 +78,37 @@ const seenPreloader = () => {
   }
 };
 
+gsap.registerPlugin(ScrollTrigger, SplitText);
+
 function App() {
   useSmoothScroll();
   useSectionMood();
+  useContactShadeLift();
   const ringRef = useRef(null);
+  const ringLabelRef = useRef(null);
   const dotRef = useRef(null);
   const [activeSection, setActiveSection] = useState('');
   const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCaseStudy, setSelectedCaseStudy] = useState(null);
+  const [scrollToSim, setScrollToSim] = useState(false);
   const [highlightedSkill, setHighlightedSkill] = useState(null);
+  const [skillsView, setSkillsView] = useState('grid');
+  const [isDesktopViewport, setIsDesktopViewport] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
   const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
   const [scrollPercent, setScrollPercent] = useState(0);
   const visitedSections = useRef(new Set());
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 34, restDelta: 0.001 });
-  const canRunBackground = useCanRunBackgroundAnimation();
+  const bgTier = useBackgroundTier();
+
+  useEffect(() => {
+    const onResize = () => setIsDesktopViewport(window.innerWidth >= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const handleSkillClick = (skillName) => {
     setHighlightedSkill((prev) => (prev === skillName ? null : skillName));
@@ -153,15 +138,45 @@ function App() {
     };
   }, []);
 
-  const handleOpenCaseStudy = (caseStudy) => {
-    setSelectedCaseStudy(caseStudy);
+  const handleOpenCaseStudy = (caseStudy, cardEl = null, focusSim = false) => {
+    const applyState = () => {
+      flushSync(() => {
+        setScrollToSim(Boolean(focusSim));
+        setSelectedCaseStudy(caseStudy);
+      });
+    };
+
     if (caseStudy) {
       const slug = caseStudy.id.replace('project-', '');
       window.history.pushState(null, '', `#casestudy-${slug}`);
     }
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (cardEl && document.startViewTransition && !reducedMotion) {
+      cardEl.style.viewTransitionName = 'cs-surface';
+      try {
+        const vt = document.startViewTransition(() => {
+          cardEl.style.viewTransitionName = '';
+          applyState();
+        });
+        vt.finished.finally(() => {
+          if (cardEl) cardEl.style.viewTransitionName = '';
+        });
+      } catch {
+        cardEl.style.viewTransitionName = '';
+        applyState();
+      }
+      return;
+    }
+
+    applyState();
   };
 
   const handleCloseCaseStudy = () => {
+    setScrollToSim(false);
     setSelectedCaseStudy(null);
     if (window.location.hash.startsWith('#casestudy-')) {
       window.history.pushState(null, '', window.location.pathname + window.location.search);
@@ -204,6 +219,11 @@ function App() {
       (p) => Array.isArray(p.categories) && p.categories.includes(selectedCategory)
     );
   }, [selectedCategory]);
+
+  const matchedSkillProjectCount = useMemo(
+    () => (highlightedSkill ? projectsForSkill(highlightedSkill).length : 0),
+    [highlightedSkill]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -249,6 +269,7 @@ function App() {
     if (prefersReducedMotion) return undefined;
 
     const ring = ringRef.current;
+    const ringLabel = ringLabelRef.current;
     const dot = dotRef.current;
     if (!ring || !dot) return undefined;
 
@@ -265,8 +286,9 @@ function App() {
     };
 
     const handleMouseOver = (e) => {
-      const target = e.target.closest('a, button, [role="button"], .skill-badge, .project-card, .metric-item, .trophy-card');
+      const target = e.target.closest('[data-cursor], a, button, [role="button"], .skill-badge, .project-card, .metric-item, .trophy-card');
       if (target) {
+        const label = e.target.closest('[data-cursor]')?.dataset.cursor || '';
         let color = '#bff205'; // default lime
         if (target.classList.contains('coral') || target.closest('.coral')) color = '#ff6b6b';
         else if (target.classList.contains('teal') || target.closest('.teal')) color = '#00e5ff';
@@ -276,15 +298,16 @@ function App() {
           if (match) color = match[1].trim();
         }
 
+        if (ringLabel) ringLabel.textContent = label;
         gsap.to(ring, {
-          scale: 1.8,
+          scale: label ? 2.6 : 1.8,
           borderColor: color,
           backgroundColor: color.startsWith('#') ? `${color}15` : 'rgba(191, 242, 5, 0.08)',
           borderWidth: '2px',
           duration: 0.2,
         });
         gsap.to(dot, {
-          scale: 0.4,
+          scale: label ? 0 : 0.4,
           backgroundColor: color,
           duration: 0.2,
         });
@@ -292,8 +315,9 @@ function App() {
     };
 
     const handleMouseOut = (e) => {
-      const target = e.target.closest('a, button, [role="button"], .skill-badge, .project-card, .metric-item, .trophy-card');
+      const target = e.target.closest('[data-cursor], a, button, [role="button"], .skill-badge, .project-card, .metric-item, .trophy-card');
       if (target) {
+        if (ringLabel) ringLabel.textContent = '';
         gsap.to(ring, {
           scale: 1,
           borderColor: 'rgba(191, 242, 5, 0.65)',
@@ -395,6 +419,149 @@ function App() {
     return () => ctx.revert();
   }, [activeSection]);
 
+  // Velocity-driven footer marquee + rising footer wordmark (Move D §8.5)
+  useLayoutEffect(() => {
+    const mm = gsap.matchMedia();
+    let unsubLenis = null;
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const track = document.querySelector('.footer-marquee-track');
+      const marquee = document.querySelector('.footer-marquee');
+      let marqueeTween = null;
+
+      if (track) {
+        marqueeTween = gsap.to(track, {
+          xPercent: -50,
+          repeat: -1,
+          duration: 22,
+          ease: 'none',
+        });
+      }
+
+      const activeLenis = lenis || (typeof window !== 'undefined' ? window.__lenis : null);
+      if (activeLenis && marqueeTween && window.innerWidth >= 768) {
+        unsubLenis = activeLenis.on('scroll', ({ velocity }) => {
+          const v = gsap.utils.clamp(-30, 30, velocity || 0);
+          gsap.to(marqueeTween, {
+            timeScale: 1 + Math.abs(v) * 0.35,
+            duration: 0.25,
+            overwrite: true,
+            onComplete: () => {
+              gsap.to(marqueeTween, { timeScale: 1, duration: 1.2, ease: 'power2.out' });
+            },
+          });
+          if (marquee) {
+            gsap.to(marquee, { skewX: -v * 0.4, duration: 0.3, overwrite: 'auto' });
+          }
+        });
+      }
+
+      const resizer = typeof ResizeObserver !== 'undefined'
+        ? (() => {
+            let rafId = 0;
+            const ro = new ResizeObserver(() => {
+              if (rafId) cancelAnimationFrame(rafId);
+              rafId = requestAnimationFrame(() => ScrollTrigger.refresh());
+            });
+            const mainEl = document.getElementById('main-content');
+            if (mainEl) ro.observe(mainEl);
+            return () => {
+              if (rafId) cancelAnimationFrame(rafId);
+              ro.disconnect();
+            };
+          })()
+        : null;
+
+      return () => {
+        resizer?.();
+        if (typeof unsubLenis === 'function') unsubLenis();
+        marqueeTween?.kill();
+      };
+    });
+
+    return () => mm.revert();
+  }, []);
+
+  // SplitText line-mask heading reveals (§9.2) & scroll-lit subtext paragraphs (§9.3)
+  useEffect(() => {
+    let active = true;
+    let mm = null;
+    const splits = [];
+    const subTriggers = [];
+
+    const setupTypographyMotion = async () => {
+      try {
+        if (document.fonts?.ready) {
+          await document.fonts.ready;
+        }
+      } catch {
+        // Proceed if FontLoading API is absent
+      }
+      if (!active) return;
+
+      mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        document.querySelectorAll('.section-heading h2:not(.sr-only)').forEach((heading) => {
+          const split = SplitText.create(heading, {
+            type: 'lines',
+            mask: 'lines',
+            autoSplit: true,
+            onSplit: (self) =>
+              gsap.from(self.lines, {
+                yPercent: 108,
+                duration: 0.85,
+                stagger: 0.08,
+                ease: 'power4.out',
+                scrollTrigger: {
+                  trigger: self.elements[0],
+                  start: 'top 88%',
+                  once: true,
+                },
+              }),
+          });
+          splits.push(split);
+        });
+
+        document.querySelectorAll('.section-subtext').forEach((subEl) => {
+          const split = SplitText.create(subEl, { type: 'words' });
+          splits.push(split);
+          const tween = gsap.fromTo(
+            split.words,
+            { opacity: 0.2 },
+            {
+              opacity: 1,
+              stagger: 0.04,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: subEl,
+                start: 'top 86%',
+                end: 'bottom 58%',
+                scrub: true,
+              },
+            }
+          );
+          if (tween.scrollTrigger) subTriggers.push(tween.scrollTrigger);
+        });
+
+        return () => {
+          subTriggers.forEach((st) => st.kill());
+          splits.forEach((sp) => sp.revert());
+          subTriggers.length = 0;
+          splits.length = 0;
+        };
+      });
+    };
+
+    setupTypographyMotion();
+
+    return () => {
+      active = false;
+      mm?.revert();
+      subTriggers.forEach((st) => st.kill());
+      splits.forEach((sp) => sp.revert());
+    };
+  }, []);
+
   return (
     <>
       {/* Skip link MUST be first */}
@@ -426,12 +593,23 @@ function App() {
         />
       )}
       <ErrorBoundary fallback={null}>
+        <HeroDepth />
         <Suspense fallback={null}>
-          {canRunBackground && <ScrubVideoBackground />}
+          {bgTier !== 'poster' && (
+            <ScrubVideoBackground
+              videoSrc={
+                bgTier === 'mobile'
+                  ? '/assets/bg/portfolio-scrub-m.v1.mp4'
+                  : '/assets/bg/portfolio-scrub.v1.mp4'
+              }
+            />
+          )}
         </Suspense>
       </ErrorBoundary>
 
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
+      <div ref={ringRef} className="cursor-ring" aria-hidden="true">
+        <span ref={ringLabelRef} className="cursor-ring-label" />
+      </div>
       <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
 
       <header className="site-header">
@@ -505,112 +683,26 @@ function App() {
           <div className="hero-spotlight-layer" aria-hidden="true" />
 
           <div className="hero-copy">
-            <m.p
-              className="eyebrow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.7 }}
-            >
-              {profile.title}
-            </m.p>
-            <HeroName play={preloaderComplete} />
-            <m.p
-              className="hero-summary"
-              initial={{ opacity: 0, y: 24 }}
-              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-              transition={{ delay: 0.5, duration: 0.75 }}
-            >
-              {profile.summary}
-            </m.p>
-
-            <HeroCapabilities />
-
+            <h1 id="hero-title" className="sr-only">
+              Neel Shingavi
+            </h1>
+            {Boolean(profile.summary) && (
+              <m.p
+                className="hero-summary"
+                initial={{ opacity: 0, y: 16 }}
+                animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+                transition={{ delay: 0.08, duration: 0.5 }}
+              >
+                {profile.summary}
+              </m.p>
+            )}
             <m.div
-              className="hero-actions"
-              initial={{ opacity: 0, y: 22 }}
-              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
-              transition={{ delay: 0.65, duration: 0.7 }}
+              className="hero-capabilities-dock"
+              initial={{ opacity: 0, y: 18 }}
+              animate={preloaderComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+              transition={{ delay: 0.12, duration: 0.5 }}
             >
-              <a
-                className="primary-action hero-cta-primary"
-                href="#work"
-                onClick={() => analytics.ctaClicked('hero_explore_work')}
-              >
-                <span>Explore Selected Work</span>
-                <ArrowDown size={16} aria-hidden="true" />
-              </a>
-              <MagneticAction
-                className="secondary-action hero-cta-secondary"
-                href={profile.resume}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Download full resume PDF"
-                onClick={() => analytics.resumeDownloaded()}
-              >
-                <Download size={16} aria-hidden="true" />
-                <span>Resume (PDF)</span>
-              </MagneticAction>
-
-              <div className="hero-socials-strip" aria-label="Developer Profiles">
-                <a
-                  href={profile.links.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hero-social-pill"
-                  title="GitHub Profile"
-                  aria-label="GitHub Profile (opens in new tab)"
-                  onClick={() => analytics.socialClicked('github')}
-                >
-                  <ExternalLink size={13} aria-hidden="true" />
-                  <span>GitHub</span>
-                </a>
-                <a
-                  href={profile.links.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hero-social-pill"
-                  title="LinkedIn Profile"
-                  aria-label="LinkedIn Profile (opens in new tab)"
-                  onClick={() => analytics.socialClicked('linkedin')}
-                >
-                  <ExternalLink size={13} aria-hidden="true" />
-                  <span>LinkedIn</span>
-                </a>
-                <a
-                  href={profile.links.leetcode}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hero-social-pill"
-                  title="LeetCode Profile"
-                  aria-label="LeetCode Profile (opens in new tab)"
-                  onClick={() => analytics.socialClicked('leetcode')}
-                >
-                  <ExternalLink size={13} aria-hidden="true" />
-                  <span>LeetCode</span>
-                </a>
-                <a
-                  href={profile.links.codeforces}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hero-social-pill"
-                  title="Codeforces Profile"
-                  aria-label="Codeforces Profile (opens in new tab)"
-                  onClick={() => analytics.socialClicked('codeforces')}
-                >
-                  <ExternalLink size={13} aria-hidden="true" />
-                  <span>Codeforces</span>
-                </a>
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="hero-social-pill"
-                  title="Direct Email"
-                  aria-label="Send direct email"
-                  onClick={() => analytics.emailClicked()}
-                >
-                  <Mail size={13} aria-hidden="true" />
-                  <span>Email</span>
-                </a>
-              </div>
+              <HeroCapabilities />
             </m.div>
           </div>
         </section>
@@ -619,7 +711,7 @@ function App() {
         <section className="about-section section-shell" id="systems" aria-labelledby="systems-heading">
           <Reveal className="section-heading">
             <p className="eyebrow">01 / CORE SYSTEMS &amp; ARCHITECTURE</p>
-            <h2 id="systems-heading">Engineering topologies and interactive deep dives.</h2>
+            <h2 id="systems-heading">Engineering topologies and interactive <em className="fx-accent">deep dives.</em></h2>
             <p className="section-subtext">
               Explore the modular service contracts, local-first transaction lifecycles, and NL-to-SQL analytics execution pipelines that power production operations.
             </p>
@@ -633,7 +725,7 @@ function App() {
           <Reveal className="section-heading split-heading">
             <div>
               <p className="eyebrow">02 / EXPERIENCE &amp; LEADERSHIP</p>
-              <h2 id="experience-heading">Professional experience and academic foundation.</h2>
+              <h2 id="experience-heading">Professional experience and academic <em className="fx-accent">foundation.</em></h2>
               <p className="section-subtext">
                 Engineering internships, technical direction for startup incubators, and student chapter coordination.
               </p>
@@ -659,10 +751,7 @@ function App() {
           <Reveal className="section-heading split-heading">
             <div>
               <p className="eyebrow">03 / SELECTED WORK</p>
-              <h2 id="work-heading">Production software built for measurable outcomes.</h2>
-              <p className="section-subtext">
-                Offline-first desktop &amp; mobile systems, natural-language analytics pipelines, and distributed payment infrastructure. Select any project for technical architecture and deep-dive specs.
-              </p>
+              <h2 id="work-heading">Production software built for <em className="fx-accent">measurable</em> outcomes.</h2>
             </div>
           </Reveal>
 
@@ -673,9 +762,25 @@ function App() {
           />
 
           {highlightedSkill && (
-            <div className="skill-filter-banner" role="status" aria-live="polite">
+            <div
+              className={`skill-filter-banner ${matchedSkillProjectCount === 0 ? 'is-info' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
               <span className="skill-filter-text">
-                Highlighting projects built with <strong>{highlightedSkill}</strong>
+                {matchedSkillProjectCount > 0 ? (
+                  <>
+                    Highlighting projects built with <strong>{highlightedSkill}</strong>
+                  </>
+                ) : INTERNSHIP_SKILLS.has(highlightedSkill) ? (
+                  <>
+                    No project card uses <strong>{highlightedSkill}</strong> — it appears in internship work.
+                  </>
+                ) : (
+                  <>
+                    Not tied to a listed project: <strong>{highlightedSkill}</strong>
+                  </>
+                )}
               </span>
               <button
                 type="button"
@@ -710,67 +815,116 @@ function App() {
 
         {/* 05 / COMPETITIVE PROOF & RECOGNITIONS */}
         <section className="wins-section section-shell" id="wins" aria-labelledby="wins-heading">
-          <Reveal className="section-heading split-heading">
-            <div>
-              <p className="eyebrow">05 / COMPETITIVE PROOF</p>
-              <h2 id="wins-heading">Hackathon signal, national scale.</h2>
-              <p className="section-subtext">
-                Top podium finishes at IIT Bombay, PICT ACM, Meta, and Algorand hackathons evaluated against thousands of competing teams.
-              </p>
-            </div>
-            <div className="trophy-pill">
-              <Trophy size={18} />
-              {achievements.length} major recognitions
-            </div>
-          </Reveal>
+          <div className="wins-pin-inner">
+            <Reveal className="section-heading split-heading">
+              <div>
+                <p className="eyebrow">05 / COMPETITIVE PROOF</p>
+                <h2 id="wins-heading">Hackathon signal, <em className="fx-accent">national</em> scale.</h2>
+              </div>
+              <div className="trophy-pill">
+                <Trophy size={18} />
+                {achievements.length} major recognitions
+              </div>
+            </Reveal>
 
-          <AchievementGallery />
+            <AchievementGallery />
+          </div>
         </section>
 
         {/* 06 / STACK ARCHITECTURE */}
         <section className="skills-section section-shell" id="skills" aria-labelledby="skills-heading">
-          <Reveal className="section-heading">
-            <p className="eyebrow">06 / STACK ARCHITECTURE</p>
-            <h2 id="skills-heading">The technical stack behind the shipped work.</h2>
-            <p className="section-subtext">
-              Verified tools and languages utilized across high-concurrency backends, local persistence engines, and AI analytics pipelines.
-            </p>
+          <Reveal className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">06 / STACK ARCHITECTURE</p>
+              <h2 id="skills-heading">The technical stack behind the <em className="fx-accent">shipped work.</em></h2>
+              <p className="section-subtext">
+                Verified tools and languages utilized across high-concurrency backends, local persistence engines, and AI analytics pipelines.
+              </p>
+            </div>
+            {isDesktopViewport && (
+              <div className="skill-view-toggle" role="tablist" aria-label="Skills visualization mode">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={skillsView === 'grid'}
+                  className={`funnel-mode-btn ${skillsView === 'grid' ? 'is-active' : ''}`}
+                  onClick={() => setSkillsView('grid')}
+                >
+                  Grid Board
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={skillsView === 'constellation'}
+                  className={`funnel-mode-btn ${skillsView === 'constellation' ? 'is-active' : ''}`}
+                  onClick={() => setSkillsView('constellation')}
+                >
+                  Constellation Graph
+                </button>
+              </div>
+            )}
           </Reveal>
-          <div className="skills-board">
-            {skills.map((group, index) => (
-              <Reveal
-                className="skill-group"
-                delay={index * 0.05}
-                key={group.label}
-              >
-                <div className="skill-group-header">
-                  <div className="skill-group-meta">
-                    <span className="skill-group-index">{String(index + 1).padStart(2, '0')}</span>
-                    <span className="skill-group-count">{group.items.length} technologies</span>
+          {isDesktopViewport && skillsView === 'constellation' ? (
+            <Suspense fallback={<div className="skills-board-loading">Loading skill constellation…</div>}>
+              <SkillsConstellation
+                highlightedSkill={highlightedSkill}
+                onSelectSkill={handleSkillClick}
+              />
+            </Suspense>
+          ) : (
+            <div className="skills-board">
+              {skills.map((group, index) => (
+                <Reveal
+                  className="skill-group"
+                  delay={index * 0.05}
+                  key={group.label}
+                >
+                  <div className="skill-group-header">
+                    <div className="skill-group-meta">
+                      <span className="skill-group-index">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="skill-group-count">{group.items.length} technologies</span>
+                    </div>
+                    <h3>{group.label}</h3>
                   </div>
-                  <h3>{group.label}</h3>
-                </div>
-                <ul className="skills-grid">
-                  {group.items.map((item) => (
-                    <li key={item}>
-                      <SkillBadge
-                        name={item}
-                        onClick={handleSkillClick}
-                        isHighlighted={highlightedSkill === item}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
-            ))}
-          </div>
+                  <ul className="skills-grid">
+                    {(() => {
+                      const spans = [];
+                      let halfCount = 0;
+                      for (let i = 0; i < group.items.length; i += 1) {
+                        const item = group.items[i];
+                        const isWide = item.length >= 15;
+                        const next = group.items[i + 1];
+                        const nextIsWide = !next || next.length >= 15;
+                        const isUnpairedHalf = !isWide && halfCount % 2 === 0 && nextIsWide;
+                        const full = isWide || isUnpairedHalf;
+                        if (!full) halfCount += 1;
+                        else halfCount = 0;
+                        spans.push(full);
+                      }
+                      return group.items.map((item, itemIdx) => (
+                        <li key={item} className={spans[itemIdx] ? 'is-full-span' : undefined}>
+                          <SkillBadge
+                            name={item}
+                            onClick={handleSkillClick}
+                            isHighlighted={highlightedSkill === item}
+                          />
+                        </li>
+                      ));
+                    })()}
+                  </ul>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 07 / CONTACT & COLLABORATION */}
         <section className="contact-section section-shell" id="contact" aria-labelledby="contact-heading">
           <Reveal className="contact-panel">
-            <p className="eyebrow">07 / CONTACT &amp; COLLABORATION</p>
-            <h2 id="contact-heading">Have something worth building?</h2>
+            <div className="section-heading">
+              <p className="eyebrow">07 / CONTACT &amp; COLLABORATION</p>
+              <h2 id="contact-heading">Have something <em className="fx-accent">worth building?</em></h2>
+            </div>
             <p className="contact-availability">
               Whether you are architecting distributed backend infrastructure, building high-accuracy data pipelines,
               or seeking a product engineer who delivers client-tested software — let’s connect.
@@ -821,14 +975,17 @@ function App() {
           <ProjectCaseStudyModal
             caseStudy={selectedCaseStudy}
             isOpen={Boolean(selectedCaseStudy)}
+            scrollToSim={scrollToSim}
             onClose={handleCloseCaseStudy}
           />
         </Suspense>
       )}
 
-      <div className="footer-marquee">
-        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
-        <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
+      <div className="footer-marquee" aria-hidden="true">
+        <div className="footer-marquee-track">
+          <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
+          <span>PRODUCT ENGINEER · BACKEND SYSTEMS · AI ANALYTICS · LOCAL-FIRST ARCHITECTURE · PRODUCT ENGINEER · BACKEND SYSTEMS · </span>
+        </div>
       </div>
 
       <footer className="site-footer">

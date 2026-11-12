@@ -2,30 +2,29 @@ import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-const moodBySection = {
-  systems: '#00a6a6',
-  work: '#ff5e3a',
-  wins: '#e1b92f',
-  contact: '#bff205',
-};
+gsap.registerPlugin(ScrollTrigger);
+
+const IDS = ['hero', 'systems', 'experience', 'work', 'cadence', 'wins', 'skills', 'contact'];
 
 export function useSectionMood() {
   useEffect(() => {
-    const triggers = Object.entries(moodBySection).map(([id, color]) =>
+    document.body.dataset.section = 'hero';
+
+    const triggers = IDS.map((id) =>
       ScrollTrigger.create({
         trigger: `#${id}`,
-        start: 'top center',
-        end: 'bottom center',
-        onEnter: () => {
-          document.body.setAttribute('data-section', id);
-          window.dispatchEvent(new CustomEvent('section-mood', { detail: { color } }));
-        },
-        onEnterBack: () => {
-          document.body.setAttribute('data-section', id);
-          window.dispatchEvent(new CustomEvent('section-mood', { detail: { color } }));
+        start: 'top 55%',
+        end: 'bottom 55%',
+        onToggle: (s) => {
+          if (s.isActive) {
+            document.body.dataset.section = id;
+          }
         },
       })
     );
-    return () => triggers.forEach((t) => t.kill());
+
+    return () => {
+      triggers.forEach((t) => t.kill());
+    };
   }, []);
 }

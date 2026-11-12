@@ -21,16 +21,21 @@ gsap.registerPlugin(ScrollTrigger);
 
 // Bump the version in the filename whenever you re-encode. /assets/* is served
 // with `immutable, max-age=1y` (vercel.json), so reusing a name = stale forever.
-const VIDEO_SRC = '/assets/bg/portfolio-scrub.v1.mp4';
+const DEFAULT_VIDEO_SRC = '/assets/bg/portfolio-scrub.v1.mp4';
 
 // Must match the -framerate used in encode-bg-video.sh.
 const FPS = 24;
 
-// Scroll distance, in viewport heights, over which the whole clip plays.
-// After that the last frame is held (and CSS dims it). Lower = faster scrub.
-const SCRUB_SCREENS = 3.5;
+// Multi-segment scroll choreography across sections (from -> to normalized 0..279 frame cues).
+// Falls back cleanly if an intermediate segment element is not present in the DOM.
+const SEGMENTS = [
+  { trigger: '#hero', start: 'top top', end: '+=350%', fromRatio: 0, toRatio: 120 / 279 },
+  { trigger: '#work', start: 'top bottom', end: 'center center', fromRatio: 120 / 279, toRatio: 185 / 279 },
+  { trigger: '#wins', start: 'top bottom', end: 'bottom top', fromRatio: 185 / 279, toRatio: 235 / 279 },
+  { trigger: '#contact', start: 'top bottom', end: 'center center', fromRatio: 235 / 279, toRatio: 1 },
+];
 
-export function ScrubVideoBackground() {
+export function ScrubVideoBackground({ videoSrc = DEFAULT_VIDEO_SRC }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -40,7 +45,7 @@ export function ScrubVideoBackground() {
 
     const abort = new AbortController();
     let objectUrl = '';
-    let trigger = null;
+    const triggers = [];
     let raf = 0;
     let frames = 0;
     let targetFrame = 0; // where scroll says we should be (float)
@@ -72,7 +77,7 @@ export function ScrubVideoBackground() {
       try {
         // Download the whole file up front and play from memory: every seek is
         // then instant (no range requests mid-scroll).
-        const res = await fetch(VIDEO_SRC, { signal: abort.signal });
+        const res = await fetch(videoSrc, { signal: abort.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const blob = await res.blob();
         if (abort.signal.aborted) return;
@@ -93,19 +98,44 @@ export function ScrubVideoBackground() {
         if (abort.signal.aborted) return;
 
         frames = Math.max(1, Math.round(video.duration * FPS));
+        const maxFrame = Math.max(0, frames - 1);
 
-        trigger = ScrollTrigger.create({
-          trigger: document.documentElement,
-          start: 0,
-          end: () => window.innerHeight * SCRUB_SCREENS,
-          onUpdate: (self) => {
-            targetFrame = self.progress * (frames - 1);
-            kick();
-          },
+        const activeSegments = SEGMENTS.filter((seg) => document.querySelector(seg.trigger));
+        const progress = new Array(activeSegments.length).fill(0);
+
+        const recompute = () => {
+          let nextFrame = 0;
+          activeSegments.forEach((seg, idx) => {
+            if (progress[idx] > 0) {
+              const fromF = seg.fromRatio * maxFrame;
+              const toF = seg.toRatio * maxFrame;
+              nextFrame = fromF + progress[idx] * (toF - fromF);
+            }
+          });
+          targetFrame = Math.min(Math.max(0, nextFrame), maxFrame);
+          kick();
+        };
+
+        activeSegments.forEach((seg, idx) => {
+          triggers.push(
+            ScrollTrigger.create({
+              trigger: seg.trigger,
+              start: seg.start,
+              end: seg.end,
+              onUpdate: (self) => {
+                progress[idx] = self.progress;
+                recompute();
+              },
+              onRefresh: (self) => {
+                progress[idx] = self.progress;
+                recompute();
+              },
+            })
+          );
         });
 
         // Correct frame immediately if the page was restored mid-scroll.
-        targetFrame = trigger.progress * (frames - 1);
+        recompute();
         shownFrame = targetFrame;
         kick();
         video.classList.add('is-ready'); // CSS fades it in over the poster
@@ -122,12 +152,12 @@ export function ScrubVideoBackground() {
     return () => {
       abort.abort();
       if (raf) cancelAnimationFrame(raf);
-      if (trigger) trigger.kill();
+      triggers.forEach((t) => t.kill());
       video.removeAttribute('src');
       video.load();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, []);
+  }, [videoSrc]);
 
   return (
     <video

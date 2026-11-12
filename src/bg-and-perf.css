@@ -93,23 +93,19 @@ body {
    needed — use near-opaque panels instead.
    (Kept on .site-header only: one element is fine.)
    --------------------------------------------------------------------- */
-.system-tile,
 .timeline-block,
 .education-item,
 .project-card,
 .skill-group,
-.signal-node,
 .contact-panel {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 
-.system-tile,
 .timeline-block,
 .education-item,
 .project-card,
-.skill-group,
-.signal-node {
+.skill-group {
   background:
     linear-gradient(180deg, rgba(244, 240, 223, 0.07), rgba(244, 240, 223, 0.02)),
     rgba(9, 6, 14, 0.9);
@@ -137,31 +133,17 @@ body::after {
    re-smoothed by CSS, making the tilt feel mushy. Let GSAP own transform.
    Also: static will-change on many elements wastes GPU memory.
    --------------------------------------------------------------------- */
-.project-card,
-.system-tile {
+.project-card {
   transition:
     border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: auto;
 }
-.project-card:hover,
-.system-tile:hover {
+.project-card:hover {
   transform: none;
 }
 .skill-badge {
   will-change: auto;
-}
-
-.project-slot,
-.system-slot {
-  perspective: 900px;
-  display: flex;
-  flex-direction: column;
-}
-.project-slot > .project-card,
-.system-slot > .system-tile {
-  width: 100%;
-  height: 100%;
 }
 
 /* ---------------------------------------------------------------------
@@ -180,12 +162,6 @@ body::after {
 /* =====================================================================
    PHASE 01: CINEMATIC HERO + PROJECT SHOWCASE UPGRADE
    ===================================================================== */
-
-/* Hero backdrop vignette for text legibility without artificial color overlays */
-.hero-section::before {
-  bottom: 0;
-  background: radial-gradient(ellipse 80% 100% at 20% 50%, rgba(11, 12, 9, 0.95) 0%, rgba(11, 12, 9, 0.6) 40%, transparent 100%);
-}
 
 /* ---------------------------------------------------------------------
    6. HERO KINETIC TYPOGRAPHY & REACTIVE LIGHTING
@@ -357,23 +333,8 @@ body::after {
 }
 
 /* ---------------------------------------------------------------------
-   9. PROJECT CARDS: DEPTH, SPOTLIGHT & DESKTOP STACKING
+   9. PROJECT CARDS: DEPTH & SPOTLIGHT
    --------------------------------------------------------------------- */
-.project-slot {
-  animation: projectFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes projectFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .project-card {
   position: relative;
   overflow: hidden;
@@ -547,33 +508,6 @@ body::after {
     gap: 36px;
     position: relative;
   }
-
-  .project-slot {
-    position: sticky;
-    top: clamp(80px, 12vh, 115px);
-    z-index: 1;
-  }
-
-  .project-slot[data-index="0"] { top: 80px; z-index: 1; }
-  .project-slot[data-index="1"] { top: 92px; z-index: 2; }
-  .project-slot[data-index="2"] { top: 104px; z-index: 3; }
-  .project-slot[data-index="3"] { top: 116px; z-index: 4; }
-  .project-slot[data-index="4"] { top: 128px; z-index: 5; }
-
-  .project-slot .project-card {
-    background:
-      linear-gradient(180deg, rgba(244, 240, 223, 0.07), rgba(244, 240, 223, 0.02)),
-      #0c0914;
-    box-shadow:
-      0 -4px 20px rgba(0, 0, 0, 0.4),
-      0 20px 60px rgba(0, 0, 0, 0.6);
-  }
-}
-
-@media (max-width: 1023px) {
-  .project-slot {
-    position: static;
-  }
 }
 
 @media (max-width: 768px) {
@@ -613,10 +547,6 @@ body::after {
   .project-card:hover {
     transform: none !important;
   }
-  .project-slot {
-    position: static !important;
-    animation: none !important;
-  }
   .project-photos-link:hover .cta-arrow {
     transform: none !important;
   }
@@ -625,11 +555,6 @@ body::after {
 /* ---------------------------------------------------------------------
    10. TIMELINE UNIFICATION (EXPERIENCE, EDUCATION, CLUBS)
    --------------------------------------------------------------------- */
-.timeline-layout {
-  position: relative;
-  padding-left: 18px;
-}
-
 .timeline-progress-line {
   position: absolute;
   left: 0;
@@ -707,8 +632,6 @@ body::after {
   color: var(--paper-2);
   font-size: 1.05rem;
   line-height: 1.6;
-  text-align: justify;
-  text-justify: inter-word;
 }
 
 .about-intro-split .about-copy p:last-child {

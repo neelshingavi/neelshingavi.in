@@ -1,0 +1,1074 @@
+/* =====================================================================
+   motion.css
+   Explicit layer z-scale, registered custom properties, section mood tint,
+   GSAP/CSS transform separation, card glare, and Move A hero depth/intro.
+   Imported LAST in src/main.jsx.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   4.1 EXPLICIT Z-SCALE
+   --------------------------------------------------------------------- */
+:root {
+  --z-poster: 0;
+  --z-video: 1;
+  --z-name: 2;
+  --z-cutout: 3;
+  --z-shade: 4;
+  --z-content: 5;
+}
+
+.bg-poster {
+  z-index: var(--z-poster);
+}
+
+.bg-video {
+  z-index: var(--z-video);
+}
+
+.bg-shade {
+  z-index: var(--z-shade);
+  opacity: var(--fx-shade, 1);
+}
+
+main,
+footer,
+footer.site-footer,
+.site-footer,
+.footer-marquee {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+footer.site-footer,
+.site-footer {
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------
+   4.2 REGISTERED CUSTOM PROPERTIES
+   --------------------------------------------------------------------- */
+@property --fx-tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(0, 0, 0, 0);
+}
+
+@property --fx-shade {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/* ---------------------------------------------------------------------
+   4.3 SECTION MOOD TINT (on .bg-shade::before, above video)
+   --------------------------------------------------------------------- */
+.bg-shade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(90% 70% at 50% 110%, var(--fx-tint), transparent 70%);
+  mix-blend-mode: screen;
+  transition: --fx-tint 0.9s ease;
+}
+
+body[data-section='hero']       { --fx-tint: rgba(168, 114, 255, 0.00); }
+body[data-section='systems']    { --fx-tint: rgba(0, 229, 255, 0.14); }
+body[data-section='experience'] { --fx-tint: rgba(191, 242, 5, 0.10); }
+body[data-section='work']       { --fx-tint: rgba(255, 94, 58, 0.16); }
+body[data-section='cadence']    { --fx-tint: rgba(255, 161, 22, 0.12); }
+body[data-section='wins']       { --fx-tint: rgba(251, 192, 45, 0.16); }
+body[data-section='skills']     { --fx-tint: rgba(168, 114, 255, 0.14); }
+body[data-section='contact']    { --fx-tint: rgba(191, 242, 5, 0.16); }
+
+/* ---------------------------------------------------------------------
+   4.4 TRANSITION / TRANSFORM SEPARATION
+   GSAP owns `transform`; CSS uses individual `translate` & never transitions `transform`.
+   --------------------------------------------------------------------- */
+.project-compact-card {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.header-action {
+  transition: background 180ms ease, box-shadow 180ms ease;
+}
+
+.hero-cta-secondary {
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.skill-badge {
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-links a {
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.primary-action:hover {
+  transform: none;
+  translate: -3px -3px;
+}
+
+.primary-action:active {
+  transform: none;
+  translate: 0 0;
+}
+
+/* ---------------------------------------------------------------------
+   4.6 PROJECT CARD GLARE (--gx / --gy driven by useTilt)
+   --------------------------------------------------------------------- */
+.project-compact-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.project-compact-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    420px circle at var(--gx, 50%) var(--gy, 50%),
+    var(--card-accent, rgba(191, 242, 5, 0.75)) 0%,
+    transparent 60%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.project-compact-card:hover::after {
+  opacity: 0.5;
+}
+
+/* ---------------------------------------------------------------------
+   5. MOVE A — HERO DEPTH LAYERS & INTRO CURTAIN
+   --------------------------------------------------------------------- */
+.fx-name,
+.fx-cutout {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fx-name {
+  z-index: var(--z-name);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  padding: clamp(108px, 13.5svh, 144px) clamp(16px, 2vw, 32px) 0 clamp(56px, 7.5vw, 112px);
+  overflow: hidden;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(3.2rem, 12vw, 11.8rem);
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.fx-name-line {
+  display: block;
+  overflow: hidden;
+}
+
+.fx-name-line > span {
+  display: block;
+  will-change: transform;
+}
+
+.fx-cutout {
+  z-index: var(--z-cutout);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+/* Match seamless dark canvas behind offset portrait layers across desktop & mobile */
+body {
+  background: #07050b;
+}
+
+/* Take portrait slightly down and slightly smaller on desktop without breaking layer lock */
+@media (min-width: 769px) {
+  /* Extend matching magenta (left) and crimson (right) studio lighting edge-to-edge */
+  body {
+    background-color: #07050b;
+    background-image:
+      radial-gradient(34% 58% at 6% 68svh, rgba(134, 0, 122, 0.92) 0%, rgba(96, 0, 88, 0.7) 42%, rgba(45, 0, 42, 0.28) 72%, transparent 100%),
+      radial-gradient(36% 60% at 94% 68svh, rgba(210, 0, 42, 0.95) 0%, rgba(152, 0, 28, 0.72) 42%, rgba(68, 0, 10, 0.28) 72%, transparent 100%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .bg-poster,
+  .bg-video,
+  .fx-cutout {
+    left: 5%;
+    right: auto;
+    width: 90%;
+    top: 14svh;
+    bottom: auto;
+    height: 90svh;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 10%),
+      linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.45) 8%, #000 20%, #000 80%, rgba(0, 0, 0, 0.45) 92%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 10%),
+      linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.45) 8%, #000 20%, #000 80%, rgba(0, 0, 0, 0.45) 92%, transparent 100%);
+    mask-composite: intersect;
+  }
+}
+
+.fx-lights {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cutout);
+  background: #07050b;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fx-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0b0c09;
+  clip-path: inset(0);
+}
+
+/* ---------------------------------------------------------------------
+   5.3 HERO RELAYOUT — CLEAR CENTER PORTRAIT WINDOW
+   --------------------------------------------------------------------- */
+.hero-section {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: clamp(96px, 11.5vh, 124px);
+  padding-bottom: clamp(28px, 4.5vh, 48px);
+}
+
+/* Ground the lower edge smoothly into the capabilities band */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 100vw;
+  height: 32%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to top,
+    rgba(7, 5, 11, 0.86) 0%,
+    rgba(7, 5, 11, 0.44) 55%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-copy {
+  max-width: none;
+  width: 100%;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    '.'
+    'dock';
+  row-gap: 16px;
+  align-items: end;
+  justify-items: center;
+}
+
+.hero-summary {
+  align-self: end;
+  justify-self: center;
+  max-width: 66ch;
+  margin: 0;
+  text-align: center;
+  text-justify: auto;
+  font-size: clamp(0.94rem, 1.15vw, 1.06rem);
+  line-height: 1.56;
+  color: rgba(244, 240, 223, 0.92);
+  text-shadow: 0 2px 20px rgba(7, 5, 11, 0.9);
+}
+
+.hero-capabilities-dock {
+  grid-area: dock;
+  width: 100%;
+  min-width: 0;
+  max-width: 1020px;
+  justify-self: center;
+  align-self: end;
+}
+
+.hero-capabilities-dock .hero-capabilities-shell {
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
+  background: rgba(11, 12, 9, 0.78);
+  border: 1px solid rgba(244, 240, 223, 0.14);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 900px) {
+  .hero-copy {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      '.'
+      'dock';
+    row-gap: 16px;
+  }
+
+  .hero-summary {
+    max-width: 54ch;
+  }
+}
+
+@media (max-width: 768px) {
+  .bg-poster,
+  .bg-video,
+  .fx-cutout {
+    top: auto;
+    bottom: 58px;
+    height: 58svh;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 8%, #000 88%, transparent 100%);
+  }
+
+  .hero-section {
+    min-height: 100svh;
+    padding-top: 84px;
+    padding-bottom: 16px;
+  }
+
+  .hero-section::before {
+    height: 28%;
+    background: linear-gradient(
+      to top,
+      rgba(7, 5, 11, 0.94) 0%,
+      rgba(7, 5, 11, 0.65) 55%,
+      transparent 100%
+    );
+  }
+
+  .fx-name {
+    z-index: var(--z-name);
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    white-space: normal;
+    padding: clamp(88px, 15.5svh, 148px) 10px 0 34px;
+    font-size: clamp(2.55rem, 13.4vw, 3.9rem);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  .hero-copy {
+    z-index: 7;
+    grid-template-rows: 1fr auto;
+    row-gap: 12px;
+  }
+
+  .hero-capabilities-dock .hero-capabilities-shell {
+    margin: 0;
+    padding: 10px 12px;
+  }
+
+  .hero-capabilities-dock .capabilities-tablist {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .hero-capabilities-dock .capabilities-tablist::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-capabilities-dock .capability-pill {
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .hero-capabilities-dock .capability-detail-bar {
+    margin-top: 8px;
+    padding: 8px 10px;
+    white-space: normal;
+  }
+
+  .hero-capabilities-dock .capability-tagline {
+    font-size: 11px;
+    line-height: 1.45;
+    white-space: normal;
+    display: block;
+  }
+
+  .hero-summary {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+}
+
+/* Skill filter empty/internship banner */
+.skill-filter-banner.is-info {
+  border-color: rgba(244, 240, 223, 0.22);
+  background: rgba(244, 240, 223, 0.05);
+}
+
+/* View Transition morph (progressive enhancement §9.4) */
+.case-study-dialog {
+  view-transition-name: cs-surface;
+}
+
+::view-transition-group(cs-surface) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------------
+   7. MOVE C — WINS CROWD FUNNEL
+   --------------------------------------------------------------------- */
+.funnel-mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.funnel-mode-btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 240, 223, 0.18);
+  background: rgba(17, 19, 14, 0.72);
+  color: var(--muted, #aaa28a);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.funnel-mode-btn.is-active {
+  border-color: var(--lime, #bff205);
+  color: var(--lime, #bff205);
+  background: rgba(191, 242, 5, 0.08);
+}
+
+.fx-funnel {
+  min-height: 82svh;
+  display: flex;
+  align-items: center;
+  padding: 72px 0 24px;
+}
+
+.fx-funnel-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.fx-funnel-canvas-box,
+.fx-funnel-detail-card {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 240, 223, 0.14);
+  background: rgba(11, 12, 9, 0.88);
+  display: flex;
+  flex-direction: column;
+}
+
+.fx-funnel-canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+}
+
+.fx-funnel-kicker {
+  color: var(--muted, #aaa28a);
+  letter-spacing: 0.08em;
+}
+
+.fx-funnel-canvas-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 360px;
+  border-radius: 5px;
+  background: #07050b;
+  border: 1px solid rgba(244, 240, 223, 0.08);
+  overflow: hidden;
+}
+
+.fx-funnel-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fx-funnel-footnote {
+  margin: 10px 0 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted, #aaa28a);
+}
+
+.fx-funnel-stage-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.fx-funnel-pill {
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 240, 223, 0.18);
+  background: transparent;
+  color: var(--muted, #aaa28a);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.fx-funnel-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--muted, #aaa28a);
+  margin-bottom: 10px;
+}
+
+.fx-funnel-title {
+  margin: 0 0 12px;
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  line-height: 1.18;
+  color: var(--paper, #f4f0df);
+}
+
+.fx-funnel-summary {
+  margin: 0 0 16px;
+  font-size: 0.96rem;
+  line-height: 1.58;
+  color: var(--paper-2, #e7dfc4);
+}
+
+.fx-funnel-impact {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+  line-height: 1.48;
+  color: rgba(244, 240, 223, 0.88);
+}
+
+.fx-funnel-impact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fx-funnel-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(244, 240, 223, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+}
+
+.fx-funnel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+}
+
+/* Mobile & reduced motion mini dot-field */
+.funnel-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.funnel-mini-card {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(244, 240, 223, 0.12);
+  background: rgba(11, 12, 9, 0.82);
+}
+
+.funnel-mini-top {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  margin-bottom: 8px;
+}
+
+.funnel-mini-dots {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.funnel-mini-dots span {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 1px;
+}
+
+.funnel-mini-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  color: var(--muted, #aaa28a);
+}
+
+@media (max-width: 960px) {
+  .fx-funnel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   8. MOVE D — INTERLUDES, CONTACT BOOKEND, VELOCITY FOOTER & TYPE SCALE
+   --------------------------------------------------------------------- */
+.fx-interlude {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--gutter, clamp(20px, 5vw, 72px));
+}
+
+.fx-interlude-line {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 8.6vw, 9.2rem);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  max-width: 14ch;
+  text-align: center;
+  color: var(--paper, #f4f0df);
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.68);
+  margin: 0;
+}
+
+.section-heading,
+.about-section .section-heading {
+  max-width: 100%;
+}
+
+.section-heading h2,
+.about-section .section-heading h2,
+.contact-panel .section-heading h2 {
+  font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
+  font-weight: 700;
+  font-size: clamp(1.92rem, 4.32vw, 3.84rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.activity-tabs-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.activity-tabs-intro {
+  margin-bottom: 0;
+}
+
+.fx-accent {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.12em;
+  letter-spacing: -0.02em;
+  color: var(--paper, #f4f0df);
+}
+
+/* Contact bookend: translucent glass over camera-facing portrait */
+.contact-panel {
+  background: rgba(11, 12, 9, 0.56) !important;
+  border: 1px solid rgba(244, 240, 223, 0.16);
+  backdrop-filter: none;
+}
+
+/* Velocity marquee & giant cropped footer wordmark */
+.footer-marquee {
+  opacity: 0.16;
+  font-size: clamp(4rem, 14vw, 12rem);
+  letter-spacing: -0.02em;
+  transform-origin: center center;
+}
+
+.footer-marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.footer-marquee span {
+  animation: none;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .fx-interlude {
+    min-height: 70svh;
+  }
+
+  .section-heading h2,
+  .about-section .section-heading h2,
+  .contact-panel .section-heading h2 {
+    font-size: clamp(1.52rem, 6.08vw, 2.24rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-marquee span {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-curtain,
+  .fx-lights {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   9. SECONDARY UPGRADES (PARALLAX, CURSOR LABELS, CONSTELLATION, CLI)
+   --------------------------------------------------------------------- */
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .bg-poster,
+  .bg-video,
+  .fx-cutout {
+    scale: 1.03;
+    translate: var(--fx-px, 0px) var(--fx-py, 0px);
+    transform-origin: 50% 42%;
+  }
+
+  .fx-name {
+    translate: var(--fx-nx, 0px) 0;
+  }
+}
+
+.cursor-ring {
+  display: grid;
+  place-items: center;
+}
+
+.cursor-ring-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 5.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f4f0df;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.skill-view-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.skills-constellation-wrap {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 240, 223, 0.14);
+  background: rgba(11, 12, 9, 0.86);
+  overflow-x: auto;
+}
+
+.skills-constellation-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 680px;
+}
+
+@media (max-width: 768px) {
+  .skills-constellation-svg {
+    min-width: 780px;
+  }
+}
+
+.constellation-hint {
+  margin: 12px 0 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--muted, #aaa28a);
+  text-align: center;
+}
+
+.cf-rating-sparkline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  background: rgba(0, 229, 255, 0.05);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #b7f7ff;
+}
+
+.cmd-terminal-output {
+  margin: 0 14px 12px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(191, 242, 5, 0.35);
+  background: #070806;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #dff59c;
+}
+
+.wins-section {
+  padding-top: clamp(32px, 4svh, 52px);
+  padding-bottom: clamp(32px, 4svh, 52px);
+}
+
+.wins-pin-inner {
+  width: 100%;
+}
+
+.wins-pin-inner .section-heading {
+  margin-bottom: 24px;
+}
+
+.ach-scroll-stage {
+  padding-top: 0;
+}
+
+.ach-batch-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ach-batch-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ach-nav-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 240, 223, 0.22);
+  background: rgba(17, 19, 14, 0.78);
+  color: var(--paper, #f4f0df);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.ach-nav-arrow:hover:not(:disabled) {
+  border-color: var(--lime, #bff205);
+  color: var(--lime, #bff205);
+}
+
+.ach-nav-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ach-progress-track {
+  width: 120px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(244, 240, 223, 0.14);
+  overflow: hidden;
+}
+
+.ach-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--lime, #bff205);
+  transition: width 0.08s linear;
+}
+
+.ach-scroll-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--muted, #aaa28a);
+}
+
+.ach-hscroll-viewport {
+  width: 100%;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.ach-hscroll-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 40px) / 3);
+  gap: 20px;
+  width: 100%;
+  will-change: transform;
+}
+
+.ach-hscroll-track .achievement-card-interactive {
+  height: 100%;
+}
+
+.ach-hscroll-fallback-rail {
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+}
+
+.ach-hscroll-fallback-rail .achievement-card-interactive {
+  flex: 0 0 clamp(270px, 82vw, 350px);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 1080px) {
+  .ach-hscroll-track {
+    grid-auto-columns: calc((100% - 20px) / 2);
+  }
+}
+
+.cmd-terminal-head {
+  color: var(--lime, #bff205);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cmd-terminal-line {
+  color: var(--paper, #f4f0df);
+}
+
+/* Command palette alignment polish */
+.cmd-item {
+  border: 1px solid transparent;
+}
+
+.cmd-footer {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.cmd-footer-hints {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.cmd-cli-tip {
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .cmd-cli-tip {
+    display: none;
+  }
+}
+
+/* Linear 2-column skill card bento layout (1/2 width or full width rows) */
+.skill-group {
+  height: 100%;
+}
+
+.skill-group ul.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1;
+  align-content: start;
+  align-items: stretch;
+  width: 100%;
+}
+
+.skill-group ul.skills-grid > li {
+  min-width: 0;
+  display: flex;
+}
+
+.skill-group ul.skills-grid > li.is-full-span {
+  grid-column: 1 / -1;
+}
+
+.skill-group ul.skills-grid .skill-badge {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.skill-group ul.skills-grid .skill-badge > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .skill-group ul.skills-grid .skill-badge {
+    font-size: 0.72rem;
+    padding: 8px 9px;
+  }
+}
+
+

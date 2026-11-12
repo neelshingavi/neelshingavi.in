@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Trophy, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { codeforcesConfig } from '../data/codingProfiles.js';
 import { CodingActivityHeader } from './CodingActivityHeader.jsx';
+import { useHeatmapRipple } from '../hooks/useHeatmapRipple.js';
+
+gsap.registerPlugin(ScrollTrigger);
 import {
   DATA_STATES,
   readCache,
@@ -24,6 +29,8 @@ export function CodeforcesActivity() {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const gridContainerRef = useRef(null);
+  const sparkPathRef = useRef(null);
+  useHeatmapRipple(gridContainerRef, Boolean(data && dataState !== DATA_STATES.LOADING));
 
   const fetchCodeforcesData = async (abortSignal, forceBypassCache = false) => {
     // 1. Check local cache
@@ -51,12 +58,16 @@ export function CodeforcesActivity() {
       // Step B: user.rating (Rated contest history)
       let ratedContestsCount = null;
       let bestContestRank = null;
+      let ratingHistory = [];
       try {
         const resRating = await fetch(codeforcesConfig.apiUrlRating, { signal: abortSignal });
         if (resRating.ok) {
           const jsonRating = await resRating.json();
           if (jsonRating.status === 'OK' && Array.isArray(jsonRating.result)) {
             ratedContestsCount = jsonRating.result.length;
+            ratingHistory = jsonRating.result
+              .map((r) => r.newRating)
+              .filter((val) => typeof val === 'number');
             if (jsonRating.result.length > 0) {
               const ranks = jsonRating.result
                 .map((r) => r.rank)
@@ -109,6 +120,7 @@ export function CodeforcesActivity() {
         maxRank: u.maxRank || u.rank || 'unrated',
         ratedContestsCount,
         bestContestRank,
+        ratingHistory,
         recentUniqueSolved,
         totalSubmissionsSample,
         dayCounts,
@@ -164,6 +176,46 @@ export function CodeforcesActivity() {
       setIsRefreshing(false);
     }
   };
+
+  const sparklinePath = useMemo(() => {
+    const pts = data?.ratingHistory;
+    if (!Array.isArray(pts) || pts.length < 2) return '';
+    const min = Math.min(...pts);
+    const max = Math.max(...pts);
+    const span = Math.max(1, max - min);
+    return pts
+      .map((val, idx) => {
+        const x = (idx / (pts.length - 1)) * 220;
+        const y = 34 - ((val - min) / span) * 26;
+        return `${idx === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+  }, [data?.ratingHistory]);
+
+  useEffect(() => {
+    const pathEl = sparkPathRef.current;
+    if (!pathEl || !sparklinePath) return undefined;
+    const len = pathEl.getTotalLength();
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
+      const tw = gsap.to(pathEl, {
+        strokeDashoffset: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: pathEl,
+          start: 'top 90%',
+          end: 'top 55%',
+          scrub: true,
+        },
+      });
+      return () => {
+        tw.scrollTrigger?.kill();
+        tw.kill();
+      };
+    });
+    return () => mm.revert();
+  }, [sparklinePath]);
 
   const { weeks, sampleWindowSubmissionCount } = useMemo(() => {
     const countMap = new Map();
@@ -373,6 +425,23 @@ export function CodeforcesActivity() {
               ))}
             </div>
           </div>
+
+          {/* Optional Live Rating History Trend Line */}
+          {sparklinePath && (
+            <div className="cf-rating-sparkline" aria-label="Verified Codeforces rating trajectory">
+              <span>Contest Rating Trend ({data.ratingHistory.length} rated contests)</span>
+              <svg width="220" height="40" viewBox="0 0 220 40" aria-hidden="true">
+                <path
+                  ref={sparkPathRef}
+                  d={sparklinePath}
+                  fill="none"
+                  stroke="#00e5ff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
 
           {/* Legend & Verification Attribution */}
           <div className="gh-cal-footer">

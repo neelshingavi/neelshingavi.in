@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-export function useTilt(max = 8) {
+export function useTilt(max = 8, scaleTo = 1.015) {
   const ref = useRef(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el || window.matchMedia('(hover: none)').matches) return undefined;
@@ -12,25 +13,37 @@ export function useTilt(max = 8) {
     const rotY = gsap.quickTo(el, 'rotateY', { duration: 0.4, ease: 'power3.out' });
     const scale = gsap.quickTo(el, 'scale', { duration: 0.4, ease: 'power3.out' });
 
-    const handleMove = (e) => {
-      const { left, top, width, height } = el.getBoundingClientRect();
-      const px = (e.clientX - left) / width - 0.5;
-      const py = (e.clientY - top) / height - 0.5;
-      rotY(px * max);
-      rotX(-py * max);
-    };
-    const enter = () => scale(1.02);
-    const leave = () => { rotX(0); rotY(0); scale(1); };
+    gsap.set(el, { transformPerspective: 900 });
 
-    gsap.set(el, { transformPerspective: 800 });
-    el.addEventListener('mousemove', handleMove);
-    el.addEventListener('mouseenter', enter);
-    el.addEventListener('mouseleave', leave);
-    return () => {
-      el.removeEventListener('mousemove', handleMove);
-      el.removeEventListener('mouseenter', enter);
-      el.removeEventListener('mouseleave', leave);
+    const handleMove = (e) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      rotY((px - 0.5) * max * 2);
+      rotX(-(py - 0.5) * max * 2);
+      el.style.setProperty('--gx', `${px * 100}%`);
+      el.style.setProperty('--gy', `${py * 100}%`);
     };
-  }, [max]);
+
+    const enter = () => scale(scaleTo);
+    const leave = () => {
+      rotX(0);
+      rotY(0);
+      scale(1);
+    };
+
+    el.addEventListener('pointermove', handleMove, { passive: true });
+    el.addEventListener('pointerenter', enter);
+    el.addEventListener('pointerleave', leave);
+
+    return () => {
+      el.removeEventListener('pointermove', handleMove);
+      el.removeEventListener('pointerenter', enter);
+      el.removeEventListener('pointerleave', leave);
+      gsap.set(el, { clearProps: 'transform' });
+    };
+  }, [max, scaleTo]);
+
   return ref;
 }

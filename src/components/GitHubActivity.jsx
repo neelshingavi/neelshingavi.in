@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { GitCommit, RefreshCw, AlertCircle, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
 import { profile } from '../data/portfolio.js';
 import { CodingActivityHeader } from './CodingActivityHeader.jsx';
+import { useHeatmapRipple } from '../hooks/useHeatmapRipple.js';
 import {
   DATA_STATES,
   readCache,
@@ -24,6 +25,7 @@ export function GitHubActivity() {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const gridContainerRef = useRef(null);
+  useHeatmapRipple(gridContainerRef, Boolean(data && dataState !== DATA_STATES.LOADING));
 
   const fetchContributions = async (abortSignal, forceBypassCache = false) => {
     // 1. Try Cache if not bypassing

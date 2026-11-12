@@ -16,8 +16,9 @@ import {
   CornerDownLeft,
   Download,
   BookOpen,
+  Terminal,
 } from 'lucide-react';
-import { profile } from '../data/portfolio.js';
+import { experience, profile, stats } from '../data/portfolio.js';
 import { lenis } from '../hooks/useSmoothScroll.js';
 import { SECTIONS, PROJECT_COMMANDS } from '../data/navigation.js';
 import { projectCaseStudies } from '../data/caseStudies.js';
@@ -33,10 +34,61 @@ const sectionIconMap = {
   contact: Mail,
 };
 
+const KNOWN_CLI_TOKENS = ['whoami', 'git log', 'sudo hire neel', 'cat stats', 'help'];
+
+function launchConfetti() {
+  if (typeof window === 'undefined') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  Object.assign(canvas.style, {
+    position: 'fixed',
+    inset: '0',
+    zIndex: '100000',
+    pointerEvents: 'none',
+  });
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const palette = ['#bff205', '#00e5ff', '#ff5e3a', '#fbc02d', '#f4f0df'];
+  const particles = Array.from({ length: 120 }, () => ({
+    x: window.innerWidth * (0.25 + Math.random() * 0.5),
+    y: window.innerHeight * 0.35,
+    vx: (Math.random() - 0.5) * 14,
+    vy: -6 - Math.random() * 10,
+    size: 4 + Math.random() * 4,
+    color: palette[Math.floor(Math.random() * palette.length)],
+    life: 1,
+  }));
+
+  const start = performance.now();
+  const tick = (now) => {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.vy += 0.38;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life = Math.max(0, 1 - elapsed / 1200);
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    });
+    if (elapsed < 1200) {
+      requestAnimationFrame(tick);
+    } else {
+      canvas.remove();
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
 export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [cliOutput, setCliOutput] = useState(null);
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const previousFocusRef = useRef(null);
@@ -208,7 +260,69 @@ export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
   ], [copiedEmail]);
 
   // Filter commands based on search query
+  const trimmedRaw = search.trim();
+  const normalizedCli = trimmedRaw.replace(/^>\s*/, '').toLowerCase();
+  const isCliMode = trimmedRaw.startsWith('>') || KNOWN_CLI_TOKENS.includes(normalizedCli);
+
+  const runCliCommand = (cmdToken) => {
+    const cmd = cmdToken.replace(/^>\s*/, '').trim().toLowerCase();
+    if (cmd === 'whoami') {
+      setCliOutput({
+        title: '> whoami',
+        lines: [`${profile.name} · Product Engineer · ${profile.location}`, `Email: ${profile.email}`],
+      });
+      return true;
+    }
+    if (cmd === 'git log') {
+      setCliOutput({
+        title: '> git log --experience',
+        lines: experience.map(
+          (exp, i) => `0${i + 1}a8f${9 - i}c · ${exp.period} · ${exp.company} — ${exp.role}`
+        ),
+      });
+      return true;
+    }
+    if (cmd === 'cat stats') {
+      setCliOutput({
+        title: '> cat stats',
+        lines: stats.map((st) => `${st.value}${st.suffix || ''}  ${st.label}`),
+      });
+      return true;
+    }
+    if (cmd === 'sudo hire neel') {
+      setCliOutput(null);
+      launchConfetti();
+      navigateTo('#contact');
+      return true;
+    }
+    if (cmd === 'help' || cmd === '') {
+      setCliOutput({
+        title: '> help',
+        lines: ['Available CLI commands: whoami · git log · cat stats · sudo hire neel'],
+      });
+      return true;
+    }
+    setCliOutput({
+      title: `> ${cmd}`,
+      lines: [`Unknown command "${cmd}". Try: whoami, git log, cat stats, sudo hire neel`],
+    });
+    return true;
+  };
+
   const filteredCommands = useMemo(() => {
+    if (isCliMode) {
+      return [
+        {
+          id: `cli-${normalizedCli || 'help'}`,
+          category: 'Terminal',
+          label: `Run "> ${normalizedCli || 'help'}"`,
+          keywords: '',
+          icon: Terminal,
+          badge: 'CLI',
+          action: () => runCliCommand(normalizedCli),
+        },
+      ];
+    }
     const q = search.trim().toLowerCase();
     if (!q) return commands;
     return commands.filter((cmd) =>
@@ -216,7 +330,7 @@ export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
       cmd.category.toLowerCase().includes(q) ||
       cmd.keywords.toLowerCase().includes(q)
     );
-  }, [search, commands]);
+  }, [search, commands, isCliMode, normalizedCli]);
 
   // Group filtered commands by category
   const groupedCommands = useMemo(() => {
@@ -249,6 +363,7 @@ export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
         lenis?.start();
       }
       setSearch('');
+      setCliOutput(null);
       setSelectedIndex(0);
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
         previousFocusRef.current.focus({ preventScroll: true });
@@ -350,51 +465,63 @@ export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
           )}
         </div>
 
+        {/* Inline CLI Terminal Output */}
+        {cliOutput && (
+          <div className="cmd-terminal-output" role="status" aria-live="polite">
+            <div className="cmd-terminal-head">{cliOutput.title}</div>
+            {cliOutput.lines.map((line) => (
+              <div key={line} className="cmd-terminal-line">{line}</div>
+            ))}
+          </div>
+        )}
+
         {/* Results List */}
         <div
           ref={listRef}
           id="cmd-list"
-          className="cmd-results-list"
+          className="cmd-list-container cmd-results-list"
           role="listbox"
           aria-label="Available commands"
         >
           {filteredCommands.length === 0 ? (
             <div className="cmd-empty-state">
               <p>No results found for &ldquo;{search}&rdquo;</p>
-              <span>Try searching for &quot;Projects&quot;, &quot;Systems&quot;, or &quot;Resume&quot;</span>
+              <small>Try &quot;Projects&quot;, &quot;Systems&quot;, &quot;Resume&quot;, or CLI: whoami, git log, cat stats</small>
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, items]) => (
-              <div key={category} className="cmd-category-group" role="group" aria-label={category}>
-                <div className="cmd-category-header">{category}</div>
-                {items.map((cmd) => {
-                  const itemIndex = flatCounter++;
-                  const isSelected = itemIndex === selectedIndex;
-                  const Icon = cmd.icon;
+              <div key={category} className="cmd-group cmd-category-group" role="group" aria-label={category}>
+                <div className="cmd-group-title cmd-category-header">{category}</div>
+                <div className="cmd-group-items">
+                  {items.map((cmd) => {
+                    const itemIndex = flatCounter++;
+                    const isSelected = itemIndex === selectedIndex;
+                    const Icon = cmd.icon;
 
-                  return (
-                    <div
-                      key={cmd.id}
-                      id={`cmd-${cmd.id}`}
-                      role="option"
-                      aria-selected={isSelected}
-                      className={`cmd-item ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => cmd.action()}
-                      onMouseEnter={() => {
-                        setSelectedIndex(itemIndex);
-                      }}
-                    >
-                      <div className="cmd-item-left">
-                        <Icon size={16} className="cmd-item-icon" aria-hidden="true" />
-                        <span className="cmd-item-label">{cmd.label}</span>
+                    return (
+                      <div
+                        key={cmd.id}
+                        id={`cmd-${cmd.id}`}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`cmd-item ${isSelected ? 'is-selected' : ''}`}
+                        onClick={() => cmd.action()}
+                        onMouseEnter={() => {
+                          setSelectedIndex(itemIndex);
+                        }}
+                      >
+                        <div className="cmd-item-left">
+                          <Icon size={16} className="cmd-item-icon" aria-hidden="true" />
+                          <span className="cmd-item-label">{cmd.label}</span>
+                        </div>
+                        <div className="cmd-item-right">
+                          {cmd.badge && <span className="cmd-item-badge">{cmd.badge}</span>}
+                          {isSelected && <CornerDownLeft size={13} className="cmd-item-enter cmd-enter-icon" aria-hidden="true" />}
+                        </div>
                       </div>
-                      <div className="cmd-item-right">
-                        {cmd.badge && <span className="cmd-item-badge">{cmd.badge}</span>}
-                        {isSelected && <CornerDownLeft size={13} className="cmd-enter-icon" aria-hidden="true" />}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             ))
           )}
@@ -403,16 +530,19 @@ export function CommandPalette({ isOpen, onClose, onOpenCaseStudy }) {
         {/* Footer Shortcut Bar */}
         <div className="cmd-footer">
           <div className="cmd-footer-hints">
-            <span className="cmd-hint">
-              <kbd>↑</kbd> <kbd>↓</kbd> to navigate
+            <span className="cmd-shortcut-hint cmd-hint">
+              <kbd className="cmd-kbd">↑</kbd> <kbd className="cmd-kbd">↓</kbd> <span>to navigate</span>
             </span>
-            <span className="cmd-hint">
-              <kbd>↵</kbd> to select
+            <span className="cmd-shortcut-hint cmd-hint">
+              <kbd className="cmd-kbd">↵</kbd> <span>to select</span>
             </span>
-            <span className="cmd-hint">
-              <kbd>ESC</kbd> to close
+            <span className="cmd-shortcut-hint cmd-hint">
+              <kbd className="cmd-kbd">ESC</kbd> <span>to close</span>
             </span>
           </div>
+          <span className="cmd-shortcut-hint cmd-cli-tip">
+            Try: <kbd className="cmd-kbd">whoami</kbd> <kbd className="cmd-kbd">git log</kbd>
+          </span>
         </div>
       </div>
     </div>,

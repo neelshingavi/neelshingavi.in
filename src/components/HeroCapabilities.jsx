@@ -35,10 +35,6 @@ export function HeroCapabilities({ onSelectCategory }) {
 
   return (
     <div className="hero-capabilities-shell" aria-label="Core Engineering Domains">
-      <div className="capabilities-header">
-        <span className="capabilities-label">Core Focus Areas</span>
-      </div>
-
       <div
         className="capabilities-tablist"
         role="tablist"

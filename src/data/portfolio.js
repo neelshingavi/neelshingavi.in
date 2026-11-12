@@ -1,4 +1,5 @@
 import { getEmail, getPhone } from '../utils/contact.js';
+import { projectCaseStudies } from './caseStudies.js';
 
 export const profile = {
   name: 'Neel Shingavi',
@@ -15,7 +16,7 @@ export const profile = {
     codeforces: 'https://codeforces.com/profile/shingavineel',
   },
   summary:
-    'Full-Stack Software Engineer with expertise in building scalable web applications, distributed architectures, and AI-integrated data pipelines. Proficient across the stack using Java, Node.js, Next.js, and PostgreSQL, alongside cloud deployment on AWS. Proven track record of accelerating product delivery from responsive client interfaces to secure backend systems.',
+    '',
   availability: 'Open for high-impact software engineering roles, backend systems architecture, and technical collaborations.',
 };
 
@@ -79,8 +80,9 @@ export const experience = [
     period: 'Jun 2026 - Present',
     location: 'On-Site',
     points: [
-      'Designed and implemented end-to-end AI Notes processing engine for MBBS Mentor, integrating AWS S3 and OpenRouter APIs to automate document ingestion, processing, and parsing workflows.',
-      'Engineered localized data aggregation pipelines to process historical user activity and generate automated weekly and monthly concept summaries.',
+      'Engineered full-stack MERN features (MongoDB, Express.js, React.js, Node.js) alongside PostgreSQL, Prisma ORM, SQLite, REST APIs, and scalable system design workflows.',
+      'Designed and implemented end-to-end AI Notes processing engine for MBBS Mentor, combining Prompt Engineering, AWS S3, and OpenRouter APIs to automate document ingestion, processing, and parsing.',
+      'Built localized data aggregation pipelines under structured Git and GitHub workflows to process historical user activity and generate automated weekly and monthly concept summaries.',
     ],
   },
   {
@@ -186,7 +188,7 @@ export const projects = [
     description:
       'Developed a local-first financial ledger and trade management application with a native desktop interface for managing billing, returns, and commission settlements. Handles 5,000+ monthly trade-related records (trade lines, invoices, and bill orders) and 2,000+ client settlement transactions across 3 active clients. Implemented offline-first persistence using SQLite (desktop via Hibernate ORM, mobile via Flutter sqflite), synchronized with Supabase PostgreSQL via incremental push/pull HTTP replication with eventual consistency.',
     impact: ['5,000+ monthly trade records', '2,000+ client transactions', 'Offline-first SQLite persistence'],
-    stack: ['Java', 'Swing', 'Flutter', 'SQLite', 'Hibernate ORM', 'PostgreSQL', 'Supabase', 'HTTP APIs'],
+    stack: projectCaseStudies['project-tradersdesk'].stack,
     color: 'coral',
     photosLink: 'https://drive.google.com/drive/folders/1tmuq4egWo1IHDVIaBjV3EH-x7ZLuNRKr?usp=drive_link',
   },
@@ -208,7 +210,7 @@ export const projects = [
     description:
       'Engineered a natural language to SQL analytics pipeline using conversational LLM reasoning and schema-grounded prompt orchestration. Ingested and analyzed 250,000+ UPI financial transactions to extract contextual business insights, spending patterns, and revenue velocity metrics with strict read-only SQL safety guardrails.',
     impact: ['250,000+ UPI records analyzed', '2nd place at InsightX IIT Bombay', 'Read-only SQL safety guardrails'],
-    stack: ['Python', 'LangChain', 'PostgreSQL', 'LLM APIs', 'SQL', 'Data Analytics'],
+    stack: projectCaseStudies['project-querypilot'].stack,
     color: 'lime',
   },
   {
@@ -227,9 +229,9 @@ export const projects = [
       imageAlt: 'PayPerUseAI Algorand PyTeal smart escrow and FastAPI SSE streaming gateway blueprint',
     },
     description:
-      'Usage-based payment gateway that dynamically meters and processes multi-model AI inference queries utilizing Algorand smart contracts for secure billing.',
+      'Usage-based AI payment gateway built with FastAPI, LangChain, and LLM APIs that dynamically routes and meters multi-model inference streams over SSE with Algorand PyTeal smart contract settlement.',
     impact: ['Smart escrow settlement (PyTeal)', 'Sub-200ms real-time streaming (SSE)', 'Blockchain-backed ledgers'],
-    stack: ['FastAPI', 'Python', 'React.js', 'PyTeal', 'Algorand Blockchain'],
+    stack: projectCaseStudies['project-payperuseai'].stack,
     color: 'teal',
   },
   {
@@ -250,7 +252,7 @@ export const projects = [
     description:
       'Event management platform for certificate generation, participant management, QR validation, and bulk email communication.',
     impact: ['300+ participants automated', '80% manual effort reduction', 'Hackathon-winning end-to-end product'],
-    stack: ['Web Development', 'QR Systems', 'Email Automation'],
+    stack: projectCaseStudies['project-certicraft'].stack,
     color: 'teal',
   },
   {
@@ -271,7 +273,7 @@ export const projects = [
     description:
       'Startup workflow platform combining idea validation, roadmap planning, task tracking, dashboards, and team communication into one execution system.',
     impact: ['Roadmap and task execution pipelines', 'Centralized founder dashboard', 'Built around startup productivity workflows'],
-    stack: ['Workflow Automation', 'Product Design', 'Dashboards'],
+    stack: projectCaseStudies['project-founderflow'].stack,
     color: 'gold',
   },
 ];
@@ -292,7 +294,7 @@ export const skills = [
   },
   {
     label: 'Backend & API Architecture',
-    items: ['Node.js', 'Express.js', 'FastAPI', 'REST APIs', 'Hibernate ORM', 'System Design'],
+    items: ['Node.js', 'Express.js', 'FastAPI', 'REST APIs', 'Prisma ORM', 'Hibernate ORM', 'System Design'],
   },
   {
     label: 'Databases & Data Engineering',
