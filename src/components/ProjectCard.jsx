@@ -15,7 +15,7 @@ export const ProjectCard = memo(function ProjectCard({
   onOpenCaseStudy,
   highlightedSkill,
 }) {
-  const tiltRef = useTilt(7);
+  const { ref: tiltRef, onPointerMove, onPointerLeave } = useTilt(7);
   const cardRef = useRef(null);
 
   const setRefs = (el) => {
@@ -48,6 +48,8 @@ export const ProjectCard = memo(function ProjectCard({
       data-cursor="Open"
       className={`project-compact-card tone-${project.color || 'lime'} ${isFlagship ? 'is-flagship' : ''} ${isSkillMatched ? 'is-skill-matched' : ''} ${isSkillDimmed ? 'is-skill-dimmed' : ''}`}
       aria-labelledby={`title-${cardDomId}`}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
       {/* Card Header Meta */}
       <div className="compact-card-meta">

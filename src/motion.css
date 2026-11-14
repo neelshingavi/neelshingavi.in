@@ -86,7 +86,15 @@ body[data-section='contact']    { --fx-tint: rgba(191, 242, 5, 0.16); }
    GSAP owns `transform`; CSS uses individual `translate` & never transitions `transform`.
    --------------------------------------------------------------------- */
 .project-compact-card {
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transform-style: preserve-3d;
+  transform:
+    perspective(900px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg))
+    scale(var(--tilt-scale, 1));
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
 }
 
 .header-action {
@@ -1072,3 +1080,167 @@ body {
 }
 
 
+
+/* =====================================================================
+   FILM GRAIN — fixed overlay, cheap & cinematic
+   Ported from Portfolio_series (Sushmita Dasari, 196★)
+   ===================================================================== */
+.fx-grain {
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: fx-grain-shift 1.4s steps(6) infinite;
+  will-change: transform;
+}
+@keyframes fx-grain-shift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  16%  { transform: translate(-3%, 2%) rotate(0.3deg); }
+  33%  { transform: translate(2%, -3%) rotate(-0.2deg); }
+  50%  { transform: translate(-2%, -1%) rotate(0.1deg); }
+  66%  { transform: translate(3%, 3%) rotate(-0.3deg); }
+  83%  { transform: translate(-1%, 2%) rotate(0.2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* =====================================================================
+   LIGHT STREAKS — horizontal crimson/gold scan lines on hero
+   ===================================================================== */
+.fx-light-streak {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(191,242,5,0.7), rgba(255,94,58,0.5), transparent);
+  filter: blur(0.5px);
+  animation: fx-streak 8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes fx-streak {
+  0%   { transform: translateX(-60%) scaleX(0.3); opacity: 0; }
+  12%  { opacity: 0.85; }
+  48%  { transform: translateX(60%) scaleX(1.1); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* =====================================================================
+   SHIMMER TEXT — animated gradient sweep (name / headings)
+   ===================================================================== */
+.fx-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #ffffff 38%,
+    #bff205 48%,
+    #ff5e3a 54%,
+    #ffffff 62%,
+    #ffffff 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fx-shimmer 5s linear infinite;
+}
+@keyframes fx-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+/* =====================================================================
+   CURSOR SPOTLIGHT — mouse-following radial glow on hero
+   ===================================================================== */
+.hero-section {
+  --hero-mx: 50%;
+  --hero-my: 50%;
+}
+.fx-hero-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    520px circle at var(--hero-mx) var(--hero-my),
+    rgba(191, 242, 5, 0.06) 0%,
+    rgba(255, 94, 58, 0.04) 35%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+.hero-section:hover .fx-hero-spotlight {
+  opacity: 1;
+}
+
+/* =====================================================================
+   WORD-REVEAL — blur-to-focus stagger for section headings
+   Each .fx-word-wrap clips; .fx-word-inner slides up from below
+   ===================================================================== */
+.fx-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.06em;
+}
+.fx-word-inner {
+  display: inline-block;
+  transform: translateY(108%) rotate(2deg);
+  opacity: 0;
+  filter: blur(6px);
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity, filter;
+}
+.fx-word-wrap.is-visible .fx-word-inner {
+  transform: translateY(0) rotate(0deg);
+  opacity: 1;
+  filter: blur(0px);
+}
+
+/* =====================================================================
+   SCROLL-SCENE CSS ENTRANCE — works without React component wrapping
+   Add class="scroll-scene" to any section for auto entrance animation
+   ===================================================================== */
+.scroll-scene {
+  opacity: 0;
+  transform: translateY(28px) scale(0.978);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--scene-delay, 0ms);
+}
+.scroll-scene.scene-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-grain,
+  .fx-light-streak,
+  .fx-shimmer-text {
+    animation: none !important;
+  }
+  .fx-light-streak { display: none; }
+  .fx-shimmer-text { 
+    background: none; 
+    color: inherit; 
+    -webkit-background-clip: unset;
+    background-clip: unset;
+  }
+  .fx-word-inner {
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .scroll-scene {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .project-compact-card {
+    transform: none !important;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+  }
+}

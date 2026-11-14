@@ -87,6 +87,7 @@ function App() {
   const ringRef = useRef(null);
   const ringLabelRef = useRef(null);
   const dotRef = useRef(null);
+  const spotlightRef = useRef(null);
   const [activeSection, setActiveSection] = useState('');
   const [preloaderComplete, setPreloaderComplete] = useState(seenPreloader);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -283,6 +284,9 @@ function App() {
       ringY(e.clientY);
       dotX(e.clientX);
       dotY(e.clientY);
+      if (spotlightRef.current) {
+        spotlightRef.current.style.transform = `translate3d(${e.clientX - 350}px, ${e.clientY - 350}px, 0)`;
+      }
     };
 
     const handleMouseOver = (e) => {
@@ -333,6 +337,11 @@ function App() {
       }
     };
 
+    const showSpotlight = () => { if (spotlightRef.current) spotlightRef.current.style.opacity = '1'; };
+    const hideSpotlight = () => { if (spotlightRef.current) spotlightRef.current.style.opacity = '0'; };
+    document.addEventListener('mouseenter', showSpotlight);
+    document.addEventListener('mouseleave', hideSpotlight);
+
     window.addEventListener('pointermove', handleMouseMove);
     document.addEventListener('mouseover', handleMouseOver);
     document.addEventListener('mouseout', handleMouseOut);
@@ -341,6 +350,8 @@ function App() {
       window.removeEventListener('pointermove', handleMouseMove);
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('mouseenter', showSpotlight);
+      document.removeEventListener('mouseleave', hideSpotlight);
     };
   }, []);
 
@@ -564,6 +575,9 @@ function App() {
 
   return (
     <>
+      {/* Film grain overlay — cinematic texture from Portfolio_series */}
+      <div className="fx-grain" aria-hidden="true" />
+
       {/* Skip link MUST be first */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -611,6 +625,7 @@ function App() {
         <span ref={ringLabelRef} className="cursor-ring-label" />
       </div>
       <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
+      <div ref={spotlightRef} className="cursor-spotlight" aria-hidden="true" />
 
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Go to top">
@@ -679,6 +694,14 @@ function App() {
         {/* We use #top and #hero for 'back to top' and hero targeting */}
         <div id="top"></div>
         <section className="hero-section section-shell" id="hero" aria-labelledby="hero-title">
+          {/* Cursor-following spotlight */}
+          <div className="fx-hero-spotlight" aria-hidden="true" />
+
+          {/* Light streaks */}
+          <span className="fx-light-streak" style={{ top: '28%', width: '52vw', left: '30%', animationDelay: '0.8s' }} aria-hidden="true" />
+          <span className="fx-light-streak" style={{ top: '62%', width: '38vw', left: '20%', animationDelay: '3.2s' }} aria-hidden="true" />
+          <span className="fx-light-streak" style={{ top: '45%', width: '28vw', left: '55%', animationDelay: '5.8s' }} aria-hidden="true" />
+
           {/* Reactive pointer spotlight layer for hero */}
           <div className="hero-spotlight-layer" aria-hidden="true" />
 
