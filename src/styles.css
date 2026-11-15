@@ -30,27 +30,13 @@ body {
   margin: 0;
   min-width: 320px;
   overflow-x: hidden;
-  --grid-tint: rgba(244, 240, 223, 0.035);
-  background:
-    linear-gradient(90deg, var(--grid-tint) 1px, transparent 1px),
-    linear-gradient(0deg, var(--grid-tint) 1px, transparent 1px),
-    var(--ink);
-  background-size: 84px 84px;
+  background-color: #07050b;
   color: var(--paper);
   cursor: none;
-  transition: --grid-tint 0.8s ease;
 }
 
 body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -3;
-  pointer-events: none;
-  content: '';
-  background:
-    linear-gradient(120deg, rgba(255, 94, 58, 0.12), transparent 34%),
-    linear-gradient(300deg, rgba(191, 242, 5, 0.1), transparent 38%),
-    repeating-linear-gradient(135deg, rgba(244, 240, 223, 0.028) 0 1px, transparent 1px 16px);
+  display: none;
 }
 
 body::after {

@@ -30,6 +30,8 @@ import { SystemsNetwork } from './components/SystemsNetwork.jsx';
 import { CodingActivityShowcase } from './components/CodingActivityShowcase.jsx';
 import { ExperienceTimeline } from './components/ExperienceTimeline.jsx';
 import { AchievementGallery } from './components/AchievementGallery.jsx';
+import { HeroFloatChips } from './components/HeroFloatChips.jsx';
+import { FxParticles } from './components/FxParticles.jsx';
 import { analytics } from './utils/analytics.js';
 import { achievements, profile, projects, skills } from './data/portfolio.js';
 import { projectCaseStudies } from './data/caseStudies.js';
@@ -226,43 +228,6 @@ function App() {
     [highlightedSkill]
   );
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!isFinePointer || prefersReducedMotion) return;
-
-    const heroSection = document.querySelector('.hero-section');
-    if (!heroSection) return;
-
-    let rafId = null;
-    let clientX = 0;
-    let clientY = 0;
-
-    const updateSpotlight = () => {
-      const rect = heroSection.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      heroSection.style.setProperty('--hero-mx', `${x}px`);
-      heroSection.style.setProperty('--hero-my', `${y}px`);
-      rafId = null;
-    };
-
-    const handlePointerMove = (e) => {
-      clientX = e.clientX;
-      clientY = e.clientY;
-      if (!rafId) {
-        rafId = requestAnimationFrame(updateSpotlight);
-      }
-    };
-
-    heroSection.addEventListener('pointermove', handlePointerMove, { passive: true });
-
-    return () => {
-      heroSection.removeEventListener('pointermove', handlePointerMove);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
 
   useEffect(() => {
     // Check user's motion preference before setting up GSAP cursor
@@ -694,16 +659,11 @@ function App() {
         {/* We use #top and #hero for 'back to top' and hero targeting */}
         <div id="top"></div>
         <section className="hero-section section-shell" id="hero" aria-labelledby="hero-title">
-          {/* Cursor-following spotlight */}
-          <div className="fx-hero-spotlight" aria-hidden="true" />
+          {/* Canvas floating particles — Ported from Portfolio_series */}
+          <FxParticles count={36} />
 
-          {/* Light streaks */}
-          <span className="fx-light-streak" style={{ top: '28%', width: '52vw', left: '30%', animationDelay: '0.8s' }} aria-hidden="true" />
-          <span className="fx-light-streak" style={{ top: '62%', width: '38vw', left: '20%', animationDelay: '3.2s' }} aria-hidden="true" />
-          <span className="fx-light-streak" style={{ top: '45%', width: '28vw', left: '55%', animationDelay: '5.8s' }} aria-hidden="true" />
-
-          {/* Reactive pointer spotlight layer for hero */}
-          <div className="hero-spotlight-layer" aria-hidden="true" />
+          {/* Ambient Floating Parallax Chips — Ported from Portfolio_series */}
+          <HeroFloatChips />
 
           <div className="hero-copy">
             <h1 id="hero-title" className="sr-only">

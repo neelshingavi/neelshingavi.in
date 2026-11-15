@@ -137,17 +137,18 @@ body[data-section='contact']    { --fx-tint: rgba(191, 242, 5, 0.16); }
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
   background: radial-gradient(
-    420px circle at var(--gx, 50%) var(--gy, 50%),
-    var(--card-accent, rgba(191, 242, 5, 0.75)) 0%,
-    transparent 60%
+    500px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(191, 242, 5, 0.22) 0%,
+    rgba(255, 94, 58, 0.12) 35%,
+    transparent 70%
   );
-  mix-blend-mode: soft-light;
+  mix-blend-mode: screen;
 }
 
 .project-compact-card:hover::after {
-  opacity: 0.5;
+  opacity: 0.85;
 }
 
 /* ---------------------------------------------------------------------
@@ -202,14 +203,29 @@ body {
   background: #07050b;
 }
 
-/* Take portrait slightly down and slightly smaller on desktop without breaking layer lock */
+/* Portrait sizing (75% size on desktop, seamless edges) */
 @media (min-width: 769px) {
-  /* Extend matching magenta (left) and crimson (right) studio lighting edge-to-edge */
   body {
     background-color: #07050b;
     background-image:
-      radial-gradient(34% 58% at 6% 68svh, rgba(134, 0, 122, 0.92) 0%, rgba(96, 0, 88, 0.7) 42%, rgba(45, 0, 42, 0.28) 72%, transparent 100%),
-      radial-gradient(36% 60% at 94% 68svh, rgba(210, 0, 42, 0.95) 0%, rgba(152, 0, 28, 0.72) 42%, rgba(68, 0, 10, 0.28) 72%, transparent 100%);
+      radial-gradient(
+        46% 68% at 3% 63%,
+        rgba(135, 1, 123, 0.95) 0%,
+        rgba(115, 1, 105, 0.82) 24%,
+        rgba(85, 1, 78, 0.58) 46%,
+        rgba(48, 0, 44, 0.30) 68%,
+        rgba(20, 0, 18, 0.10) 84%,
+        transparent 100%
+      ),
+      radial-gradient(
+        48% 70% at 97% 63%,
+        rgba(215, 1, 48, 0.96) 0%,
+        rgba(182, 1, 42, 0.84) 24%,
+        rgba(130, 1, 30, 0.60) 46%,
+        rgba(70, 0, 16, 0.30) 68%,
+        rgba(25, 0, 6, 0.10) 84%,
+        transparent 100%
+      );
     background-attachment: fixed;
     background-repeat: no-repeat;
   }
@@ -217,20 +233,35 @@ body {
   .bg-poster,
   .bg-video,
   .fx-cutout {
-    left: 5%;
-    right: auto;
-    width: 90%;
-    top: 14svh;
-    bottom: auto;
-    height: 90svh;
-    -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0%, #000 10%),
-      linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.45) 8%, #000 20%, #000 80%, rgba(0, 0, 0, 0.45) 92%, transparent 100%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      linear-gradient(to bottom, transparent 0%, #000 10%),
-      linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.45) 8%, #000 20%, #000 80%, rgba(0, 0, 0, 0.45) 92%, transparent 100%);
-    mask-composite: intersect;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    object-fit: cover;
+    object-position: 50% 30%;
+    transform-origin: 50% 30%;
+    scale: 0.83;
+    translate: 0 28px;
+    -webkit-mask-image: radial-gradient(
+      ellipse 54% 50% at 50% 34%,
+      black 20%,
+      rgba(0, 0, 0, 0.85) 38%,
+      rgba(0, 0, 0, 0.45) 54%,
+      rgba(0, 0, 0, 0.12) 65%,
+      transparent 72%
+    );
+    mask-image: radial-gradient(
+      ellipse 54% 50% at 50% 34%,
+      black 20%,
+      rgba(0, 0, 0, 0.85) 38%,
+      rgba(0, 0, 0, 0.45) 54%,
+      rgba(0, 0, 0, 0.12) 65%,
+      transparent 72%
+    );
   }
 }
 
@@ -787,9 +818,9 @@ body {
   .bg-poster,
   .bg-video,
   .fx-cutout {
-    scale: 1.03;
-    translate: var(--fx-px, 0px) var(--fx-py, 0px);
-    transform-origin: 50% 42%;
+    scale: 0.83;
+    translate: var(--fx-px, 0px) calc(var(--fx-py, 0px) + 28px);
+    transform-origin: 50% 30%;
   }
 
   .fx-name {
@@ -1149,31 +1180,6 @@ body {
 }
 
 /* =====================================================================
-   CURSOR SPOTLIGHT — mouse-following radial glow on hero
-   ===================================================================== */
-.hero-section {
-  --hero-mx: 50%;
-  --hero-my: 50%;
-}
-.fx-hero-spotlight {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    520px circle at var(--hero-mx) var(--hero-my),
-    rgba(191, 242, 5, 0.06) 0%,
-    rgba(255, 94, 58, 0.04) 35%,
-    transparent 65%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: 1;
-}
-.hero-section:hover .fx-hero-spotlight {
-  opacity: 1;
-}
-
-/* =====================================================================
    WORD-REVEAL — blur-to-focus stagger for section headings
    Each .fx-word-wrap clips; .fx-word-inner slides up from below
    ===================================================================== */
@@ -1215,32 +1221,117 @@ body {
   transform: translateY(0) scale(1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .fx-grain,
-  .fx-light-streak,
-  .fx-shimmer-text {
-    animation: none !important;
+/* =====================================================================
+   HERO AMBIENT FLOAT CHIPS
+   Ported from Portfolio_series Hero.tsx (Sushmita Dasari, 196★)
+   ===================================================================== */
+.hero-chips-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.hero-float-chip {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(14, 14, 19, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  text-decoration: none;
+  transform: translate3d(
+    calc(var(--chip-px, 0px) * var(--chip-depth, 1)),
+    calc(var(--chip-py, 0px) * var(--chip-depth, 1)),
+    0
+  );
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, background 0.25s ease;
+  animation: hero-chip-float 6s ease-in-out infinite;
+  animation-delay: var(--chip-delay, 0s);
+  will-change: transform;
+}
+
+.hero-float-chip:hover {
+  background: rgba(22, 22, 30, 0.85);
+  border-color: rgba(191, 242, 5, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(191, 242, 5, 0.2);
+}
+
+.hero-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #bff205;
+  box-shadow: 0 0 10px #bff205;
+  flex-shrink: 0;
+}
+
+.hero-chip-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-chip-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f4f1ec;
+  line-height: 1.2;
+}
+
+.hero-chip-sub {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(244, 241, 236, 0.6);
+  text-transform: uppercase;
+}
+
+.hero-chip-top-left {
+  top: 18%;
+  left: 6%;
+}
+
+.hero-chip-mid-left {
+  top: 48%;
+  left: 4%;
+}
+
+.hero-chip-top-right {
+  top: 22%;
+  right: 6%;
+}
+
+.hero-chip-mid-right {
+  top: 52%;
+  right: 5%;
+}
+
+@keyframes hero-chip-float {
+  0%, 100% {
+    margin-top: 0;
   }
-  .fx-light-streak { display: none; }
-  .fx-shimmer-text { 
-    background: none; 
-    color: inherit; 
-    -webkit-background-clip: unset;
-    background-clip: unset;
-  }
-  .fx-word-inner {
-    transform: none !important;
-    opacity: 1 !important;
-    filter: none !important;
-    transition: none !important;
-  }
-  .scroll-scene {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-  .project-compact-card {
-    transform: none !important;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+  50% {
+    margin-top: -9px;
   }
 }
+
+@media (max-width: 1024px) {
+  .hero-chips-container {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-float-chip {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
