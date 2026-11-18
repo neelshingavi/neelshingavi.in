@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { FallbackPage } from './components/FallbackPage.jsx';
 import { initGA } from './utils/analytics.js';
+import { initPostHog } from './utils/posthog.js';
 import { reportWebVitals } from './utils/webVitals.js';
 import { profile } from './data/portfolio.js';
 import './styles.css';
@@ -15,6 +16,7 @@ import './motion.css';
 // Initialize analytics after page loads (non-blocking)
 window.addEventListener('load', () => {
   initGA();
+  initPostHog();
   reportWebVitals();
   if (typeof console !== 'undefined') {
     console.log(

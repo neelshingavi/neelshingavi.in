@@ -1,3 +1,5 @@
+import { posthog } from './posthog.js';
+
 // Measurement ID — configured via environment variable
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
@@ -24,8 +26,19 @@ export function initGA() {
 // ─── Custom Event Tracking ────────────────────────────────────────
 
 export function trackEvent(eventName, params = {}) {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  window.gtag('event', eventName, params);
+  // Google Analytics
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, params);
+  }
+
+  // PostHog
+  try {
+    if (typeof window !== 'undefined' && posthog?.__loaded) {
+      posthog.capture(eventName, params);
+    }
+  } catch {
+    // Fail silently so user interactions are never interrupted
+  }
 }
 
 // Specific event helpers:
