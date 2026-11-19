@@ -1,4 +1,5 @@
 import { posthog } from './posthog.js';
+import { recordSessionAction } from './visitorLogger.js';
 
 // Measurement ID — configured via environment variable
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
@@ -38,6 +39,13 @@ export function trackEvent(eventName, params = {}) {
     }
   } catch {
     // Fail silently so user interactions are never interrupted
+  }
+
+  // Local Admin Telemetry
+  try {
+    recordSessionAction(eventName, params);
+  } catch {
+    // Fail silently
   }
 }
 

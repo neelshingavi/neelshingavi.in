@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/((?!assets/|favicon|site\\.webmanifest|og-image).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
