@@ -62,6 +62,27 @@ export function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  // Ensure cursor is visible and background layers from main portfolio are hidden
+  useEffect(() => {
+    document.body.classList.add('admin-view');
+    document.documentElement.classList.add('admin-view');
+    document.body.style.setProperty('cursor', 'auto', 'important');
+
+    const bgElements = document.querySelectorAll('.bg-poster, .bg-video, .bg-shade, #fx-depth, .cursor-ring, .progress-bar');
+    bgElements.forEach((el) => {
+      el.style.setProperty('display', 'none', 'important');
+    });
+
+    return () => {
+      document.body.classList.remove('admin-view');
+      document.documentElement.classList.remove('admin-view');
+      document.body.style.removeProperty('cursor');
+      bgElements.forEach((el) => {
+        el.style.removeProperty('display');
+      });
+    };
+  }, []);
+
   // Refresh data from storage
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -192,6 +213,8 @@ export function AdminDashboard() {
                 }}
                 style={styles.passwordInput}
                 autoFocus
+                autoComplete="current-password"
+                spellCheck="false"
               />
               <button
                 type="button"
@@ -592,23 +615,31 @@ export function AdminDashboard() {
 // ─── STYLES (Inline to ensure zero bundle dependency and complete styling fidelity) ───
 const styles = {
   loginContainer: {
-    minHeight: '100vh',
+    position: 'fixed',
+    inset: 0,
+    zIndex: 999999,
+    width: '100vw',
+    height: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#0b0c09',
+    background: '#070806',
     padding: '24px',
     fontFamily: 'JetBrains Mono, monospace, system-ui',
     color: '#f4f0df',
+    cursor: 'auto',
+    overflowY: 'auto',
   },
   loginCard: {
     width: '100%',
     maxWidth: '440px',
-    background: 'rgba(18, 20, 15, 0.95)',
-    border: '1px solid rgba(191, 242, 5, 0.25)',
+    background: '#11140e',
+    border: '1px solid rgba(191, 242, 5, 0.35)',
     borderRadius: '16px',
     padding: '36px',
-    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(191, 242, 5, 0.08)',
+    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(191, 242, 5, 0.1)',
+    position: 'relative',
+    zIndex: 2,
   },
   loginBadge: {
     display: 'inline-flex',
@@ -643,36 +674,47 @@ const styles = {
   },
   inputWrapper: {
     position: 'relative',
+    width: '100%',
     display: 'flex',
     alignItems: 'center',
   },
   inputIcon: {
     position: 'absolute',
-    left: '14px',
+    left: '16px',
+    top: '50%',
+    transform: 'translateY(-50%)',
     pointerEvents: 'none',
+    zIndex: 3,
   },
   passwordInput: {
+    boxSizing: 'border-box',
     width: '100%',
-    background: '#0e110c',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
+    height: '52px',
+    background: '#090b07',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '10px',
-    padding: '14px 44px 14px 42px',
-    fontSize: '14px',
+    padding: '0 50px 0 46px',
+    fontSize: '15px',
     color: '#f4f0df',
-    fontFamily: 'inherit',
+    fontFamily: 'JetBrains Mono, monospace, system-ui',
     outline: 'none',
+    cursor: 'text',
     transition: 'border-color 0.2s',
   },
   togglePasswordBtn: {
     position: 'absolute',
-    right: '12px',
+    right: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
     background: 'transparent',
     border: 'none',
     color: '#8a9977',
     cursor: 'pointer',
-    padding: '4px',
+    padding: '8px',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3,
   },
   errorMessage: {
     color: '#ff5e3a',
@@ -714,23 +756,25 @@ const styles = {
 
   // ─── DASHBOARD CONTAINER ──────────────────────────────────────────
   dashboardContainer: {
+    position: 'relative',
+    zIndex: 100,
     minHeight: '100vh',
-    background: '#090a07',
+    background: '#070806',
     color: '#f4f0df',
     fontFamily: 'JetBrains Mono, monospace, system-ui',
     paddingBottom: '60px',
+    cursor: 'auto',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '16px 28px',
-    background: 'rgba(14, 16, 12, 0.95)',
+    background: '#0d100b',
     borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
     position: 'sticky',
     top: 0,
     zIndex: 100,
-    backdropFilter: 'blur(10px)',
   },
   headerLeft: {
     display: 'flex',
@@ -818,8 +862,8 @@ const styles = {
     marginBottom: '28px',
   },
   kpiCard: {
-    background: 'rgba(18, 21, 16, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: '#11140e',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '12px',
     padding: '20px',
   },
@@ -916,8 +960,8 @@ const styles = {
 
   // ─── CARD & TABLE ─────────────────────────────────────────────────
   cardContainer: {
-    background: 'rgba(18, 21, 16, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: '#11140e',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '14px',
     padding: '24px',
   },
@@ -1142,7 +1186,7 @@ const styles = {
     marginTop: '18px',
   },
   hubCard: {
-    background: 'rgba(255, 255, 255, 0.03)',
+    background: '#131710',
     border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: '12px',
     padding: '22px',
@@ -1151,6 +1195,7 @@ const styles = {
     flexDirection: 'column',
     gap: '10px',
     transition: 'all 0.2s',
+    cursor: 'pointer',
   },
   hubIconWrap: {
     marginBottom: '4px',

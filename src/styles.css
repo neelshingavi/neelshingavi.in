@@ -59,6 +59,35 @@ a {
   cursor: none;
 }
 
+/* Restored system cursor and background cleanup for Admin Console */
+body.admin-view,
+body.admin-view *,
+html.admin-view,
+html.admin-view * {
+  cursor: auto !important;
+}
+
+body.admin-view a,
+body.admin-view button,
+body.admin-view [role="button"],
+body.admin-view label {
+  cursor: pointer !important;
+}
+
+body.admin-view input,
+body.admin-view textarea {
+  cursor: text !important;
+}
+
+body.admin-view .bg-poster,
+body.admin-view .bg-video,
+body.admin-view .bg-shade,
+body.admin-view #fx-depth,
+body.admin-view .progress-bar,
+body.admin-view .cursor-ring {
+  display: none !important;
+}
+
 ::selection {
   background: var(--lime);
   color: var(--ink);
